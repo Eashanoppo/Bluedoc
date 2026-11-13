@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{40000004-0004-0004-0004-000000000004}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>BlueDoc.Diagnostics</RootNamespace>
+    <AssemblyName>BlueDoc.Diagnostics</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BlueDoc.Core\BlueDoc.Core.csproj">
+      <Project>{10000001-0001-0001-0001-000000000001}</Project>
+      <Name>BlueDoc.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlueDoc.Infrastructure\BlueDoc.Infrastructure.csproj">
+      <Project>{20000002-0002-0002-0002-000000000002}</Project>
+      <Name>BlueDoc.Infrastructure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlueDoc.Bluetooth\BlueDoc.Bluetooth.csproj">
+      <Project>{30000003-0003-0003-0003-000000000003}</Project>
+      <Name>BlueDoc.Bluetooth</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Rules\IDiagnosticRule.cs" />
+    <Compile Include="Rules\DiagnosticContext.cs" />
+    <Compile Include="Rules\OsCompatibilityRule.cs" />
+    <Compile Include="Rules\AdapterDetectionRule.cs" />
+    <Compile Include="Rules\HardwareStatusRule.cs" />
+    <Compile Include="Rules\DriverHealthRule.cs" />
+    <Compile Include="Rules\ServiceStatusRule.cs" />
+    <Compile Include="Rules\AudioServiceRule.cs" />
+    <Compile Include="Rules\RadioAvailabilityRule.cs" />
+    <Compile Include="Rules\DiscoveryReadinessRule.cs" />
+    <Compile Include="Rules\PairingReadinessRule.cs" />
+    <Compile Include="Rules\BleAvailabilityRule.cs" />
+    <Compile Include="Rules\BleGattSupportRule.cs" />
+    <Compile Include="Rules\EventLogHealthRule.cs" />
+    <Compile Include="Benchmark\BenchmarkModels.cs" />
+    <Compile Include="Benchmark\BluetoothBenchmarkEngine.cs" />
+    <Compile Include="Engine\DiagnosticEngine.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

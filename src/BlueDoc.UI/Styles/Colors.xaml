@@ -1,0 +1,69 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Core Dark Theme Colors (Default) -->
+    <Color x:Key="BgDarkColor">#0A0E17</Color>
+    <Color x:Key="SidebarBgColor">#101726</Color>
+    <Color x:Key="CardBgColor">#161F30</Color>
+    <Color x:Key="CardBgHoverColor">#1C273C</Color>
+    <Color x:Key="BorderColor">#243247</Color>
+    <Color x:Key="TextPrimaryColor">#F1F5F9</Color>
+    <Color x:Key="TextSecondaryColor">#94A3B8</Color>
+    <Color x:Key="TextMutedColor">#64748B</Color>
+
+    <Color x:Key="AccentColor">#3B82F6</Color>
+    <Color x:Key="AccentHoverColor">#60A5FA</Color>
+    <Color x:Key="SuccessColor">#10B981</Color>
+    <Color x:Key="WarningColor">#F59E0B</Color>
+    <Color x:Key="DangerColor">#EF4444</Color>
+
+    <!-- Navigation Colors -->
+    <Color x:Key="NavActiveBgColor">#1E2A40</Color>
+    <Color x:Key="NavActiveTextColor">#60A5FA</Color>
+    <Color x:Key="NavHoverBgColor">#1A2438</Color>
+    <Color x:Key="HeaderBgColor">#101726</Color>
+    <Color x:Key="NavGroupTextColor">#64748B</Color>
+    <Color x:Key="NavGroupBgColor">#131C2D</Color>
+    <Color x:Key="ArrowColor">#475569</Color>
+    <Color x:Key="ArrowActiveColor">#60A5FA</Color>
+
+    <!-- Pill Switch Colors -->
+    <Color x:Key="PillBgColor">#1C273C</Color>
+    <Color x:Key="PillActiveBgColor">#2563EB</Color>
+    <Color x:Key="PillActiveTextColor">#FFFFFF</Color>
+    <Color x:Key="PillInactiveTextColor">#94A3B8</Color>
+
+    <!-- Primary Semantic Brushes -->
+    <SolidColorBrush x:Key="BgDarkBrush" Color="{StaticResource BgDarkColor}" />
+    <SolidColorBrush x:Key="SidebarBgBrush" Color="{StaticResource SidebarBgColor}" />
+    <SolidColorBrush x:Key="CardBgBrush" Color="{StaticResource CardBgColor}" />
+    <SolidColorBrush x:Key="CardBgHoverBrush" Color="{StaticResource CardBgHoverColor}" />
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}" />
+
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}" />
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}" />
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
+
+    <!-- Navigation & UI Brushes -->
+    <SolidColorBrush x:Key="NavActiveBgBrush" Color="{StaticResource NavActiveBgColor}" />
+    <SolidColorBrush x:Key="NavActiveTextBrush" Color="{StaticResource NavActiveTextColor}" />
+    <SolidColorBrush x:Key="NavHoverBgBrush" Color="{StaticResource NavHoverBgColor}" />
+    <SolidColorBrush x:Key="HeaderBgBrush" Color="{StaticResource HeaderBgColor}" />
+    <SolidColorBrush x:Key="NavGroupTextBrush" Color="{StaticResource NavGroupTextColor}" />
+    <SolidColorBrush x:Key="NavGroupBgBrush" Color="{StaticResource NavGroupBgColor}" />
+    <SolidColorBrush x:Key="ArrowBrush" Color="{StaticResource ArrowColor}" />
+    <SolidColorBrush x:Key="ArrowActiveBrush" Color="{StaticResource ArrowActiveColor}" />
+
+    <SolidColorBrush x:Key="PillBgBrush" Color="{StaticResource PillBgColor}" />
+    <SolidColorBrush x:Key="PillActiveBgBrush" Color="{StaticResource PillActiveBgColor}" />
+    <SolidColorBrush x:Key="PillActiveTextBrush" Color="{StaticResource PillActiveTextColor}" />
+    <SolidColorBrush x:Key="PillInactiveTextBrush" Color="{StaticResource PillInactiveTextColor}" />
+
+    <!-- Legacy / Compatibility Aliases -->
+    <SolidColorBrush x:Key="DarkBgBrush" Color="{StaticResource BgDarkColor}" />
+</ResourceDictionary>

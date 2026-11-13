@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{20000002-0002-0002-0002-000000000002}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>BlueDoc.Infrastructure</RootNamespace>
+    <AssemblyName>BlueDoc.Infrastructure</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BlueDoc.Core\BlueDoc.Core.csproj">
+      <Project>{10000001-0001-0001-0001-000000000001}</Project>
+      <Name>BlueDoc.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Native\SetupApiNative.cs" />
+    <Compile Include="Native\CfgMgr32Native.cs" />
+    <Compile Include="Native\BluetoothNative.cs" />
+    <Compile Include="Native\NtdllNative.cs" />
+    <Compile Include="Hardware\HardwareIdParser.cs" />
+    <Compile Include="Hardware\DeviceClassDecoder.cs" />
+    <Compile Include="Hardware\PnpBluetoothDeviceInspector.cs" />
+    <Compile Include="Hardware\SetupApiHardwareInspector.cs" />
+    <Compile Include="Hardware\HardwareRadioManager.cs" />
+    <Compile Include="Services\WindowsServiceInspector.cs" />
+    <Compile Include="Platform\OperatingSystemInspector.cs" />
+    <Compile Include="EventLogs\BluetoothEventAnalyzer.cs" />
+    <Compile Include="Drivers\DriverAssistant.cs" />
+    <Compile Include="Repairs\SafeRepairEngine.cs" />
+    <Compile Include="Reporting\ReportGenerator.cs" />
+    <Compile Include="Reporting\PdfReportGenerator.cs" />
+    <Compile Include="Audio\BluetoothAudioModels.cs" />
+    <Compile Include="Audio\BluetoothAudioInspector.cs" />
+    <Compile Include="Drivers\DriverComparisonModels.cs" />
+    <Compile Include="Drivers\DriverComparisonService.cs" />
+    <Compile Include="Diagnostics\HciTraceAssistant.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{50000005-0005-0005-0005-000000000005}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>BlueDoc.Application</RootNamespace>
+    <AssemblyName>BlueDoc.Application</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BlueDoc.Core\BlueDoc.Core.csproj">
+      <Project>{10000001-0001-0001-0001-000000000001}</Project>
+      <Name>BlueDoc.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlueDoc.Infrastructure\BlueDoc.Infrastructure.csproj">
+      <Project>{20000002-0002-0002-0002-000000000002}</Project>
+      <Name>BlueDoc.Infrastructure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlueDoc.Bluetooth\BlueDoc.Bluetooth.csproj">
+      <Project>{30000003-0003-0003-0003-000000000003}</Project>
+      <Name>BlueDoc.Bluetooth</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlueDoc.Diagnostics\BlueDoc.Diagnostics.csproj">
+      <Project>{40000004-0004-0004-0004-000000000004}</Project>
+      <Name>BlueDoc.Diagnostics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlueDoc.Data\BlueDoc.Data.csproj">
+      <Project>{80000008-0008-0008-0008-000000000008}</Project>
+      <Name>BlueDoc.Data</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Services\AdapterService.cs" />
+    <Compile Include="Services\DiagnosticsService.cs" />
+    <Compile Include="Services\DeviceDiscoveryService.cs" />
+    <Compile Include="Services\DeviceManagementService.cs" />
+    <Compile Include="Services\HistoryService.cs" />
+    <Compile Include="Services\EventAnalysisService.cs" />
+    <Compile Include="Services\DriverService.cs" />
+    <Compile Include="Services\RepairService.cs" />
+    <Compile Include="Services\ReportService.cs" />
+    <Compile Include="Services\CompatibilityService.cs" />
+    <Compile Include="KnowledgeBase\KnowledgeBaseArticle.cs" />
+    <Compile Include="KnowledgeBase\OfflineKnowledgeBaseService.cs" />
+    <Compile Include="Cloud\FleetTelemetryPayload.cs" />
+    <Compile Include="Cloud\ISaasTelemetryService.cs" />
+    <Compile Include="Cloud\SaasTelemetryService.cs" />
+    <Compile Include="Cloud\FleetModels.cs" />
+    <Compile Include="Cloud\MockSaasCloudApiGateway.cs" />
+    <Compile Include="Cloud\SaasTelemetryPollerService.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

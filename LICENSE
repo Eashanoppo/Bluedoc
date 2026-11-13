@@ -1,21 +1,41 @@
-MIT License
+COMMERCIAL SOFTWARE LICENSE AGREEMENT
+==============================================================================
+Product: BlueDoc - Windows Bluetooth Diagnostics & Management
+Copyright (C) 2026 UNLEFT LLC. All Rights Reserved.
+Lead Architect & Developer: Golam Morshed Eashan
+==============================================================================
 
-Copyright (c) 2026 Golam Morshed Eashan
+IMPORTANT NOTICE: PLEASE READ THIS SOFTWARE LICENSE AGREEMENT CAREFULLY BEFORE 
+USING, INSTALLING, OR COPYING THE SOFTWARE.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. GRANT OF LICENSE
+Subject to the terms and conditions of this Agreement, UNLEFT LLC grants you a 
+non-exclusive, non-transferable license to install and run the executable binary 
+copies of BlueDoc on compatible Microsoft Windows personal computers and workstations.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. OWNERSHIP AND INTELLECTUAL PROPERTY
+BlueDoc, including its source code, architecture, algorithms, user interfaces, 
+documentation, and brand assets, is the sole and exclusive intellectual property of 
+UNLEFT LLC and Golam Morshed Eashan. This software is protected by United States and 
+international copyright laws and treaty provisions.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+3. RESTRICTIONS
+You may not:
+(a) Reverse engineer, decompile, disassemble, or derive source code from the software;
+(b) Modify, adapt, translate, rent, lease, loan, sell, or distribute the software;
+(c) Remove or alter any proprietary notices, labels, or marks on the software;
+(d) Bypass or circumvent any safety checks, driver safety safeguards, or permission gates.
+
+4. SAFETY, REPAIRS, AND DISCLAIMER OF WARRANTIES
+BlueDoc provides system diagnostic, troubleshooting, and repair assistance tools. 
+All repair actions (service restarts, driver rollbacks, hardware resets) require 
+explicit user confirmation and elevation where necessary.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL UNLEFT LLC OR GOLAM MORSHED EASHAN BE 
+LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
+
+==============================================================================
+UNLEFT LLC - https://unleft.com
+Product Inquiries & Support: support@unleft.com
+

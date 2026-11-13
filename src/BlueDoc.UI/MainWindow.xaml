@@ -1,0 +1,336 @@
+<Window x:Class="BlueDoc.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:BlueDoc.UI.ViewModels"
+        xmlns:views="clr-namespace:BlueDoc.UI.Views"
+        mc:Ignorable="d"
+        Title="BlueDoc" 
+        Icon="BlueDoc.ico"
+        Height="780" Width="1240"
+        MinHeight="600" MinWidth="900"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BgDarkBrush}">
+
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
+            <views:DashboardView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:HardwareInspectorViewModel}">
+            <views:HardwareInspectorView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:DiagnosticCenterViewModel}">
+            <views:DiagnosticCenterView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CompatibilityViewModel}">
+            <views:CompatibilityView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:BluetoothDevicesViewModel}">
+            <views:BluetoothDevicesView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:DeviceScannerViewModel}">
+            <views:DeviceScannerView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:BluetoothEventAnalyzerViewModel}">
+            <views:BluetoothEventAnalyzerView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:DriverAssistantViewModel}">
+            <views:DriverAssistantView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SafeRepairCenterViewModel}">
+            <views:SafeRepairCenterView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:DiagnosticReportViewModel}">
+            <views:DiagnosticReportView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ConnectionHistoryViewModel}">
+            <views:ConnectionHistoryView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SignalMonitorViewModel}">
+            <views:SignalMonitorView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:BleExplorerViewModel}">
+            <views:BleExplorerView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+            <views:SettingsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:TechnicianToolkitViewModel}">
+            <views:TechnicianToolkitView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AudioDiagnosticsViewModel}">
+            <views:AudioDiagnosticsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SaasFleetDashboardViewModel}">
+            <views:SaasFleetDashboardView />
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Sidebar Navigation -->
+        <Border Grid.Column="0" Background="{DynamicResource SidebarBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Brand Header -->
+                <Border Grid.Row="0" Padding="18,18,18,14" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Width="38" Height="38" CornerRadius="10" Background="{DynamicResource AccentBrush}" Margin="0,0,12,0">
+                                <Path Data="{StaticResource IconBlePath}" Width="18" Height="18" Fill="White" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="BlueDoc" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                <TextBlock Text="by UNLEFT LLC" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock Text="A Bluetooth Doctor for Windows" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Navigation Menu List (Split into Organized Groups) -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="12,12,12,12">
+                    <StackPanel>
+
+                        <!-- GROUP 1: OVERVIEW & HARDWARE -->
+                        <Border Background="{DynamicResource NavGroupBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="6,8" Margin="0,0,0,10">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="6,2,0,6">
+                                    <Path Data="{StaticResource IconHardwarePath}" Width="11" Height="11" Fill="{DynamicResource NavGroupTextBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                    <TextBlock Text="OVERVIEW &amp; HARDWARE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource NavGroupTextBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <RadioButton Tag="{StaticResource IconDashboardPath}" Content="Dashboard" Style="{StaticResource NavItemStyle}" IsChecked="True" Command="{Binding NavigateCommand}" CommandParameter="Dashboard" />
+                                <RadioButton Tag="{StaticResource IconDevicesPath}" Content="Bluetooth Devices" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Bluetooth Devices" />
+                                <RadioButton Tag="{StaticResource IconScannerPath}" Content="Device Scanner" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Device Scanner" />
+                                <RadioButton Tag="{StaticResource IconHardwarePath}" Content="Advanced Hardware Inspector" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Advanced Hardware Inspector" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- GROUP 2: DIAGNOSTIC LAB -->
+                        <Border Background="{DynamicResource NavGroupBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="6,8" Margin="0,0,0,10">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="6,2,0,6">
+                                    <Path Data="{StaticResource IconDiagnosticPath}" Width="11" Height="11" Fill="{DynamicResource NavGroupTextBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                    <TextBlock Text="DIAGNOSTIC LAB" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource NavGroupTextBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <RadioButton Tag="{StaticResource IconDiagnosticPath}" Content="Diagnostic Test Center" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Diagnostic Test Center" />
+                                <RadioButton Tag="{StaticResource IconAudioPath}" Content="Audio &amp; Packet Diagnostics" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Audio &amp; Packet Diagnostics" />
+                                <RadioButton Tag="{StaticResource IconEventsPath}" Content="Bluetooth Event Analyzer" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Bluetooth Event Analyzer" />
+                                <RadioButton Tag="{StaticResource IconDriverPath}" Content="Driver Assistant" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Driver Assistant" />
+                                <RadioButton Tag="{StaticResource IconCompatibilityPath}" Content="Compatibility Checker" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Compatibility Checker" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- GROUP 3: SAFE REPAIR & AUDIT -->
+                        <Border Background="{DynamicResource NavGroupBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="6,8" Margin="0,0,0,10">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="6,2,0,6">
+                                    <Path Data="{StaticResource IconRepairPath}" Width="11" Height="11" Fill="{DynamicResource NavGroupTextBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                    <TextBlock Text="SAFE REPAIR &amp; AUDIT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource NavGroupTextBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <RadioButton Tag="{StaticResource IconRepairPath}" Content="Safe Repair Center" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Safe Repair Center" />
+                                <RadioButton Tag="{StaticResource IconReportPath}" Content="Diagnostic Reports" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Diagnostic Reports" />
+                                <RadioButton Tag="{StaticResource IconHistoryPath}" Content="Device Connection History" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Device Connection History" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- GROUP 4: TELEMETRY & PROTOCOLS -->
+                        <Border Background="{DynamicResource NavGroupBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="6,8" Margin="0,0,0,10">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="6,2,0,6">
+                                    <Path Data="{StaticResource IconSignalPath}" Width="11" Height="11" Fill="{DynamicResource NavGroupTextBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                    <TextBlock Text="TELEMETRY &amp; PROTOCOLS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource NavGroupTextBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <RadioButton Tag="{StaticResource IconSignalPath}" Content="Signal &amp; Discovery Monitor" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Signal &amp; Discovery Monitor" />
+                                <RadioButton Tag="{StaticResource IconBlePath}" Content="Bluetooth LE Explorer" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Bluetooth LE Explorer" />
+                                <RadioButton Tag="{StaticResource IconToolkitPath}" Content="Technician Toolkit" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Technician Toolkit" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- GROUP 5: ENTERPRISE & CLOUD -->
+                        <Border Background="{DynamicResource NavGroupBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="6,8" Margin="0,0,0,10">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="6,2,0,6">
+                                    <Path Data="{StaticResource IconCloudPath}" Width="11" Height="11" Fill="{DynamicResource NavGroupTextBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                    <TextBlock Text="ENTERPRISE &amp; CLOUD" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource NavGroupTextBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <RadioButton Tag="{StaticResource IconCloudPath}" Content="SaaS Fleet Portal" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="SaaS Fleet Portal" />
+                                <RadioButton Tag="{StaticResource IconSettingsPath}" Content="Settings" Style="{StaticResource NavItemStyle}" Command="{Binding NavigateCommand}" CommandParameter="Settings" />
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Sidebar Footer -->
+                <Border Grid.Row="2" Padding="16,12" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Background="{DynamicResource HeaderBgBrush}">
+                    <StackPanel>
+                        <TextBlock Text="Developer: Golam Morshed Eashan" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <TextBlock Text="BlueDoc v1.0 • .NET 4.8 / Win32" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Right Main Application Canvas -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Top Navigation Bar -->
+            <Border Grid.Row="0" Height="60" Background="{DynamicResource HeaderBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="24,0">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Active Page Breadcrumb with Arrows -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="BlueDoc" FontSize="12" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                        <Path Data="{StaticResource IconChevronRightPath}" Width="9" Height="9" Fill="{DynamicResource TextMutedBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="8,0" />
+                        <TextBlock Text="{Binding ActiveGroup}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                        <Path Data="{StaticResource IconChevronRightPath}" Width="9" Height="9" Fill="{DynamicResource TextMutedBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="8,0" />
+                        <TextBlock Text="{Binding ActiveSection}" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- System Indicators & Theme Switcher & Quick Actions -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+
+                        <!-- Appearance Theme Segmented Switcher (Light / Dark) -->
+                        <Border Background="{DynamicResource PillBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="14" Padding="2" Margin="0,0,14,0" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton Content="☀ Light" 
+                                             GroupName="ThemeSwitch"
+                                             IsChecked="{Binding IsLightTheme, Mode=TwoWay}"
+                                             Command="{Binding SetThemeCommand}"
+                                             CommandParameter="Light"
+                                             Style="{StaticResource ThemeSegmentButton}" />
+                                <RadioButton Content="🌙 Dark" 
+                                             GroupName="ThemeSwitch"
+                                             IsChecked="{Binding IsDarkTheme, Mode=TwoWay}"
+                                             Command="{Binding SetThemeCommand}"
+                                             CommandParameter="Dark"
+                                             Style="{StaticResource ThemeSegmentButton}" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- OS Pill -->
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,10,0">
+                            <TextBlock Text="{Binding OsVersion}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        </Border>
+
+                        <!-- Primary Adapter Quick Indicator -->
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,10,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Width="7" Height="7" CornerRadius="4" Background="{Binding PrimaryAdapter.Status, Converter={StaticResource StatusToBrushConverter}}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBlock Text="{Binding PrimaryAdapter.FriendlyName, FallbackValue='Detecting...'}" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" MaxWidth="180" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Direct Hardware Bluetooth ON/OFF Quick Switch -->
+                        <Button Command="{Binding ToggleRadioPowerCommand}"
+                                Margin="0,0,12,0"
+                                Cursor="Hand"
+                                ToolTip="Direct Hardware Bus Radio Power Switch (Independent of Windows Services)">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                                    <Setter Property="BorderThickness" Value="1" />
+                                    <Setter Property="Padding" Value="10,4" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="pBorder"
+                                                        Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="12"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="pBorder" Property="Background" Value="{DynamicResource CardBgHoverBrush}" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsRadioOn}" Value="True">
+                                            <Setter Property="BorderBrush" Value="#10B981" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsRadioOn}" Value="False">
+                                            <Setter Property="BorderBrush" Value="#EF4444" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Path Data="{StaticResource IconPowerPath}"
+                                      Width="11" Height="11"
+                                      Stretch="Uniform"
+                                      VerticalAlignment="Center"
+                                      Margin="0,0,6,0">
+                                    <Path.Style>
+                                        <Style TargetType="Path">
+                                            <Setter Property="Fill" Value="#10B981" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsRadioOn}" Value="False">
+                                                    <Setter Property="Fill" Value="#EF4444" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Path.Style>
+                                </Path>
+                                <TextBlock Text="{Binding RadioStateDisplay}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#10B981" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsRadioOn}" Value="False">
+                                                    <Setter Property="Foreground" Value="#EF4444" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Quick Diagnosis Action -->
+                        <Button Content="Quick Diagnosis" Command="{Binding QuickDiagnosisCommand}" Style="{StaticResource PrimaryButton}" Padding="12,5" FontSize="12" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Active View Content Presenter -->
+            <ContentControl Grid.Row="1" Content="{Binding CurrentViewModel}" Background="{DynamicResource BgDarkBrush}" />
+        </Grid>
+    </Grid>
+</Window>

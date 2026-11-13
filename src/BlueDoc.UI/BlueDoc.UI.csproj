@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{60000006-0006-0006-0006-000000000006}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>BlueDoc.UI</RootNamespace>
+    <AssemblyName>BlueDoc</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>BlueDoc.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Data.SQLite">
+      <HintPath>..\..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\lib\net46\System.Data.SQLite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BlueDoc.Core\BlueDoc.Core.csproj">
+      <Project>{10000001-0001-0001-0001-000000000001}</Project>
+      <Name>BlueDoc.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlueDoc.Infrastructure\BlueDoc.Infrastructure.csproj">
+      <Project>{20000002-0002-0002-0002-000000000002}</Project>
+      <Name>BlueDoc.Infrastructure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlueDoc.Bluetooth\BlueDoc.Bluetooth.csproj">
+      <Project>{30000003-0003-0003-0003-000000000003}</Project>
+      <Name>BlueDoc.Bluetooth</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlueDoc.Diagnostics\BlueDoc.Diagnostics.csproj">
+      <Project>{40000004-0004-0004-0004-000000000004}</Project>
+      <Name>BlueDoc.Diagnostics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlueDoc.Data\BlueDoc.Data.csproj">
+      <Project>{80000008-0008-0008-0008-000000000008}</Project>
+      <Name>BlueDoc.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlueDoc.Application\BlueDoc.Application.csproj">
+      <Project>{50000005-0005-0005-0005-000000000005}</Project>
+      <Name>BlueDoc.Application</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Page Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Colors.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Icons.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Styles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DashboardView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\HardwareInspectorView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DiagnosticCenterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CompatibilityView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\BluetoothDevicesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DeviceScannerView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\PlaceholderView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\BluetoothEventAnalyzerView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DriverAssistantView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SafeRepairCenterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DiagnosticReportView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\ConnectionHistoryView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SignalMonitorView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\BleExplorerView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SettingsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\TechnicianToolkitView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\AudioDiagnosticsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SaasFleetDashboardView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Common\ViewModelBase.cs" />
+    <Compile Include="Common\RelayCommand.cs" />
+    <Compile Include="Common\Converters.cs" />
+    <Compile Include="Common\ThemeManager.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\DashboardViewModel.cs" />
+    <Compile Include="ViewModels\HardwareInspectorViewModel.cs" />
+    <Compile Include="ViewModels\DiagnosticCenterViewModel.cs" />
+    <Compile Include="ViewModels\CompatibilityViewModel.cs" />
+    <Compile Include="ViewModels\BluetoothDevicesViewModel.cs" />
+    <Compile Include="ViewModels\DeviceScannerViewModel.cs" />
+    <Compile Include="ViewModels\BluetoothEventAnalyzerViewModel.cs" />
+    <Compile Include="ViewModels\DriverAssistantViewModel.cs" />
+    <Compile Include="ViewModels\SafeRepairCenterViewModel.cs" />
+    <Compile Include="ViewModels\DiagnosticReportViewModel.cs" />
+    <Compile Include="ViewModels\ConnectionHistoryViewModel.cs" />
+    <Compile Include="ViewModels\SignalMonitorViewModel.cs" />
+    <Compile Include="ViewModels\BleExplorerViewModel.cs" />
+    <Compile Include="ViewModels\SettingsViewModel.cs" />
+    <Compile Include="ViewModels\TechnicianToolkitViewModel.cs" />
+    <Compile Include="ViewModels\AudioDiagnosticsViewModel.cs" />
+    <Compile Include="ViewModels\SaasFleetDashboardViewModel.cs" />
+    <Compile Include="Tray\TrayGuardManager.cs" />
+    <Compile Include="Cli\CliRunner.cs" />
+    <Compile Include="Views\DashboardView.xaml.cs">
+      <DependentUpon>DashboardView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\HardwareInspectorView.xaml.cs">
+      <DependentUpon>HardwareInspectorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DiagnosticCenterView.xaml.cs">
+      <DependentUpon>DiagnosticCenterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CompatibilityView.xaml.cs">
+      <DependentUpon>CompatibilityView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BluetoothDevicesView.xaml.cs">
+      <DependentUpon>BluetoothDevicesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DeviceScannerView.xaml.cs">
+      <DependentUpon>DeviceScannerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PlaceholderView.xaml.cs">
+      <DependentUpon>PlaceholderView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BluetoothEventAnalyzerView.xaml.cs">
+      <DependentUpon>BluetoothEventAnalyzerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DriverAssistantView.xaml.cs">
+      <DependentUpon>DriverAssistantView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SafeRepairCenterView.xaml.cs">
+      <DependentUpon>SafeRepairCenterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DiagnosticReportView.xaml.cs">
+      <DependentUpon>DiagnosticReportView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ConnectionHistoryView.xaml.cs">
+      <DependentUpon>ConnectionHistoryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SignalMonitorView.xaml.cs">
+      <DependentUpon>SignalMonitorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BleExplorerView.xaml.cs">
+      <DependentUpon>BleExplorerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SettingsView.xaml.cs">
+      <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TechnicianToolkitView.xaml.cs">
+      <DependentUpon>TechnicianToolkitView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\AudioDiagnosticsView.xaml.cs">
+      <DependentUpon>AudioDiagnosticsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SaasFleetDashboardView.xaml.cs">
+      <DependentUpon>SaasFleetDashboardView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="BlueDoc.ico" />
+    <None Include="app.manifest" />
+    <None Include="App.config" />
+    <None Include="..\..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\build\net46\x64\SQLite.Interop.dll">
+      <Link>x64\SQLite.Interop.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\build\net46\x86\SQLite.Interop.dll">
+      <Link>x86\SQLite.Interop.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,66 @@
+<UserControl x:Class="BlueDoc.UI.Views.DiagnosticReportView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="900">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="28,24,28,32">
+            <!-- Header -->
+            <Grid Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="One-Click Diagnostic Report" Style="{StaticResource PageTitleText}" />
+                    <TextBlock Text="Compile an end-to-end audit report of OS, hardware, drivers, services, diagnostic rules, and events." Style="{StaticResource PageSubtitleText}" />
+                </StackPanel>
+                <Button Grid.Column="1" Content="Compile Diagnostic Report" Command="{Binding GenerateReportCommand}" Style="{StaticResource PrimaryButton}" VerticalAlignment="Top" />
+            </Grid>
+
+            <!-- Export Toolbar -->
+            <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Export Format:" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                    
+                    <ComboBox Grid.Column="1" SelectedValue="{Binding SelectedFormat}" SelectedValuePath="Content" Height="36" VerticalContentAlignment="Center">
+                        <ComboBoxItem Content="PDF" IsSelected="True" />
+                        <ComboBoxItem Content="HTML" />
+                        <ComboBoxItem Content="TXT" />
+                        <ComboBoxItem Content="JSON" />
+                    </ComboBox>
+
+                    <Button Grid.Column="3" Content="Save Report As..." Command="{Binding SaveReportCommand}" Style="{StaticResource PrimaryButton}" Height="36" Padding="16,0" />
+                    <Button Grid.Column="5" Content="Copy Text" Command="{Binding CopyReportCommand}" Style="{StaticResource SecondaryButton}" Height="36" Padding="14,0" />
+
+                    <TextBlock Grid.Column="6" Text="{Binding StatusMessage}" FontSize="12" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" />
+                </Grid>
+            </Border>
+
+            <!-- Report Live Preview -->
+            <Border Style="{StaticResource CardPanel}">
+                <StackPanel>
+                    <Grid Margin="0,0,0,12">
+                        <TextBlock Text="DIAGNOSTIC REPORT LIVE PREVIEW" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding CurrentReport.GeneratedAtUtc, StringFormat='Generated: {0:yyyy-MM-dd HH:mm:ss UTC}'}" FontSize="11" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" />
+                    </Grid>
+
+                    <TextBox Text="{Binding ReportPreviewText, Mode=OneWay}" Background="#0F172A" Foreground="#CBD5E1" FontFamily="Consolas" FontSize="11" Padding="16" IsReadOnly="True" TextWrapping="Wrap" Height="460" VerticalScrollBarVisibility="Auto" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

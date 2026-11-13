@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{70000007-0007-0007-0007-000000000007}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>BlueDoc.Tests</RootNamespace>
+    <AssemblyName>BlueDoc.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Data.SQLite">
+      <HintPath>..\..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\lib\net46\System.Data.SQLite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BlueDoc.Core\BlueDoc.Core.csproj">
+      <Project>{10000001-0001-0001-0001-000000000001}</Project>
+      <Name>BlueDoc.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\BlueDoc.Infrastructure\BlueDoc.Infrastructure.csproj">
+      <Project>{20000002-0002-0002-0002-000000000002}</Project>
+      <Name>BlueDoc.Infrastructure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\BlueDoc.Bluetooth\BlueDoc.Bluetooth.csproj">
+      <Project>{30000003-0003-0003-0003-000000000003}</Project>
+      <Name>BlueDoc.Bluetooth</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\BlueDoc.Diagnostics\BlueDoc.Diagnostics.csproj">
+      <Project>{40000004-0004-0004-0004-000000000004}</Project>
+      <Name>BlueDoc.Diagnostics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\BlueDoc.Data\BlueDoc.Data.csproj">
+      <Project>{80000008-0008-0008-0008-000000000008}</Project>
+      <Name>BlueDoc.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\BlueDoc.Application\BlueDoc.Application.csproj">
+      <Project>{50000005-0005-0005-0005-000000000005}</Project>
+      <Name>BlueDoc.Application</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\BlueDoc.UI\BlueDoc.UI.csproj">
+      <Project>{60000006-0006-0006-0006-000000000006}</Project>
+      <Name>BlueDoc.UI</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Unit\HardwareIdParserTests.cs" />
+    <Compile Include="Unit\DiagnosticEngineTests.cs" />
+    <Compile Include="Unit\DeviceClassDecoderTests.cs" />
+    <Compile Include="Unit\SqliteRepositoryTests.cs" />
+    <Compile Include="Unit\EventAnalyzerTests.cs" />
+    <Compile Include="Unit\DriverAssistantTests.cs" />
+    <Compile Include="Unit\ReportGeneratorTests.cs" />
+    <Compile Include="Unit\Phase5AdvancedDiagnosticsTests.cs" />
+    <Compile Include="Unit\Phase6RepairAndReportingTests.cs" />
+    <Compile Include="Unit\Phase7PlatformAndFailureScenarioTests.cs" />
+    <Compile Include="Unit\Phase8TechnicianAndSaaSIntegrationTests.cs" />
+    <Compile Include="Unit\Phase9AudioTraceAndTrayGuardTests.cs" />
+    <Compile Include="Unit\Phase10SaasFleetAndApiGatewayTests.cs" />
+    <Compile Include="Integration\RealHardwareInspectionTests.cs" />
+    <Compile Include="Integration\RealDeviceDiscoveryTests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\build\net46\x64\SQLite.Interop.dll">
+      <Link>x64\SQLite.Interop.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\build\net46\x86\SQLite.Interop.dll">
+      <Link>x86\SQLite.Interop.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
+

@@ -1,0 +1,22 @@
+# Visual Studio / MSBuild temporary build outputs
+[Bb]in/
+[Oo]bj/
+[Dd]ist/
+.vs/
+*.user
+*.suo
+*.userosvmat
+*.lock.json
+
+# Local runtime databases & logs
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.log
+
+# Windows thumbnail & desktop metadata
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/

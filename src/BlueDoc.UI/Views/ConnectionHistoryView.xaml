@@ -1,0 +1,58 @@
+<UserControl x:Class="BlueDoc.UI.Views.ConnectionHistoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="900">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="28,24,28,32">
+            <!-- Header -->
+            <Grid Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Device Connection History" Style="{StaticResource PageTitleText}" />
+                    <TextBlock Text="Local persistent SQLite audit trail of all device discovery, pairing, and connection events." Style="{StaticResource PageSubtitleText}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                    <Button Content="Clear History" Command="{Binding ClearHistoryCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" />
+                    <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource PrimaryButton}" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Search and Filter Bar -->
+            <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Text="{Binding SearchFilter, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterTextBox}" Height="36" VerticalContentAlignment="Center" Padding="10,0" />
+                    <TextBlock Grid.Column="1" Text="{Binding TotalEvents, StringFormat='Total Logged Events: {0}'}" FontSize="12" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="16,0,0,0" />
+                </Grid>
+            </Border>
+
+            <!-- History Table -->
+            <Border Style="{StaticResource CardPanel}">
+                <StackPanel>
+                    <TextBlock Text="HISTORICAL CONNECTION AUDIT TRAIL" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,12" />
+
+                    <DataGrid ItemsSource="{Binding HistoryRecords}" SelectedItem="{Binding SelectedRecord}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" Background="Transparent" BorderThickness="0" RowBackground="#162238" AlternatingRowBackground="#1A2842" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{StaticResource BorderBrush}" HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Timestamp" Binding="{Binding LocalTimestampDisplay}" Width="150" />
+                            <DataGridTextColumn Header="Device Name" Binding="{Binding DeviceName}" Width="180" />
+                            <DataGridTextColumn Header="Bluetooth Address" Binding="{Binding DeviceAddress}" Width="150" />
+                            <DataGridTextColumn Header="Event Type" Binding="{Binding EventType}" Width="120" />
+                            <DataGridTextColumn Header="Outcome" Binding="{Binding IsSuccess, Converter={StaticResource BoolToSuccessConverter}}" Width="100" />
+                            <DataGridTextColumn Header="Technical Details" Binding="{Binding Details}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
