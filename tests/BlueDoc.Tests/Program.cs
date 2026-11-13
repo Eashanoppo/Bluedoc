@@ -31,6 +31,15 @@ namespace BlueDoc.Tests
                 Phase8TechnicianAndSaaSIntegrationTests.RunAllTestsAsync().GetAwaiter().GetResult();
                 Phase9AudioTraceAndTrayGuardTests.RunAllTestsAsync().GetAwaiter().GetResult();
                 Phase10SaasFleetAndApiGatewayTests.RunAllTestsAsync().GetAwaiter().GetResult();
+                DeviceScannerAndPairingTests.RunAllTests();
+                FixConnectionDoctorAndPairingTests.RunAllTests();
+                AccessibilityVerificationTests.RunAllTests();
+                Performance.PerformanceBenchmarkHarness.RunAllBenchmarksAsync().GetAwaiter().GetResult();
+                BluetoothFunctionalMatrixTests.RunAllScenariosAsync().GetAwaiter().GetResult();
+                FixConnectionDoctorAndPairingTests.RunAllTests();
+                AccessibilityVerificationTests.RunAllTests();
+                Performance.PerformanceBenchmarkHarness.RunAllBenchmarksAsync().GetAwaiter().GetResult();
+                BluetoothFunctionalMatrixTests.RunAllScenariosAsync().GetAwaiter().GetResult();
 
                 // Run Live Integration Tests
                 RealHardwareInspectionTests.Run();

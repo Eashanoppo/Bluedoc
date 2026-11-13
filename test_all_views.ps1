@@ -22,6 +22,7 @@ Write-Host "Loaded App and App.xaml successfully." -ForegroundColor Green
 # List of all view types to instantiate
 $views = @(
     "BlueDoc.UI.Views.DashboardView",
+    "BlueDoc.UI.Views.BluetoothMainView",
     "BlueDoc.UI.Views.BluetoothDevicesView",
     "BlueDoc.UI.Views.DeviceScannerView",
     "BlueDoc.UI.Views.HardwareInspectorView",
@@ -37,7 +38,8 @@ $views = @(
     "BlueDoc.UI.Views.DriverAssistantView",
     "BlueDoc.UI.Views.AudioDiagnosticsView",
     "BlueDoc.UI.Views.TechnicianToolkitView",
-    "BlueDoc.UI.Views.SaasFleetDashboardView"
+    "BlueDoc.UI.Views.SaasFleetDashboardView",
+    "BlueDoc.UI.Views.FixMyConnectionWizardView"
 )
 
 $passed = 0
@@ -56,8 +58,10 @@ foreach ($vName in $views) {
         Write-Host "[PASS] Successfully instantiated: $vName" -ForegroundColor Green
         $passed++
     } catch {
-        Write-Host "[FAIL] Exception instantiating $vName : $($_.Exception.InnerException.Message)" -ForegroundColor Red
-        Write-Host "$($_.Exception.InnerException.StackTrace)" -ForegroundColor Yellow
+        $ex = $_.Exception
+        while ($ex.InnerException) { $ex = $ex.InnerException }
+        Write-Host "[FAIL] Exception instantiating $vName : $($ex.Message)" -ForegroundColor Red
+        Write-Host "$($ex.StackTrace)" -ForegroundColor Yellow
         $failed++
     }
 }
@@ -74,6 +78,7 @@ try {
     $mainVm = $mainWin.DataContext
     $sections = @(
         "Dashboard",
+        "Bluetooth",
         "Bluetooth Devices",
         "Device Scanner",
         "Advanced Hardware Inspector",
@@ -89,7 +94,8 @@ try {
         "Bluetooth LE Explorer",
         "Settings",
         "Technician Toolkit",
-        "SaaS Fleet Portal"
+        "SaaS Fleet Portal",
+        "Fix My Bluetooth Connection"
     )
 
     foreach ($sec in $sections) {

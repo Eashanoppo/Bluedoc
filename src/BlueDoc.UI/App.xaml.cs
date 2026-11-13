@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Windows;
 using BlueDoc.UI.Cli;
 
@@ -6,6 +7,27 @@ namespace BlueDoc.UI
 {
     public partial class App : System.Windows.Application
     {
+        public App()
+        {
+            DispatcherUnhandledException += App_DispatcherUnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        }
+
+        private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            Trace.WriteLine($"[CRITICAL UI EXCEPTION] {e.Exception.Message}\n{e.Exception.StackTrace}");
+            MessageBox.Show($"An unexpected UI exception occurred:\n\n{e.Exception.Message}\n\nThe operation was safely handled.", "BlueDoc Protection", MessageBoxButton.OK, MessageBoxImage.Warning);
+            e.Handled = true;
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            if (e.ExceptionObject is Exception ex)
+            {
+                Trace.WriteLine($"[FATAL DOMAIN EXCEPTION] {ex.Message}\n{ex.StackTrace}");
+            }
+        }
+
         protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -27,7 +49,10 @@ namespace BlueDoc.UI
                     System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"WPF Rendering Tier check exception: {ex.Message}");
+            }
 
             var mainWindow = new MainWindow();
             mainWindow.Show();

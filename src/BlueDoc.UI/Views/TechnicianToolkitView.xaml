@@ -4,9 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="800" d:DesignWidth="1000">
+             d:DesignHeight="850" d:DesignWidth="1100">
 
-    <Grid Background="{StaticResource DarkBgBrush}" Margin="24">
+    <Grid Margin="28,24,28,32">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -21,15 +21,15 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Technician Toolkit &amp; SaaS Fleet Operations" Style="{StaticResource HeaderTextStyle}" />
+                    <TextBlock Text="Technician Toolkit" Style="{StaticResource PageTitleText}" />
                     <TextBlock Text="Performance benchmarking, offline troubleshooting knowledge base, and enterprise SaaS cloud fleet telemetry." 
-                               Style="{StaticResource SubHeaderTextStyle}" Margin="0,4,0,0" />
+                               Style="{StaticResource PageSubtitleText}" Margin="0,4,0,0" />
                 </StackPanel>
 
                 <!-- Status Tag -->
-                <Border Grid.Column="1" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="12,6" VerticalAlignment="Center">
+                <Border Grid.Column="1" Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12,6" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="🛠️ TECHNICIAN TOOLKIT" Foreground="#38BDF8" FontWeight="SemiBold" FontSize="12" />
+                        <TextBlock Text="🛠️ TECHNICIAN TOOLKIT" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" FontSize="12" />
                     </StackPanel>
                 </Border>
             </Grid>
@@ -40,8 +40,8 @@
             <TabControl.Resources>
                 <Style TargetType="TabItem">
                     <Setter Property="Background" Value="Transparent" />
-                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
-                    <Setter Property="FontSize" Value="14" />
+                    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+                    <Setter Property="FontSize" Value="13" />
                     <Setter Property="FontWeight" Value="SemiBold" />
                     <Setter Property="Padding" Value="16,10" />
                     <Setter Property="BorderThickness" Value="0,0,0,2" />
@@ -55,9 +55,9 @@
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Foreground" Value="#38BDF8" />
-                                        <Setter TargetName="TabBorder" Property="BorderBrush" Value="#38BDF8" />
-                                        <Setter TargetName="TabBorder" Property="Background" Value="#1E293B" />
+                                        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                        <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                        <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}" />
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
@@ -76,7 +76,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Control Card -->
-                    <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="20" Margin="0,0,0,16">
+                    <Border Grid.Row="0" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,16">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -84,16 +84,16 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Bluetooth Latency &amp; Controller Performance Probe" FontWeight="Bold" FontSize="16" Foreground="{StaticResource TextPrimaryBrush}" />
-                                <TextBlock Text="{Binding BenchmarkStatus}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,4,0,0" />
+                                <TextBlock Text="Bluetooth Latency &amp; Controller Performance Probe" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                <TextBlock Text="{Binding BenchmarkStatus}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,4,0,0" />
                             </StackPanel>
 
                             <Button Grid.Column="1" Content="Run Benchmark" Command="{Binding RunBenchmarkCommand}" 
-                                    Style="{StaticResource PrimaryButtonStyle}" Padding="20,10" IsEnabled="{Binding IsBenchmarking, Converter={StaticResource BoolToSuccessConverter}}" />
+                                    Style="{StaticResource PrimaryButton}" Padding="20,8" IsEnabled="{Binding IsBenchmarking, Converter={StaticResource BoolToSuccessConverter}}" />
                         </Grid>
                     </Border>
 
-                    <!-- Overall Score & Rating Banner (Visible when Benchmark != null) -->
+                    <!-- Overall Score & Rating Banner -->
                     <Grid Grid.Row="1" Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="220" />
@@ -101,49 +101,39 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Score Card -->
-                        <Border Grid.Column="0" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,16,0" HorizontalAlignment="Stretch">
+                        <Border Grid.Column="0" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,16,0">
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock Text="BENCHMARK SCORE" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" />
-                                <TextBlock Text="{Binding Benchmark.OverallScore, StringFormat={}{0:F1}}" FontSize="48" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center" Margin="0,8,0,0" />
-                                <TextBlock Text="/ 100" FontSize="14" Foreground="#64748B" HorizontalAlignment="Center" />
-                                <Border Background="#0EA5E9" CornerRadius="4" Padding="8,4" Margin="0,8,0,0" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding Benchmark.Rating}" Foreground="White" FontWeight="Bold" FontSize="12" />
+                                <TextBlock Text="BENCHMARK SCORE" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" />
+                                <TextBlock Text="{Binding Benchmark.OverallScore, StringFormat={}{0:F1}}" FontSize="44" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" Margin="0,8,0,0" />
+                                <TextBlock Text="/ 100" FontSize="13" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" />
+                                <Border Background="{DynamicResource AccentSubtleBrush}" CornerRadius="4" Padding="8,4" Margin="0,8,0,0" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Benchmark.Rating}" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" FontSize="12" />
                                 </Border>
                             </StackPanel>
                         </Border>
 
                         <!-- Interpretation Card -->
-                        <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Padding="20">
+                        <Border Grid.Column="1" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
                             <StackPanel>
-                                <TextBlock Text="Controller Evaluation &amp; Grading" FontWeight="Bold" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" />
-                                <TextBlock Text="{Binding Benchmark.HardwareSpecGrade}" FontWeight="SemiBold" FontSize="14" Foreground="#10B981" Margin="0,6,0,0" />
-                                <TextBlock Text="{Binding Benchmark.SummaryInterpretation}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" TextWrapping="Wrap" Margin="0,8,0,0" LineHeight="20" />
+                                <TextBlock Text="Controller Evaluation &amp; Grading" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                <TextBlock Text="{Binding Benchmark.HardwareSpecGrade}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource SuccessBrush}" Margin="0,6,0,0" />
+                                <TextBlock Text="{Binding Benchmark.SummaryInterpretation}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,8,0,0" LineHeight="18" />
                                 <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
-                                    <TextBlock Text="Primary Device: " Foreground="#94A3B8" FontSize="12" />
-                                    <TextBlock Text="{Binding Benchmark.PrimaryAdapterName}" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold" FontSize="12" Margin="0,0,16,0" />
-                                    <TextBlock Text="Vendor: " Foreground="#94A3B8" FontSize="12" />
-                                    <TextBlock Text="{Binding Benchmark.Manufacturer}" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold" FontSize="12" />
+                                    <TextBlock Text="Primary Device: " Foreground="{DynamicResource TextMutedBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding Benchmark.PrimaryAdapterName}" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold" FontSize="11" Margin="0,0,16,0" />
+                                    <TextBlock Text="Vendor: " Foreground="{DynamicResource TextMutedBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding Benchmark.Manufacturer}" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold" FontSize="11" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>
                     </Grid>
 
                     <!-- Metrics DataGrid -->
-                    <Border Grid.Row="2" Style="{StaticResource CardBorderStyle}" Padding="16">
+                    <Border Grid.Row="2" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                         <DataGrid ItemsSource="{Binding Benchmark.Metrics}" AutoGenerateColumns="False" IsReadOnly="True"
-                                  Background="Transparent" BorderThickness="0" RowBackground="#0F172A" AlternatingRowBackground="#1E293B"
-                                  GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#334155" Foreground="{StaticResource TextPrimaryBrush}"
+                                  Background="Transparent" BorderThickness="0"
+                                  GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource BorderSubtleBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
                                   CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column">
-                            <DataGrid.ColumnHeaderStyle>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#1E293B" />
-                                    <Setter Property="Foreground" Value="#94A3B8" />
-                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                    <Setter Property="Padding" Value="12,8" />
-                                    <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                    <Setter Property="BorderBrush" Value="#334155" />
-                                </Style>
-                            </DataGrid.ColumnHeaderStyle>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Benchmark Metric" Binding="{Binding Name}" Width="260" />
                                 <DataGridTextColumn Header="Observed Value" Binding="{Binding ValueDisplay}" Width="150" />
@@ -164,7 +154,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Search & Category Filters -->
-                    <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="16" Margin="0,0,0,16">
+                    <Border Grid.Row="0" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,16">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="320" />
@@ -173,7 +163,7 @@
 
                             <!-- Search Input -->
                             <TextBox Grid.Column="0" Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" 
-                                     Style="{StaticResource SearchTextBoxStyle}" Height="38" VerticalContentAlignment="Center" />
+                                     Style="{StaticResource FilterTextBox}" Height="36" VerticalContentAlignment="Center" />
 
                             <!-- Categories Chips -->
                             <ItemsControl Grid.Column="1" ItemsSource="{Binding Categories}" Margin="16,0,0,0" VerticalAlignment="Center">
@@ -185,14 +175,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Button Content="{Binding}" Command="{Binding DataContext.FilterCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                CommandParameter="{Binding}" Margin="0,0,8,0" Padding="12,6" Background="#1E293B" Foreground="#94A3B8" 
-                                                BorderBrush="#334155" BorderThickness="1" FontSize="12">
-                                            <Button.Resources>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="CornerRadius" Value="14" />
-                                                </Style>
-                                            </Button.Resources>
-                                        </Button>
+                                                CommandParameter="{Binding}" Margin="0,0,8,0" Padding="12,4" Style="{StaticResource SecondaryButton}" FontSize="11" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -207,86 +190,65 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Left: Articles List -->
-                        <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Padding="12" Margin="0,0,16,0">
+                        <Border Grid.Column="0" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,16,0">
                             <ListBox ItemsSource="{Binding FilteredArticles}" SelectedItem="{Binding SelectedArticle}" 
                                      Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                                <ListBox.ItemContainerStyle>
-                                    <Style TargetType="ListBoxItem">
-                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                        <Setter Property="Padding" Value="0" />
-                                        <Setter Property="Margin" Value="0,0,0,8" />
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="ListBoxItem">
-                                                    <Border x:Name="ItemBorder" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="12">
-                                                        <ContentPresenter />
-                                                    </Border>
-                                                    <ControlTemplate.Triggers>
-                                                        <Trigger Property="IsSelected" Value="True">
-                                                            <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#38BDF8" />
-                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#0F2B48" />
-                                                        </Trigger>
-                                                    </ControlTemplate.Triggers>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
-                                </ListBox.ItemContainerStyle>
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
-                                        <StackPanel>
-                                            <Grid>
-                                                <TextBlock Text="{Binding Id}" FontWeight="Bold" FontSize="11" Foreground="#38BDF8" />
-                                                <TextBlock Text="{Binding Severity}" HorizontalAlignment="Right" FontSize="11" FontWeight="SemiBold"
-                                                           Foreground="{Binding Severity, Converter={StaticResource StatusToBrushConverter}}" />
-                                            </Grid>
-                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" 
-                                                       TextWrapping="Wrap" Margin="0,4,0,0" />
-                                            <TextBlock Text="{Binding Category}" FontSize="11" Foreground="#94A3B8" Margin="0,4,0,0" />
-                                        </StackPanel>
+                                        <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <Grid>
+                                                    <TextBlock Text="{Binding Id}" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource AccentBrush}" />
+                                                    <TextBlock Text="{Binding Severity}" HorizontalAlignment="Right" FontSize="11" FontWeight="SemiBold"
+                                                               Foreground="{Binding Severity, Converter={StaticResource StatusToBrushConverter}}" />
+                                                </Grid>
+                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" 
+                                                           TextWrapping="Wrap" Margin="0,4,0,0" />
+                                                <TextBlock Text="{Binding Category}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,0" />
+                                            </StackPanel>
+                                        </Border>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
                         </Border>
 
                         <!-- Right: Article Detail View -->
-                        <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Padding="24">
+                        <Border Grid.Column="1" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="24">
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
                                 <StackPanel>
-                                    <!-- Article Title and Badges -->
-                                    <TextBlock Text="{Binding SelectedArticle.Id}" FontSize="12" FontWeight="Bold" Foreground="#38BDF8" />
-                                    <TextBlock Text="{Binding SelectedArticle.Title}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,4,0,0" />
+                                    <TextBlock Text="{Binding SelectedArticle.Id}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+                                    <TextBlock Text="{Binding SelectedArticle.Title}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,4,0,0" />
                                     
                                     <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                                        <Border Background="#1E293B" CornerRadius="4" Padding="8,4" Margin="0,0,8,0">
-                                            <TextBlock Text="{Binding SelectedArticle.Category}" Foreground="#94A3B8" FontSize="12" />
+                                        <Border Background="{DynamicResource SurfaceElevatedBrush}" CornerRadius="4" Padding="8,4" Margin="0,0,8,0">
+                                            <TextBlock Text="{Binding SelectedArticle.Category}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" />
                                         </Border>
-                                        <Border Background="#1E293B" CornerRadius="4" Padding="8,4">
-                                            <TextBlock Text="{Binding SelectedArticle.Severity}" Foreground="{Binding SelectedArticle.Severity, Converter={StaticResource StatusToBrushConverter}}" FontWeight="Bold" FontSize="12" />
+                                        <Border Background="{DynamicResource SurfaceElevatedBrush}" CornerRadius="4" Padding="8,4">
+                                            <TextBlock Text="{Binding SelectedArticle.Severity}" Foreground="{Binding SelectedArticle.Severity, Converter={StaticResource StatusToBrushConverter}}" FontWeight="Bold" FontSize="11" />
                                         </Border>
                                     </StackPanel>
 
                                     <!-- Symptoms -->
-                                    <TextBlock Text="Reported Symptoms" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,20,0,8" />
+                                    <TextBlock Text="Reported Symptoms" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,20,0,8" />
                                     <ItemsControl ItemsSource="{Binding SelectedArticle.Symptoms}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding StringFormat='•  {0}'}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,2,0,2" />
+                                                <TextBlock Text="{Binding StringFormat='•  {0}'}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,2,0,2" />
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
 
                                     <!-- Technical Explanation -->
-                                    <TextBlock Text="Technical Root Cause" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,20,0,8" />
-                                    <TextBlock Text="{Binding SelectedArticle.TechnicalExplanation}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" TextWrapping="Wrap" LineHeight="20" />
+                                    <TextBlock Text="Technical Root Cause" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,18,0,8" />
+                                    <TextBlock Text="{Binding SelectedArticle.TechnicalExplanation}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" LineHeight="18" />
 
                                     <!-- Step-by-Step Remediation -->
-                                    <TextBlock Text="Step-by-Step Troubleshooting Guide" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,20,0,8" />
+                                    <TextBlock Text="Step-by-Step Troubleshooting Guide" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,18,0,8" />
                                     <ItemsControl ItemsSource="{Binding SelectedArticle.StepByStepRemediation}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Border Background="#0F172A" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,6">
-                                                    <TextBlock Text="{Binding}" Foreground="{StaticResource TextPrimaryBrush}" FontSize="13" TextWrapping="Wrap" />
+                                                <Border Background="{DynamicResource SurfaceSunkenBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,6">
+                                                    <TextBlock Text="{Binding}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12" TextWrapping="Wrap" />
                                                 </Border>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
@@ -294,7 +256,7 @@
 
                                     <!-- Quick Action Button -->
                                     <Button Content="Go to Safe Repair Center" Command="{Binding ExecuteRepairShortcutCommand}"
-                                            Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" Margin="0,16,0,0" Padding="16,8" />
+                                            Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,16,0,0" Padding="16,8" />
                                 </StackPanel>
                             </ScrollViewer>
                         </Border>
@@ -311,11 +273,11 @@
                     </Grid.RowDefinitions>
 
                     <!-- SaaS Configuration Card -->
-                    <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="20" Margin="0,0,0,16">
+                    <Border Grid.Row="0" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,16">
                         <StackPanel>
-                            <TextBlock Text="Enterprise SaaS Telemetry Ingestion Settings" FontWeight="Bold" FontSize="16" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBlock Text="Enterprise SaaS Telemetry Ingestion Settings" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource TextPrimaryBrush}" />
                             <TextBlock Text="Synchronize endpoint health, driver versions, and diagnostic failure signatures to your central fleet dashboard." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,4,0,16" />
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,4,0,16" />
 
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -326,33 +288,33 @@
 
                                 <!-- Endpoint URL -->
                                 <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                                    <TextBlock Text="SaaS API Endpoint" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4" />
-                                    <TextBox Text="{Binding EndpointUrl, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SearchTextBoxStyle}" Height="36" />
+                                    <TextBlock Text="SaaS API Endpoint" Foreground="{DynamicResource TextMutedBrush}" FontSize="11" Margin="0,0,0,4" />
+                                    <TextBox Text="{Binding EndpointUrl, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterTextBox}" Height="36" />
                                 </StackPanel>
 
                                 <!-- Tenant ID -->
                                 <StackPanel Grid.Column="1" Margin="0,0,12,0">
-                                    <TextBlock Text="Tenant / Organization ID" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4" />
-                                    <TextBox Text="{Binding TenantId, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SearchTextBoxStyle}" Height="36" />
+                                    <TextBlock Text="Tenant / Organization ID" Foreground="{DynamicResource TextMutedBrush}" FontSize="11" Margin="0,0,0,4" />
+                                    <TextBox Text="{Binding TenantId, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterTextBox}" Height="36" />
                                 </StackPanel>
 
                                 <!-- API Key -->
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="API Bearer Token" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4" />
-                                    <TextBox Text="{Binding ApiKey, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SearchTextBoxStyle}" Height="36" />
+                                    <TextBlock Text="API Bearer Token" Foreground="{DynamicResource TextMutedBrush}" FontSize="11" Margin="0,0,0,4" />
+                                    <TextBox Text="{Binding ApiKey, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterTextBox}" Height="36" />
                                 </StackPanel>
                             </Grid>
 
                             <!-- Actions -->
                             <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button Content="Preview Fleet Payload" Command="{Binding GeneratePayloadPreviewCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,12,0" Padding="16,8" />
-                                <Button Content="Sync Telemetry to Fleet" Command="{Binding SyncFleetTelemetryCommand}" Style="{StaticResource PrimaryButtonStyle}" Padding="20,8" />
+                                <Button Content="Preview Fleet Payload" Command="{Binding GeneratePayloadPreviewCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,12,0" Padding="16,8" />
+                                <Button Content="Sync Telemetry to Fleet" Command="{Binding SyncFleetTelemetryCommand}" Style="{StaticResource PrimaryButton}" Padding="20,8" />
                             </StackPanel>
                         </StackPanel>
                     </Border>
 
                     <!-- Preview & Status Card -->
-                    <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" Padding="20">
+                    <Border Grid.Row="1" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -360,15 +322,15 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Text="Telemetry Payload Preview (JSON Schema v1.0)" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,10" />
+                            <TextBlock Grid.Row="0" Text="Telemetry Payload Preview (JSON Schema v1.0)" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,10" />
 
                             <TextBox Grid.Row="1" Text="{Binding PreviewPayloadJson}" IsReadOnly="True" TextWrapping="Wrap"
-                                     Background="#0F172A" Foreground="#38BDF8" BorderBrush="#334155" FontFamily="Consolas" FontSize="12" 
+                                     Background="{DynamicResource SurfaceSunkenBrush}" Foreground="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" FontFamily="Consolas" FontSize="11" 
                                      Padding="12" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" />
 
                             <!-- Status / Safety Footer -->
-                            <Border Grid.Row="2" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,12,0,0">
-                                <TextBlock Text="{Binding SyncStatus}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" />
+                            <Border Grid.Row="2" Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,12,0,0">
+                                <TextBlock Text="{Binding SyncStatus}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" />
                             </Border>
                         </Grid>
                     </Border>
@@ -377,4 +339,3 @@
         </TabControl>
     </Grid>
 </UserControl>
-

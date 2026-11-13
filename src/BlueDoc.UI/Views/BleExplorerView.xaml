@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" 
-             d:DesignHeight="750" d:DesignWidth="950">
+             d:DesignHeight="850" d:DesignWidth="1100">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="28,24,28,32">
@@ -26,16 +26,18 @@
             </Grid>
 
             <!-- Platform Capability Alert Banner -->
-            <Border Background="#1C273C" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,20">
+            <Border Background="{DynamicResource AccentSubtleBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" CornerRadius="8" Padding="16,14" Margin="0,0,0,20">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="ℹ️" FontSize="20" VerticalAlignment="Center" Margin="0,0,14,0" />
-                    <StackPanel Grid.Column="1">
-                        <TextBlock Text="PLATFORM BLE CAPABILITY NOTICE" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" />
-                        <TextBlock Text="{Binding PlatformNotice}" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap" />
+                    <Border Background="{DynamicResource AccentBrush}" Width="36" Height="36" CornerRadius="18" Margin="0,0,14,0" VerticalAlignment="Center">
+                        <TextBlock Text="⚡" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="PLATFORM BLE CAPABILITY NOTICE" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+                        <TextBlock Text="{Binding PlatformNotice}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -49,20 +51,40 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Left Column: BLE Device List -->
-                <Border Grid.Column="0" Style="{StaticResource CardPanel}">
+                <Border Grid.Column="0" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel>
-                        <TextBlock Text="DETECTED BLE PERIPHERALS" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,12" />
+                        <TextBlock Text="DETECTED BLE PERIPHERALS" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,12" />
 
-                        <ListBox ItemsSource="{Binding BleDevices}" SelectedItem="{Binding SelectedBleDevice}" Background="Transparent" BorderThickness="0" MaxHeight="480" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <!-- Empty State -->
+                        <Border Background="{DynamicResource SurfaceSunkenBrush}" CornerRadius="6" Padding="20" Margin="0,4,0,0"
+                                Visibility="{Binding BleDevices.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter='Inverse'}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="🔍" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,6" />
+                                <TextBlock Text="No BLE peripherals found" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                                <TextBlock Text="Click 'Scan for BLE Devices' to listen for advertisements." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <ListBox ItemsSource="{Binding BleDevices}" 
+                                 SelectedItem="{Binding SelectedBleDevice}" 
+                                 Background="Transparent" 
+                                 BorderThickness="0" 
+                                 MaxHeight="500" 
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#1C273C" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,8">
+                                    <Border Background="{DynamicResource SurfaceElevatedBrush}" 
+                                            BorderBrush="{DynamicResource BorderSubtleBrush}" 
+                                            BorderThickness="1" 
+                                            CornerRadius="6" 
+                                            Padding="12,10" 
+                                            Margin="0,0,0,8">
                                         <StackPanel>
-                                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                                            <TextBlock Text="{Binding BluetoothAddress}" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource AccentBrush}" Margin="0,2,0,4" />
+                                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                            <TextBlock Text="{Binding BluetoothAddress}" FontSize="11" FontFamily="Consolas" Foreground="{DynamicResource AccentBrush}" Margin="0,2,0,4" />
                                             <Grid>
-                                                <TextBlock Text="{Binding StatusDisplay}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Text="{Binding SignalStrengthDisplay}" FontSize="11" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" />
+                                                <TextBlock Text="{Binding StatusDisplay}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                                <TextBlock Text="{Binding SignalStrengthDisplay}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Right" />
                                             </Grid>
                                         </StackPanel>
                                     </Border>
@@ -70,51 +92,65 @@
                             </ListBox.ItemTemplate>
                         </ListBox>
 
-                        <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,10,0,0" TextWrapping="Wrap" />
                     </StackPanel>
                 </Border>
 
                 <!-- Right Column: BLE Device & GATT Inspection -->
-                <Border Grid.Column="2" Style="{StaticResource CardPanel}">
+                <Border Grid.Column="2" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
                     <StackPanel>
-                        <TextBlock Text="GATT SERVICE DEFINITIONS &amp; CHARACTERISTICS" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16" />
+                        <TextBlock Text="GATT SERVICE DEFINITIONS &amp; CHARACTERISTICS" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16" />
+
+                        <!-- Placeholder when no device selected -->
+                        <Border Background="{DynamicResource SurfaceSunkenBrush}" CornerRadius="6" Padding="24"
+                                Visibility="{Binding SelectedBleDevice, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter='Inverse'}">
+                            <TextBlock Text="Select a BLE peripheral from the left list to explore its GATT service tree, characteristics, and descriptors." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextAlignment="Center" TextWrapping="Wrap" />
+                        </Border>
 
                         <StackPanel Visibility="{Binding SelectedBleDevice, Converter={StaticResource NullToVisibilityConverter}}">
                             <!-- Device Header Info -->
-                            <Grid Margin="0,0,0,14">
+                            <Grid Margin="0,0,0,16">
                                 <StackPanel>
-                                    <TextBlock Text="{Binding SelectedBleDevice.DisplayName}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
-                                    <TextBlock Text="{Binding SelectedBleDevice.BluetoothAddress, StringFormat='MAC: {0}'}" FontSize="12" FontFamily="Consolas" Foreground="{StaticResource AccentBrush}" Margin="0,2,0,0" />
+                                    <TextBlock Text="{Binding SelectedBleDevice.DisplayName}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <TextBlock Text="{Binding SelectedBleDevice.BluetoothAddress, StringFormat='MAC: {0}'}" FontSize="12" FontFamily="Consolas" Foreground="{DynamicResource AccentBrush}" Margin="0,2,0,0" />
                                 </StackPanel>
-                                <Border Background="#1C273C" CornerRadius="4" Padding="10,4" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                    <TextBlock Text="{Binding SelectedBleDevice.StatusDisplay}" FontSize="11" FontWeight="Bold" Foreground="#10B981" />
+                                <Border Background="{DynamicResource AccentSubtleBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" CornerRadius="4" Padding="10,4" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                    <TextBlock Text="{Binding SelectedBleDevice.StatusDisplay}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
                                 </Border>
                             </Grid>
 
                             <!-- GATT Service Tree / List -->
-                            <TextBlock Text="EXPOSED GATT SERVICES" FontSize="11" FontWeight="SemiBold" Foreground="#38BDF8" Margin="0,0,0,8" />
+                            <TextBlock Text="EXPOSED GATT SERVICES" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" Margin="0,0,0,10" />
 
                             <ItemsControl ItemsSource="{Binding GattServices}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="#1C273C" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="14,12" Margin="0,0,0,12">
+                                        <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Padding="14,12" Margin="0,0,0,12">
                                             <StackPanel>
                                                 <Grid Margin="0,0,0,6">
-                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" FontSize="13" />
-                                                    <TextBlock Text="{Binding Uuid}" FontSize="10" FontFamily="Consolas" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" />
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" />
+                                                    <TextBlock Text="{Binding Uuid}" FontSize="10" FontFamily="Consolas" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Right" />
                                                 </Grid>
-                                                <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,10" />
+                                                <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,10" />
 
                                                 <!-- Characteristics Table inside Service -->
-                                                <DataGrid ItemsSource="{Binding Characteristics}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" Background="#121A28" BorderThickness="0" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{StaticResource BorderBrush}">
+                                                <DataGrid ItemsSource="{Binding Characteristics}" 
+                                                          AutoGenerateColumns="False" 
+                                                          CanUserAddRows="False" 
+                                                          IsReadOnly="True" 
+                                                          Background="{DynamicResource SurfaceSunkenBrush}" 
+                                                          BorderThickness="0" 
+                                                          HeadersVisibility="Column" 
+                                                          GridLinesVisibility="Horizontal" 
+                                                          HorizontalGridLinesBrush="{DynamicResource BorderSubtleBrush}">
                                                     <DataGrid.Columns>
                                                         <DataGridTextColumn Header="Characteristic" Binding="{Binding Name}" Width="150" />
                                                         <DataGridTextColumn Header="UUID" Binding="{Binding Uuid}" Width="75" />
                                                         <DataGridTextColumn Header="Properties" Binding="{Binding Properties}" Width="90" />
-                                                        <DataGridTextColumn Header="Value / Status" Binding="{Binding ValueDisplay}" Width="*" />
+                                                        <DataGridTextColumn Header="Value / State" Binding="{Binding ValueDisplay}" Width="*" />
                                                         
                                                         <!-- Actions Column: Read, Write, Notify -->
-                                                        <DataGridTemplateColumn Header="Actions" Width="170">
+                                                        <DataGridTemplateColumn Header="Actions" Width="180">
                                                             <DataGridTemplateColumn.CellTemplate>
                                                                 <DataTemplate>
                                                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -133,8 +169,8 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
 
-                            <Border Background="#0F172A" CornerRadius="6" Padding="12" Margin="0,4,0,0">
-                                <TextBlock Text="Safe GATT Operation Rule: Writing data to BLE characteristics is gated by permission checks and explicit user confirmation. BlueDoc strictly adheres to Section 15 safety policies." FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                            <Border Background="{DynamicResource SurfaceSunkenBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,6,0,0">
+                                <TextBlock Text="Section 15 Policy: BleExplorer reports genuine, verifiable GATT attribute responses. Writing data requires an active, authenticated bond and explicit confirmation." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" />
                             </Border>
                         </StackPanel>
                     </StackPanel>

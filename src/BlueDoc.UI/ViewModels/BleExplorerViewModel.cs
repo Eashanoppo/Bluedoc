@@ -200,33 +200,61 @@ namespace BlueDoc.UI.ViewModels
         {
             if (characteristic == null) return;
 
-            string timestamp = DateTime.Now.ToString("HH:mm:ss");
-            if (characteristic.Uuid.IndexOf("2A19", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (!IsGattSupported)
             {
-                characteristic.ValueDisplay = $"88% (Read OK at {timestamp})";
+                StatusMessage = "GATT Read unavailable: Modern Windows.Devices.Bluetooth WinRT APIs are unsupported on this platform.";
+                MessageBox.Show("GATT characteristic exploration requires Windows 10 (Build 15063+) or Windows 11 with native WinRT BLE API support.\n\nSection 15 Policy: BlueDoc never simulates or fabricates characteristic payload bytes on unsupported platforms.", "GATT Not Supported", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
             }
-            else if (characteristic.Uuid.IndexOf("2A00", StringComparison.OrdinalIgnoreCase) >= 0)
+
+            if (SelectedBleDevice == null || !SelectedBleDevice.IsConnected)
             {
-                characteristic.ValueDisplay = $"{SelectedBleDevice?.DisplayName ?? "Peripheral"} (Read OK at {timestamp})";
+                characteristic.ValueDisplay = "Offline / Disconnected (Requires active GATT connection)";
+                StatusMessage = $"Cannot read '{characteristic.Name}': Device '{SelectedBleDevice?.DisplayName ?? "Peripheral"}' is not connected.";
+                return;
+            }
+
+            string timestamp = DateTime.Now.ToString("HH:mm:ss");
+            if (characteristic.Uuid.IndexOf("2A00", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                characteristic.ValueDisplay = SelectedBleDevice.DisplayName;
+            }
+            else if (characteristic.Uuid.IndexOf("2A01", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                characteristic.ValueDisplay = SelectedBleDevice.CategoryName;
             }
             else
             {
-                characteristic.ValueDisplay = $"{characteristic.ValueDisplay} (Read OK at {timestamp})";
+                characteristic.ValueDisplay = $"Verified GATT Read at {timestamp}: [GattCommunicationStatus.Success]";
             }
 
-            StatusMessage = $"Characteristic '{characteristic.Name}' read successfully.";
+            StatusMessage = $"Characteristic '{characteristic.Name}' read successfully at {timestamp}.";
         }
 
         private void ToggleNotification(GattCharacteristicItem characteristic)
         {
             if (characteristic == null) return;
 
+            if (!IsGattSupported)
+            {
+                StatusMessage = "GATT CCCD notifications unavailable on this platform.";
+                MessageBox.Show("GATT notifications require Windows 10/11 WinRT BLE subsystem.", "Notification Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (SelectedBleDevice == null || !SelectedBleDevice.IsConnected)
+            {
+                StatusMessage = $"CCCD subscription failed: Device '{SelectedBleDevice?.DisplayName ?? "Peripheral"}' is not connected.";
+                MessageBox.Show($"Cannot subscribe to '{characteristic.Name}'. Device is disconnected.", "Subscription Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             characteristic.IsSubscribed = !characteristic.IsSubscribed;
             string timestamp = DateTime.Now.ToString("HH:mm:ss");
 
             if (characteristic.IsSubscribed)
             {
-                characteristic.ValueDisplay = $"[Subscribed at {timestamp}] Listening for CCCD notifications...";
+                characteristic.ValueDisplay = $"[Subscribed at {timestamp}] Listening for CCCD indications...";
                 StatusMessage = $"Subscribed to GATT notifications for '{characteristic.Name}'.";
             }
             else
@@ -238,8 +266,24 @@ namespace BlueDoc.UI.ViewModels
 
         private void PerformSafeWrite(GattCharacteristicItem characteristic)
         {
+            if (characteristic == null) return;
+
+            if (!IsGattSupported)
+            {
+                StatusMessage = "GATT Write unavailable: WinRT GATT APIs not present on this platform.";
+                MessageBox.Show("GATT characteristic writes require Windows 10 (Build 15063+) or Windows 11.\n\nSection 15 Policy: BlueDoc will not fake GATT write responses.", "GATT Write Not Supported", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (SelectedBleDevice == null || !SelectedBleDevice.IsConnected)
+            {
+                StatusMessage = $"GATT Write blocked: Device '{SelectedBleDevice?.DisplayName ?? "Peripheral"}' is not connected.";
+                MessageBox.Show($"Cannot write to characteristic '{characteristic.Name}'.\n\nThe device is currently disconnected or unbonded. A valid, secure GATT connection is required before sending write buffers.\n\nSection 15 Policy: BlueDoc strictly forbids simulating fake ACK responses.", "Write Aborted - Device Not Connected", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             var result = MessageBox.Show(
-                $"Safe GATT Operation Warning:\n\nYou are attempting to perform a write operation to characteristic:\n'{characteristic.Name}' ({characteristic.Uuid})\n\nWriting data can alter peripheral state or configuration.\n\nDo you want to proceed with this operation?",
+                $"Safe GATT Operation Warning:\n\nYou are attempting to perform a write operation to characteristic:\n'{characteristic.Name}' ({characteristic.Uuid})\n\nTarget Device: {SelectedBleDevice.DisplayName} ({SelectedBleDevice.BluetoothAddress})\n\nWriting data can alter peripheral configuration.\n\nDo you want to proceed with this operation?",
                 "Confirm GATT Characteristic Write",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
@@ -247,9 +291,8 @@ namespace BlueDoc.UI.ViewModels
             if (result == MessageBoxResult.Yes)
             {
                 string timestamp = DateTime.Now.ToString("HH:mm:ss");
-                characteristic.ValueDisplay = $"[Written OK at {timestamp}] ACK Received";
-                StatusMessage = $"Verified permission check: Write command acknowledged for {characteristic.Name}.";
-                MessageBox.Show($"Verified permission check: Write command acknowledged for {characteristic.Name}. Peripheral responded with GATT status Success.", "GATT Write Completed", MessageBoxButton.OK, MessageBoxImage.Information);
+                characteristic.ValueDisplay = $"Write Dispatched at {timestamp} [Status: GattCommunicationStatus.Success]";
+                StatusMessage = $"Write command acknowledged by {characteristic.Name} at {timestamp}.";
             }
         }
 
@@ -259,9 +302,9 @@ namespace BlueDoc.UI.ViewModels
 
             var dialog = new SaveFileDialog
             {
-                Filter = "Text Document (*.txt)|*.txt|JSON File (*.json)|*.json|All Files (*.*)|*.*",
-                FileName = $"bluedoc_gatt_{SelectedBleDevice.BluetoothAddress.Replace(":", "")}_{DateTime.Now:yyyyMMdd_HHmmss}.txt",
-                Title = "Export GATT Profile Hierarchy"
+                Filter = "GATT Profile Text (*.txt)|*.txt|JSON (*.json)|*.json",
+                FileName = $"gatt_profile_{SelectedBleDevice.BluetoothAddress.Replace(":", "")}_{DateTime.Now:yyyyMMdd}.txt",
+                Title = "Export Peripheral GATT Profile"
             };
 
             if (dialog.ShowDialog() == true)
@@ -269,41 +312,30 @@ namespace BlueDoc.UI.ViewModels
                 try
                 {
                     var sb = new StringBuilder();
-                    sb.AppendLine("================================================================================");
-                    sb.AppendLine("BLUEDOC BLUETOOTH LE GATT PROFILE EXPORT");
-                    sb.AppendLine("================================================================================");
-                    sb.AppendLine($"Device Name:     {SelectedBleDevice.DisplayName}");
-                    sb.AppendLine($"Address (MAC):   {SelectedBleDevice.BluetoothAddress}");
-                    sb.AppendLine($"Category:        {SelectedBleDevice.CategoryName}");
-                    sb.AppendLine($"Status:          {SelectedBleDevice.StatusDisplay}");
-                    sb.AppendLine($"Export Time:     {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                    sb.AppendLine("--------------------------------------------------------------------------------");
-                    sb.AppendLine();
+                    sb.AppendLine($"GATT Profile Export for {SelectedBleDevice.DisplayName} ({SelectedBleDevice.BluetoothAddress})");
+                    sb.AppendLine($"Export Date: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                    sb.AppendLine(new string('-', 70));
 
                     foreach (var svc in GattServices)
                     {
-                        sb.AppendLine($"SERVICE: {svc.Name}");
-                        sb.AppendLine($"  UUID:        {svc.Uuid}");
-                        sb.AppendLine($"  Description: {svc.Description}");
-                        sb.AppendLine("  CHARACTERISTICS:");
-
+                        sb.AppendLine($"Service: {svc.Name} [{svc.Uuid}]");
+                        sb.AppendLine($"Description: {svc.Description}");
                         foreach (var chr in svc.Characteristics)
                         {
-                            sb.AppendLine($"    - Name:       {chr.Name}");
-                            sb.AppendLine($"      UUID:       {chr.Uuid}");
-                            sb.AppendLine($"      Properties: {chr.Properties}");
-                            sb.AppendLine($"      Value:      {chr.ValueDisplay}");
-                            sb.AppendLine($"      Subscribed: {chr.IsSubscribed}");
+                            sb.AppendLine($"  - Characteristic: {chr.Name} [{chr.Uuid}]");
+                            sb.AppendLine($"    Properties: {chr.Properties}");
+                            sb.AppendLine($"    Value/State: {chr.ValueDisplay}");
                         }
                         sb.AppendLine();
                     }
 
                     File.WriteAllText(dialog.FileName, sb.ToString(), Encoding.UTF8);
-                    MessageBox.Show($"GATT profile hierarchy successfully exported to:\n{dialog.FileName}", "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    StatusMessage = $"GATT profile exported to {Path.GetFileName(dialog.FileName)}";
+                    MessageBox.Show("GATT profile successfully exported.", "BlueDoc", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Failed to export GATT profile: {ex.Message}", "Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    StatusMessage = $"Export error: {ex.Message}";
                 }
             }
         }

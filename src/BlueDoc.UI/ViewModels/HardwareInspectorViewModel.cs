@@ -13,6 +13,7 @@ namespace BlueDoc.UI.ViewModels
         private readonly AdapterService _adapterService;
         private BluetoothAdapterInfo _selectedAdapter;
         private bool _isLoading;
+        private bool _isRefreshing;
         private string _statusMessage = "Ready";
 
         public ObservableCollection<BluetoothAdapterInfo> Adapters { get; } = new ObservableCollection<BluetoothAdapterInfo>();
@@ -29,6 +30,12 @@ namespace BlueDoc.UI.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
+        public bool IsRefreshing
+        {
+            get => _isRefreshing;
+            set => SetProperty(ref _isRefreshing, value);
+        }
+
         public string StatusMessage
         {
             get => _statusMessage;
@@ -36,16 +43,52 @@ namespace BlueDoc.UI.ViewModels
         }
 
         public ICommand RefreshCommand { get; }
+        public ICommand CopyHardwareIdCommand { get; }
+        public ICommand CopyInstanceIdCommand { get; }
 
         public HardwareInspectorViewModel(AdapterService adapterService)
         {
             _adapterService = adapterService;
             RefreshCommand = new RelayCommand(async () => await LoadAdaptersAsync());
+
+            CopyHardwareIdCommand = new RelayCommand(() =>
+            {
+                if (!string.IsNullOrEmpty(SelectedAdapter?.HardwareId))
+                {
+                    try
+                    {
+                        System.Windows.Clipboard.SetText(SelectedAdapter.HardwareId);
+                        NotificationService.Instance.ShowSuccess("Copied", "Hardware ID copied to clipboard.");
+                    }
+                    catch { }
+                }
+            }, () => !string.IsNullOrEmpty(SelectedAdapter?.HardwareId));
+
+            CopyInstanceIdCommand = new RelayCommand(() =>
+            {
+                if (!string.IsNullOrEmpty(SelectedAdapter?.DeviceInstanceId))
+                {
+                    try
+                    {
+                        System.Windows.Clipboard.SetText(SelectedAdapter.DeviceInstanceId);
+                        NotificationService.Instance.ShowSuccess("Copied", "Device Instance ID copied to clipboard.");
+                    }
+                    catch { }
+                }
+            }, () => !string.IsNullOrEmpty(SelectedAdapter?.DeviceInstanceId));
         }
 
         public async Task LoadAdaptersAsync()
         {
-            IsLoading = true;
+            if (Adapters.Count == 0)
+            {
+                IsLoading = true;
+            }
+            else
+            {
+                IsRefreshing = true;
+            }
+
             StatusMessage = "Enumerating Plug and Play devices via SetupAPI...";
 
             try
@@ -75,6 +118,7 @@ namespace BlueDoc.UI.ViewModels
             finally
             {
                 IsLoading = false;
+                IsRefreshing = false;
             }
         }
     }

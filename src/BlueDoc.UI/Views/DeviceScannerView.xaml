@@ -3,223 +3,790 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:common="clr-namespace:BlueDoc.UI.Common"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="950">
+             d:DesignHeight="820" d:DesignWidth="1160">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="28,24,28,32">
-            <!-- Header Row -->
-            <Grid Margin="0,0,0,20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock Text="Bluetooth Device Scanner" Style="{StaticResource PageTitleText}" />
-                    <TextBlock Text="Active Classic radio inquiry and Plug-and-Play device discovery across supported Windows stacks." Style="{StaticResource PageSubtitleText}" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
-                    <Button Content="Clear" Command="{Binding ClearCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" />
-                    <Button Content="{Binding ScanButtonText}" Command="{Binding ToggleScanCommand}" Style="{StaticResource PrimaryButton}" />
-                </StackPanel>
-            </Grid>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <common:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <common:EqualityToBooleanConverter x:Key="EqualityToBooleanConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
 
-            <!-- Scanner Control & Status Bar -->
-            <Border Background="#121A28" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,12" Margin="0,0,0,16">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+    <Grid Margin="24,20,24,24">
+        <Grid.RowDefinitions>
+            <!-- Row 0: Page Header & Primary Actions -->
+            <RowDefinition Height="Auto" />
+            <!-- Row 1: Discovery Configuration & Status Bar -->
+            <RowDefinition Height="Auto" />
+            <!-- Row 2: Search & Multi-Category Filter Bar -->
+            <RowDefinition Height="Auto" />
+            <!-- Row 3: Master Discovered List & Contextual Pairing Inspector -->
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-                    <!-- Scanning Indicator -->
-                    <Border Width="10" Height="10" CornerRadius="5" Background="{StaticResource AccentBrush}" VerticalAlignment="Center" Margin="0,0,12,0"
-                            Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}" />
+        <!-- =========================================================================
+             ROW 0: PAGE HEADER
+             ========================================================================= -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                        <TextBlock Text="{Binding ElapsedDisplay}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0"
-                                   Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                    </StackPanel>
-
-                    <Border Grid.Column="2" Background="#1C273C" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10,4" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding DiscoveredDevices.Count, StringFormat='{}{0} Device(s) Discovered'}" FontSize="11" FontWeight="SemiBold" Foreground="#60A5FA" />
+            <!-- Page Title & Technical Description -->
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Discover Nearby Bluetooth Devices" Style="{DynamicResource PageTitleText}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                    <!-- Discovered Count Pill -->
+                    <Border Background="{DynamicResource AccentSubtleBrush}" 
+                            BorderBrush="{DynamicResource AccentBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="12" 
+                            Padding="10,3" 
+                            VerticalAlignment="Center">
+                        <TextBlock Text="{Binding TotalCount, StringFormat='{}{0} Found'}" 
+                                   FontSize="11.5" 
+                                   FontWeight="SemiBold" 
+                                   Foreground="{DynamicResource AccentBrush}" />
                     </Border>
-                </Grid>
-            </Border>
-
-            <!-- Filter Buttons Bar -->
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                <Button Content="All Devices" Command="{Binding FilterCommand}" CommandParameter="All" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Padding="12,5" FontSize="12" />
-                <Button Content="Audio / Headphones" Command="{Binding FilterCommand}" CommandParameter="Audio" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Padding="12,5" FontSize="12" />
-                <Button Content="Peripherals (Mouse/Keyboard)" Command="{Binding FilterCommand}" CommandParameter="Peripherals" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Padding="12,5" FontSize="12" />
-                <Button Content="Phones &amp; PCs" Command="{Binding FilterCommand}" CommandParameter="Phones/PCs" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Padding="12,5" FontSize="12" />
-                <Button Content="Paired Only" Command="{Binding FilterCommand}" CommandParameter="Paired" Style="{StaticResource SecondaryButton}" Padding="12,5" FontSize="12" />
+                </StackPanel>
+                <TextBlock Text="Dual-stack radio discovery across Classic Bluetooth inquiry and Windows Bluetooth Low Energy (BLE) advertisement watcher." 
+                           Style="{DynamicResource PageSubtitleText}" 
+                           Margin="0,4,0,0" />
             </StackPanel>
 
-            <!-- Main Discovered Devices & Detail Grid -->
+            <!-- Top Right Quick Actions -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                <!-- Clear Catalog Button -->
+                <Button Content="Clear Results" 
+                        Command="{Binding ClearCommand}" 
+                        Style="{DynamicResource SecondaryButton}" 
+                        Margin="0,0,10,0" 
+                        Padding="12,7" 
+                        ToolTip="Clear discovered devices catalog" />
+
+                <!-- Primary Start / Stop Scan Button -->
+                <Button Command="{Binding ToggleScanCommand}" 
+                        Padding="18,7">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsScanning}" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource DangerBrush}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Animated Scanning Pulse Dot -->
+                        <Border Width="8" Height="8" CornerRadius="4" Background="White" Margin="0,0,8,0" VerticalAlignment="Center"
+                                Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <TextBlock Text="{Binding ScanButtonText}" FontWeight="Bold" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- =========================================================================
+             ROW 1: DISCOVERY CONFIGURATION & CONTROL BAR
+             ========================================================================= -->
+        <Border Grid.Row="1" 
+                Background="{DynamicResource SurfaceCardBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" 
+                BorderThickness="1" 
+                CornerRadius="8" 
+                Padding="16,12" 
+                Margin="0,0,0,14">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="420" />
-                    <ColumnDefinition Width="20" />
+                    <!-- Left: Scanner Status & Elapsed Timer -->
+                    <ColumnDefinition Width="280" />
+                    <ColumnDefinition Width="16" />
+                    <!-- Center: Adapter, Mode & Duration Selectors -->
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <!-- Right: Stack Metric Counters -->
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: Status Message & Live Timer -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Scanning Activity Indicator -->
+                        <Border Width="9" Height="9" CornerRadius="4.5" Margin="0,0,8,0" VerticalAlignment="Center">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="{DynamicResource TextMutedBrush}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsScanning}" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource SuccessBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        <TextBlock Text="{Binding StatusMessage}" 
+                                   FontWeight="SemiBold" 
+                                   FontSize="12.5" 
+                                   Foreground="{DynamicResource TextPrimaryBrush}" 
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="17,3,0,0">
+                        <TextBlock Text="Elapsed: " FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                        <TextBlock Text="{Binding ElapsedDisplay}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Center: Hardware Controller, Discovery Mode, and Duration Dropdowns -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Adapter Selector -->
+                    <StackPanel Margin="0,0,12,0">
+                        <TextBlock Text="Controller Adapter" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Margin="2,0,0,3" />
+                        <ComboBox ItemsSource="{Binding AvailableAdapters}" 
+                                  SelectedItem="{Binding SelectedAdapter}" 
+                                  DisplayMemberPath="FriendlyName" 
+                                  Width="200" Height="30" 
+                                  VerticalContentAlignment="Center"
+                                  IsEnabled="{Binding IsIdle}"
+                                  ToolTip="Local Bluetooth radio controller used for inquiries" />
+                    </StackPanel>
+
+                    <!-- Discovery Mode Selector -->
+                    <StackPanel Margin="0,0,12,0">
+                        <TextBlock Text="Discovery Mode" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Margin="2,0,0,3" />
+                        <ComboBox ItemsSource="{Binding AvailableDiscoveryModes}" 
+                                  SelectedItem="{Binding SelectedDiscoveryMode}" 
+                                  Width="190" Height="30" 
+                                  VerticalContentAlignment="Center"
+                                  IsEnabled="{Binding IsIdle}"
+                                  ToolTip="Dual Mode (Classic + BLE) is supported on Windows 10/11" />
+                    </StackPanel>
+
+                    <!-- Scan Duration Selector -->
+                    <StackPanel>
+                        <TextBlock Text="Scan Duration" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Margin="2,0,0,3" />
+                        <ComboBox ItemsSource="{Binding AvailableDurations}" 
+                                  SelectedItem="{Binding ScanDurationSeconds}" 
+                                  Width="100" Height="30" 
+                                  VerticalContentAlignment="Center"
+                                  IsEnabled="{Binding IsIdle}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding StringFormat='{}{0} seconds'}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Right: Stack Metric Pills -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Classic Count Pill -->
+                    <Border Background="{DynamicResource SurfaceElevatedBrush}" 
+                            BorderBrush="{DynamicResource BorderBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="6" 
+                            Padding="8,5" 
+                            Margin="0,0,6,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Classic: " FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                            <TextBlock Text="{Binding ClassicCount}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentHoverBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- BLE Count Pill -->
+                    <Border Background="{DynamicResource SurfaceElevatedBrush}" 
+                            BorderBrush="{DynamicResource BorderBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="6" 
+                            Padding="8,5">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="BLE: " FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                            <TextBlock Text="{Binding BleCount}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- =========================================================================
+             ROW 2: SEARCH & MULTI-CATEGORY FILTER BAR
+             ========================================================================= -->
+        <Border Grid.Row="2" 
+                Background="{DynamicResource SurfaceCardBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" 
+                BorderThickness="1" 
+                CornerRadius="8" 
+                Padding="12,9" 
+                Margin="0,0,0,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <!-- Search Input -->
+                    <ColumnDefinition Width="260" />
+                    <ColumnDefinition Width="14" />
+                    <!-- Filter Segment Pills -->
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Left Column: Devices List -->
-                <Border Grid.Column="0" Style="{StaticResource CardPanel}">
-                    <StackPanel>
-                        <TextBlock Text="DISCOVERED BLUETOOTH DEVICES" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,12" />
+                <!-- Search Input Field -->
+                <TextBox Grid.Column="0" 
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+                         Style="{DynamicResource FilterTextBox}" 
+                         Height="30" 
+                         VerticalAlignment="Center" 
+                         ToolTip="Filter by device name or Bluetooth MAC address" />
 
-                        <ListBox ItemsSource="{Binding FilteredDevices}" SelectedItem="{Binding SelectedDevice}" Background="Transparent" BorderThickness="0" MaxHeight="480">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="#1C273C" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,8">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="38" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-
-                                            <!-- Category Icon Pill -->
-                                            <Border Grid.Column="0" Width="30" Height="30" CornerRadius="6" Background="#101726" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding CategoryIcon}" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-
-                                            <!-- Name & Address -->
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="6,0,8,0">
-                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
-                                                <TextBlock Text="{Binding BluetoothAddress}" FontFamily="Consolas, Courier New" FontSize="11" Foreground="#60A5FA" Margin="0,2,0,0" />
-                                                <TextBlock Text="{Binding CategoryName}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
-                                            </StackPanel>
-
-                                            <!-- Status & Type Badge -->
-                                            <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                                <Border CornerRadius="4" Padding="6,2" HorizontalAlignment="Right" Margin="0,0,0,4">
-                                                    <Border.Style>
-                                                        <Style TargetType="Border">
-                                                            <Setter Property="Background" Value="#334155" />
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding IsConnected}" Value="True">
-                                                                    <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding IsPaired}" Value="True">
-                                                                    <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Border.Style>
-                                                    <TextBlock Text="{Binding StatusDisplay}" FontSize="10" FontWeight="Bold" Foreground="White" />
-                                                </Border>
-                                                <TextBlock Text="{Binding DeviceType}" FontSize="10" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" />
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-
-                        <TextBlock Text="Select any discovered device to inspect technical Bluetooth properties." FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                <!-- Category Segment Pills (Scrollable if narrow) -->
+                <ScrollViewer Grid.Column="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Content="All Devices" Command="{Binding SetFilterCommand}" CommandParameter="All" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="10,4" FontSize="11.5" />
+                        <Button Content="Audio" Command="{Binding SetFilterCommand}" CommandParameter="Audio" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="10,4" FontSize="11.5" />
+                        <Button Content="Headphones" Command="{Binding SetFilterCommand}" CommandParameter="Headphones" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="10,4" FontSize="11.5" />
+                        <Button Content="Speakers" Command="{Binding SetFilterCommand}" CommandParameter="Speakers" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="10,4" FontSize="11.5" />
+                        <Button Content="Keyboards" Command="{Binding SetFilterCommand}" CommandParameter="Keyboards" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="10,4" FontSize="11.5" />
+                        <Button Content="Mice" Command="{Binding SetFilterCommand}" CommandParameter="Mice" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="10,4" FontSize="11.5" />
+                        <Button Content="Phones" Command="{Binding SetFilterCommand}" CommandParameter="Phones" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="10,4" FontSize="11.5" />
+                        <Button Content="Sensors" Command="{Binding SetFilterCommand}" CommandParameter="Sensors" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="10,4" FontSize="11.5" />
+                        <Button Content="Classic" Command="{Binding SetFilterCommand}" CommandParameter="Classic" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="10,4" FontSize="11.5" />
+                        <Button Content="BLE" Command="{Binding SetFilterCommand}" CommandParameter="BLE" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="10,4" FontSize="11.5" />
+                        <Button Content="Unknown" Command="{Binding SetFilterCommand}" CommandParameter="Unknown" Style="{DynamicResource SecondaryButton}" Padding="10,4" FontSize="11.5" />
                     </StackPanel>
-                </Border>
-
-                <!-- Right Column: Selected Device Property Sheet -->
-                <Border Grid.Column="2" Style="{StaticResource CardPanel}">
-                    <StackPanel>
-                        <TextBlock Text="DEVICE TECHNICAL INSPECTOR" Style="{StaticResource CardHeaderTitle}" Margin="0,0,0,4" />
-                        <TextBlock Text="Hardware MAC address, Class of Device (CoD), and Windows pairing status." Style="{StaticResource CardSubtitle}" Margin="0,0,0,16" />
-
-                        <Grid Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="160" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Device Name" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.DisplayName, FallbackValue='Select a device'}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                        </Grid>
-
-                        <Grid Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="160" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Bluetooth Address (MAC)" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.BluetoothAddress, FallbackValue='None'}" FontFamily="Consolas, Courier New" Foreground="#60A5FA" />
-                        </Grid>
-
-                        <Grid Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="160" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Category" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.CategoryName, FallbackValue='Unknown'}" Foreground="{StaticResource TextPrimaryBrush}" />
-                        </Grid>
-
-                        <Grid Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="160" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Device Type" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.DeviceType, FallbackValue='Unknown'}" Foreground="{StaticResource TextPrimaryBrush}" />
-                        </Grid>
-
-                        <Grid Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="160" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Pairing Status" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.IsPaired, StringFormat='Paired: {0}', FallbackValue='No'}" Foreground="{StaticResource TextSecondaryBrush}" />
-                        </Grid>
-
-                        <Grid Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="160" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Connection State" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.StatusDisplay, FallbackValue='Offline'}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                        </Grid>
-
-                        <Grid Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="160" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Class of Device (CoD)" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.DeviceClass, StringFormat='0x{0:X6}', FallbackValue='0x000000'}" FontFamily="Consolas, Courier New" Foreground="{StaticResource TextSecondaryBrush}" />
-                        </Grid>
-
-                        <Grid Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="160" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Signal Strength (RSSI)" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.SignalStrengthDisplay, FallbackValue='Signal not exposed'}" Foreground="{StaticResource TextSecondaryBrush}" />
-                        </Grid>
-
-                        <Grid Margin="0,0,0,14">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="160" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="PnP Instance ID" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.InstanceId, FallbackValue='N/A (Discovered via Inquiry)'}" FontFamily="Consolas, Courier New" FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
-                        </Grid>
-
-                        <Separator Background="{StaticResource BorderBrush}" Margin="0,10,0,16" />
-
-                        <!-- Quick Actions -->
-                        <TextBlock Text="DEVICE ACTIONS" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,10" />
-                        <Button Content="Pair / Manage in Windows" Command="{Binding PairWithDeviceCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" />
-                    </StackPanel>
-                </Border>
+                </ScrollViewer>
             </Grid>
-        </StackPanel>
-    </ScrollViewer>
-</UserControl>
+        </Border>
 
+        <!-- =========================================================================
+             ROW 3: MASTER DEVICE LIST & CONTEXTUAL PAIRING INSPECTOR
+             ========================================================================= -->
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <!-- Left: Discovered Devices Master List -->
+                <ColumnDefinition Width="*" MinWidth="420" />
+                <ColumnDefinition Width="18" />
+                <!-- Right: Selected Device Inspector & In-App Pairing Sheet -->
+                <ColumnDefinition Width="460" />
+            </Grid.ColumnDefinitions>
+
+            <!-- =====================================================================
+                 LEFT COLUMN: DISCOVERED DEVICES CATALOG
+                 ===================================================================== -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <!-- Indeterminate Scan Progress Bar -->
+                    <RowDefinition Height="Auto" />
+                    <!-- List or Empty State -->
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Scanning Activity Progress Bar -->
+                <ProgressBar Grid.Row="0" 
+                             Height="3" 
+                             IsIndeterminate="True" 
+                             Margin="0,0,0,6" 
+                             Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                <!-- SKELETON LOADING STATE WHILE SCANNING AND CATALOG IS EMPTY -->
+                <Control Grid.Row="1" 
+                         Template="{StaticResource DeviceCardListSkeletonTemplate}" 
+                         Visibility="{Binding ShowScanSkeleton, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                <!-- Empty State Banner -->
+                <Border Grid.Row="1" 
+                        Style="{DynamicResource EmptyStateContainer}" 
+                        Padding="32" 
+                        Visibility="{Binding ShowEmptyState, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border Width="52" Height="52" CornerRadius="14" Background="{DynamicResource AccentSubtleBrush}" HorizontalAlignment="Center" Margin="0,0,0,12">
+                            <Path Data="{DynamicResource IconSearchPath}" Width="24" Height="24" Fill="{DynamicResource AccentBrush}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="No Nearby Devices Discovered" Style="{DynamicResource EmptyStateTitle}" />
+                        <TextBlock Text="Ensure your headphones, speakers, or peripherals are in discoverable/pairing mode, then click 'Start Scan' above." 
+                                   Style="{DynamicResource EmptyStateDescription}" />
+                        <Button Content="Start Discovery Scan" Command="{Binding ToggleScanCommand}" Style="{DynamicResource PrimaryButton}" HorizontalAlignment="Center" Margin="0,14,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <!-- DISCOVERED DEVICES LISTBOX -->
+                <ListBox Grid.Row="1" 
+                         ItemsSource="{Binding FilteredDevices}" 
+                         SelectedItem="{Binding SelectedDevice}" 
+                         Background="Transparent" 
+                         BorderThickness="0" 
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
+                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <ListBox.Style>
+                        <Style TargetType="ListBox">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowScanSkeleton}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding ShowEmptyState}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListBox.Style>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0,0,0,8" />
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <ContentPresenter />
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{DynamicResource DeviceCard}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <!-- Left Colored State Bar -->
+                                        <ColumnDefinition Width="4" />
+                                        <ColumnDefinition Width="10" />
+                                        <!-- Category Glyph Box -->
+                                        <ColumnDefinition Width="42" />
+                                        <!-- Title, MAC & Category Details -->
+                                        <ColumnDefinition Width="*" />
+                                        <!-- Signal & Status Badge -->
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Left Status Stripe -->
+                                    <Border Grid.Column="0" CornerRadius="2">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="{DynamicResource BorderStrongBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource SuccessBrush}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsPaired}" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                    </Border>
+
+                                    <!-- Category Avatar Box -->
+                                    <Border Grid.Column="2" 
+                                            Width="38" Height="38" 
+                                            CornerRadius="8" 
+                                            Background="{DynamicResource SurfaceElevatedBrush}" 
+                                            BorderBrush="{DynamicResource BorderBrush}" 
+                                            BorderThickness="1" 
+                                            HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding CategoryIcon}" 
+                                                   FontSize="18" 
+                                                   HorizontalAlignment="Center" 
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+
+                                    <!-- Name, Hardware Address, Classification -->
+                                    <StackPanel Grid.Column="3" Margin="8,0,8,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding DisplayName}" 
+                                                   FontSize="13.5" 
+                                                   FontWeight="SemiBold" 
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" 
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                            <TextBlock Text="{Binding BluetoothAddress}" 
+                                                       Style="{DynamicResource TextHardwareId}" 
+                                                       Foreground="{DynamicResource AccentHoverBrush}" 
+                                                       Margin="0,0,8,0" />
+                                            <TextBlock Text="•" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,8,0" />
+                                            <TextBlock Text="{Binding CategoryName}" 
+                                                       FontSize="11" 
+                                                       Foreground="{DynamicResource TextSecondaryBrush}" 
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Right: Signal Strength & Status Tag -->
+                                    <StackPanel Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <!-- Status Badge -->
+                                        <Border CornerRadius="4" Padding="7,2" HorizontalAlignment="Right">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="{DynamicResource CardBgHoverBrush}" />
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                                                    <Setter Property="BorderThickness" Value="1" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource SuccessSubtleBrush}" />
+                                                            <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsPaired}" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource AccentSubtleBrush}" />
+                                                            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="{Binding StatusDisplay}" FontSize="10" FontWeight="Bold">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                                <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsPaired}" Value="True">
+                                                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+
+                                        <!-- Signal Strength Display -->
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,3,0,0">
+                                            <TextBlock Text="{Binding SignalBars}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" Margin="0,0,4,0" />
+                                            <TextBlock Text="{Binding SignalStrengthDisplay}" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+
+            <!-- =====================================================================
+                 RIGHT COLUMN: CONTEXTUAL INSPECTOR & IN-APP PAIRING SHEET
+                 ===================================================================== -->
+            <Border Grid.Column="2" 
+                    Style="{DynamicResource CardPanel}" 
+                    Padding="20" 
+                    VerticalAlignment="Stretch">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel>
+                        <!-- Inspector Empty Selection Prompt -->
+                        <Border Padding="24" 
+                                Visibility="{Binding HasSelectedDevice, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverse'}">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border Width="48" Height="48" CornerRadius="12" Background="{DynamicResource SurfaceElevatedBrush}" HorizontalAlignment="Center" Margin="0,0,0,10">
+                                    <Path Data="{DynamicResource IconDevicesPath}" Width="22" Height="22" Fill="{DynamicResource TextMutedBrush}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="Select a Discovered Device" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                                <TextBlock Text="Choose any nearby device from the list to inspect hardware properties, initiate native pairing, or manage connections." 
+                                           FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" TextAlignment="Center" TextWrapping="Wrap" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- ACTIVE SELECTED DEVICE INSPECTOR CONTENT -->
+                        <StackPanel Visibility="{Binding HasSelectedDevice, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <!-- Selected Device Header Banner -->
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" 
+                                    BorderBrush="{DynamicResource BorderBrush}" 
+                                    BorderThickness="1" 
+                                    CornerRadius="8" 
+                                    Padding="14" 
+                                    Margin="0,0,0,14">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="48" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Category Avatar -->
+                                    <Border Grid.Column="0" Width="44" Height="44" CornerRadius="10" Background="{DynamicResource AccentSubtleBrush}" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding SelectedDevice.CategoryIcon}" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+
+                                    <!-- Name, Transport, Last Seen -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,10,0">
+                                        <TextBlock Text="{Binding SelectedDevice.DisplayName}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{Binding SelectedDevice.DeviceTypeDisplay}" FontSize="11" Foreground="{DynamicResource AccentHoverBrush}" Margin="0,2,0,0" />
+                                        <TextBlock Text="{Binding SelectedDevice.LastSeenDisplay, StringFormat='Observed: {0}'}" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0" />
+                                    </StackPanel>
+
+                                    <!-- Status Pill -->
+                                    <Border Grid.Column="2" CornerRadius="6" Padding="8,4" VerticalAlignment="Top">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="{DynamicResource CardBgHoverBrush}" />
+                                                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                                                <Setter Property="BorderThickness" Value="1" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedDevice.IsConnected}" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource SuccessSubtleBrush}" />
+                                                        <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedDevice.IsPaired}" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource AccentSubtleBrush}" />
+                                                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Text="{Binding SelectedDevice.StatusDisplay}" FontSize="11" FontWeight="Bold">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SelectedDevice.IsConnected}" Value="True">
+                                                            <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding SelectedDevice.IsPaired}" Value="True">
+                                                            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- TECHNICAL HARDWARE DETAILS -->
+                            <TextBlock Text="TECHNICAL TELEMETRY" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10" />
+
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="140" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="Bluetooth Address" FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.BluetoothAddress}" Style="{DynamicResource TextHardwareId}" Foreground="{DynamicResource AccentHoverBrush}" />
+                            </Grid>
+
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="140" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="Device Category" FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.CategoryName}" FontSize="11.5" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            </Grid>
+
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="140" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="Class of Device (CoD)" FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.DeviceClass, StringFormat='0x{0:X6}'}" Style="{DynamicResource TextHardwareId}" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            </Grid>
+
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="140" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="Signal RSSI" FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" />
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <TextBlock Text="{Binding SelectedDevice.SignalBars}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" Margin="0,0,6,0" />
+                                    <TextBlock Text="{Binding SelectedDevice.SignalStrengthDisplay}" FontSize="11.5" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="140" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="Discovered Services" FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.AdvertisedServices, FallbackValue='Pending link query...'}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                            </Grid>
+
+                            <!-- =========================================================
+                                 PAIRING WORKFLOW & AUTHENTICATION PANEL
+                                 ========================================================= -->
+                            <Separator Background="{DynamicResource BorderBrush}" Margin="0,6,0,12" />
+
+                            <TextBlock Text="WINDOWS PAIRING &amp; AUTHENTICATION" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10" />
+
+                            <!-- Pairing Readiness Banner -->
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10,8" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Adapter Binding: " FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Text="{Binding SelectedAdapter.FriendlyName, FallbackValue='Active Bluetooth Controller'}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </StackPanel>
+                                    <TextBlock Text="Windows native pairing supported. PIN entry or passkey comparison supported directly inside BlueDoc." FontSize="10.5" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,3,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- NUMERIC COMPARISON PASSKEY CONFIRMATION MODAL CARD -->
+                            <Border Background="{DynamicResource AccentSubtleBrush}" 
+                                    BorderBrush="{DynamicResource AccentBrush}" 
+                                    BorderThickness="1.5" 
+                                    CornerRadius="8" 
+                                    Padding="14" 
+                                    Margin="0,0,0,12"
+                                    Visibility="{Binding ShowNumericComparison, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <StackPanel>
+                                    <TextBlock Text="Confirm Passkey Match" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource AccentBrush}" />
+                                    <TextBlock Text="Does this PIN match the code displayed on your peripheral device?" FontSize="11.5" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,4,0,8" />
+                                    
+                                    <Border Background="{DynamicResource SurfaceCardBrush}" CornerRadius="6" Padding="12,6" HorizontalAlignment="Center" Margin="0,0,0,10">
+                                        <TextBlock Text="{Binding NumericComparisonPin}" FontSize="20" FontWeight="Bold" FontFamily="Consolas, Courier New" Foreground="{DynamicResource AccentHoverBrush}" />
+                                    </Border>
+
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Content="Yes, PIN Matches" Command="{Binding ConfirmNumericComparisonCommand}" Style="{DynamicResource PrimaryButton}" Margin="0,0,10,0" Padding="14,5" />
+                                        <Button Content="No, Reject" Command="{Binding RejectNumericComparisonCommand}" Style="{DynamicResource DangerButton}" Padding="14,5" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- OPTIONAL PIN ENTRY SECTION -->
+                            <StackPanel Margin="0,0,0,10" Visibility="{Binding CanPairSelectedDevice, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Button Command="{Binding TogglePinInputCommand}" 
+                                        Style="{DynamicResource GhostButton}" 
+                                        HorizontalAlignment="Left" 
+                                        Padding="0,2" Margin="0,0,0,6">
+                                    <TextBlock Text="⚙ Specify Custom PIN Code (e.g. 0000 / 1234)" FontSize="11" Foreground="{DynamicResource AccentBrush}" />
+                                </Button>
+
+                                <Grid Visibility="{Binding ShowPinInput, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Custom PIN / Passkey:" FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBox Grid.Column="1" Text="{Binding PinInput, UpdateSourceTrigger=PropertyChanged}" Style="{DynamicResource CodeTextBox}" Height="28" MaxLength="16" ToolTip="Default PIN is usually 0000 or 1234" />
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- PRIMARY PAIR ACTION BUTTON -->
+                            <StackPanel Visibility="{Binding CanPairSelectedDevice, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Button Content="Pair Device in Windows" 
+                                        Command="{Binding PairSelectedDeviceCommand}" 
+                                        Style="{DynamicResource PrimaryButton}" 
+                                        Height="36" 
+                                        FontWeight="SemiBold" 
+                                        Margin="0,0,0,8" />
+                            </StackPanel>
+
+                            <!-- PAIRING IN PROGRESS SPINNER & STATUS -->
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" 
+                                    BorderBrush="{DynamicResource AccentBrush}" 
+                                    BorderThickness="1" 
+                                    CornerRadius="6" 
+                                    Padding="10,8" 
+                                    Margin="0,0,0,10"
+                                    Visibility="{Binding IsPairingInProgress, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Path Data="{StaticResource IconRefreshPath}" Width="12" Height="12" Fill="{DynamicResource AccentBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,8,0" RenderTransformOrigin="0.5,0.5">
+                                        <Path.RenderTransform>
+                                            <RotateTransform Angle="0" />
+                                        </Path.RenderTransform>
+                                        <Path.Style>
+                                            <Style TargetType="Path">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsPairingInProgress}" Value="True">
+                                                        <DataTrigger.EnterActions>
+                                                            <BeginStoryboard Storyboard="{StaticResource SpinnerRotateStoryboard}" />
+                                                        </DataTrigger.EnterActions>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Path.Style>
+                                    </Path>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding PairingStageDisplay}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
+                                        <TextBlock Text="{Binding PairingStatusText}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- =========================================================
+                                 POST-PAIRING EXPERIENCE & CONNECTION ACTIONS
+                                 ========================================================= -->
+                            <StackPanel Visibility="{Binding SelectedDevice.IsPaired, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <!-- Explanatory Post-Pairing Guidance -->
+                                <Border Background="{DynamicResource AccentSubtleBrush}" 
+                                        BorderBrush="{DynamicResource AccentBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="6" 
+                                        Padding="12,10" 
+                                        Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <TextBlock Text="Pairing Verified in Windows" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource AccentBrush}" />
+                                        <TextBlock Text="{Binding PostPairingMessage}" 
+                                                   FontSize="11" 
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" 
+                                                   TextWrapping="Wrap" 
+                                                   Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- CONNECTING IN PROGRESS SPINNER & STATUS -->
+                                <Border Background="{DynamicResource SurfaceElevatedBrush}" 
+                                        BorderBrush="{DynamicResource AccentBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="6" 
+                                        Padding="10,8" 
+                                        Margin="0,0,0,10"
+                                        Visibility="{Binding IsConnecting, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Path Data="{StaticResource IconRefreshPath}" Width="12" Height="12" Fill="{DynamicResource AccentBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,8,0" RenderTransformOrigin="0.5,0.5">
+                                            <Path.RenderTransform>
+                                                <RotateTransform Angle="0" />
+                                            </Path.RenderTransform>
+                                            <Path.Style>
+                                                <Style TargetType="Path">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsConnecting}" Value="True">
+                                                            <DataTrigger.EnterActions>
+                                                                <BeginStoryboard Storyboard="{StaticResource SpinnerRotateStoryboard}" />
+                                                            </DataTrigger.EnterActions>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Path.Style>
+                                        </Path>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding ConnectionStageDisplay}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
+                                            <TextBlock Text="{Binding PairingStatusText}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Post-Pairing Buttons Grid -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Connect Button -->
+                                    <Button Grid.Column="0" 
+                                            Content="Connect Device" 
+                                            Command="{Binding ConnectSelectedDeviceCommand}" 
+                                            Style="{DynamicResource PrimaryButton}" 
+                                            Height="34" 
+                                            Visibility="{Binding CanConnectSelectedDevice, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                                    <!-- Disconnect Button -->
+                                    <Button Grid.Column="0" 
+                                            Content="Disconnect Device" 
+                                            Command="{Binding DisconnectSelectedDeviceCommand}" 
+                                            Style="{DynamicResource SecondaryButton}" 
+                                            Height="34" 
+                                            Visibility="{Binding CanDisconnectSelectedDevice, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                                    <!-- Unpair Button -->
+                                    <Button Grid.Column="2" 
+                                            Content="Unpair / Remove" 
+                                            Command="{Binding UnpairSelectedDeviceCommand}" 
+                                            Style="{DynamicResource DangerButton}" 
+                                            Height="34" />
+                                </Grid>
+
+                                <!-- Cross-Section Diagnostics Shortcut -->
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <Button Content="🩺 Audio Diagnostics →" Command="{Binding NavigateToAudioDiagnosticsCommand}" Style="{DynamicResource GhostButton}" Margin="0,0,12,0" Padding="0,2" FontSize="11" />
+                                    <Button Content="📜 Device Manager →" Command="{Binding NavigateToBluetoothDevicesCommand}" Style="{DynamicResource GhostButton}" Padding="0,2" FontSize="11" />
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

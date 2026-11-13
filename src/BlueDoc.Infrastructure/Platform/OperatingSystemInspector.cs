@@ -43,6 +43,12 @@ namespace BlueDoc.Infrastructure.Platform
             return info;
         }
 
+        public static bool IsWindows10OrGreater()
+        {
+            var os = GetOperatingSystemInfo();
+            return os.MajorVersion >= 10;
+        }
+
         private static void DetermineWindowsPlatform(OsVersionInfo info)
         {
             if (info.MajorVersion == 6 && info.MinorVersion == 1)

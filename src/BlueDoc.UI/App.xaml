@@ -13,7 +13,11 @@
             <common:StatusToTextConverter x:Key="StatusToTextConverter" />
             <common:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <common:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <common:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
             <common:BoolToSuccessConverter x:Key="BoolToSuccessConverter" />
+            <common:NotificationTypeToBrushConverter x:Key="NotificationTypeToBrushConverter" />
+            <common:NotificationTypeToGeometryConverter x:Key="NotificationTypeToGeometryConverter" />
+            <common:EqualityToBooleanConverter x:Key="EqualityToBooleanConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

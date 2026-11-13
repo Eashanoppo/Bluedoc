@@ -4,255 +4,300 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="900">
+             d:DesignHeight="880" d:DesignWidth="1100">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="28,24,28,32">
-            <!-- Header Row -->
+        <StackPanel Margin="36,28,36,36" MaxWidth="960" HorizontalAlignment="Left">
+
+            <!-- ==========================================
+                 1. PAGE HEADER (Minimalist & Single Primary Action)
+                 ========================================== -->
             <Grid Margin="0,0,0,24">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock Text="Bluetooth Health Dashboard" Style="{StaticResource PageTitleText}" />
-                    <TextBlock Text="Live system overview of Bluetooth hardware, drivers, and background services." Style="{StaticResource PageSubtitleText}" />
+
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="System Overview" 
+                               Style="{DynamicResource PageTitleText}" 
+                               FontSize="26" 
+                               FontWeight="SemiBold" 
+                               Margin="0,0,0,4" />
+                    <TextBlock Text="Live health and status of Bluetooth controller hardware, active peripherals, and diagnostics." 
+                               Style="{DynamicResource PageSubtitleText}" 
+                               FontSize="13" 
+                               Foreground="{DynamicResource TextSecondaryBrush}" />
                 </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
-                    <Button Content="Refresh Status" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" />
-                    <Button Content="Run Full Diagnosis" Command="{Binding RunDiagnosisCommand}" Style="{StaticResource PrimaryButton}" />
+
+                <!-- Header Actions: Refresh & Single Primary Action -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="Refresh" 
+                            Command="{Binding RefreshCommand}" 
+                            Style="{DynamicResource CompactSecondaryButton}" 
+                            Margin="0,0,10,0" />
+                    <Button Content="Run Full Diagnosis" 
+                            Command="{Binding RunDiagnosisCommand}" 
+                            Style="{DynamicResource CompactPrimaryButton}" />
                 </StackPanel>
             </Grid>
 
-            <!-- Status Banner -->
-            <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="18,14" Margin="0,0,0,16">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Border Width="12" Height="12" CornerRadius="6" Background="{Binding PrimaryAdapter.Status, Converter={StaticResource StatusToBrushConverter}}" VerticalAlignment="Center" Margin="0,0,14,0" />
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding PrimaryAdapter.FriendlyName, FallbackValue='Scanning hardware...'}" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource TextPrimaryBrush}" />
-                        <TextBlock Text="{Binding PrimaryAdapter.StatusDisplay, FallbackValue='Detecting status...'}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
-                    </StackPanel>
-                    <TextBlock Grid.Column="2" Text="{Binding StatusMessage}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-                </Grid>
-            </Border>
+            <!-- SKELETON LOADING STATE -->
+            <Control Template="{StaticResource DashboardStatsSkeletonTemplate}" 
+                     Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                     Margin="0,0,0,24" />
 
-            <!-- Hardware Independence & Radio Power Controller Panel -->
-            <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="18,16" Margin="0,0,0,20">
-                <Grid>
+            <!-- LIVE DASHBOARD CONTENT -->
+            <StackPanel Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverse'}">
+
+                <!-- ==========================================
+                     2. SECTION 1: IS BLUETOOTH WORKING? (Hardware & Stack Status)
+                     ========================================== -->
+                <TextBlock Text="Bluetooth Controller &amp; Services" Style="{DynamicResource GroupedSectionHeader}" />
+                
+                <Grid Margin="0,0,0,24">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="14" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="14" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    
-                    <!-- Icon / Status Indicator -->
-                    <Border Width="44" Height="44" CornerRadius="10" Background="{DynamicResource PillBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,0,16,0" VerticalAlignment="Center">
-                        <Path Data="{StaticResource IconPowerPath}" Width="20" Height="20" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Path.Style>
-                                <Style TargetType="Path">
-                                    <Setter Property="Fill" Value="#10B981" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsRadioOn}" Value="False">
-                                            <Setter Property="Fill" Value="#EF4444" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Path.Style>
-                        </Path>
+
+                    <!-- Card 1: Adapter Hardware -->
+                    <Border Grid.Column="0" Style="{DynamicResource CardPanel}" Padding="16,14">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,6">
+                                <TextBlock Text="ADAPTER HARDWARE" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" />
+                                <Border Width="8" Height="8" CornerRadius="4" 
+                                        Background="{Binding PrimaryAdapter.Status, Converter={StaticResource StatusToBrushConverter}}" 
+                                        HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </Grid>
+                            <TextBlock Text="{Binding PrimaryAdapter.FriendlyName, FallbackValue='Detecting adapter...'}" 
+                                       FontWeight="SemiBold" FontSize="13.5" 
+                                       Foreground="{DynamicResource TextPrimaryBrush}" 
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding PrimaryAdapter.Manufacturer, FallbackValue='Standard Controller'}" 
+                                       FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,10" />
+                            <Separator Background="{DynamicResource BorderBrush}" Margin="0,0,0,8" />
+                            <Grid>
+                                <TextBlock Text="Status" FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Text="{Binding PrimaryAdapter.Status}" HorizontalAlignment="Right" FontSize="11.5" FontWeight="SemiBold" 
+                                           Foreground="{Binding PrimaryAdapter.Status, Converter={StaticResource StatusToBrushConverter}}" />
+                            </Grid>
+                        </StackPanel>
                     </Border>
 
-                    <!-- Text Details -->
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,3">
-                            <TextBlock Text="PHYSICAL RADIO TRANSCEIVER POWER" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,10,0" />
-                            <Border CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Background" Value="#152E24" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsRadioOn}" Value="False">
-                                                <Setter Property="Background" Value="#381E1E" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                                <TextBlock FontSize="10" FontWeight="SemiBold">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Text" Value="RF TRANSCEIVER ACTIVE" />
-                                            <Setter Property="Foreground" Value="#10B981" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsRadioOn}" Value="False">
-                                                    <Setter Property="Text" Value="RF POWER CUT (HARDWARE DISABLED)" />
-                                                    <Setter Property="Foreground" Value="#EF4444" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </Border>
+                    <!-- Card 2: Driver Info -->
+                    <Border Grid.Column="2" Style="{DynamicResource CardPanel}" Padding="16,14">
+                        <StackPanel>
+                            <TextBlock Text="DRIVER STACK" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,6" />
+                            <TextBlock Text="{Binding PrimaryAdapter.Driver.DriverProvider, FallbackValue='Microsoft'}" 
+                                       FontWeight="SemiBold" FontSize="13.5" 
+                                       Foreground="{DynamicResource TextPrimaryBrush}" 
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding PrimaryAdapter.Driver.DriverVersion, StringFormat='v{0}', FallbackValue='v10.0'}" 
+                                       FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,10" />
+                            <Separator Background="{DynamicResource BorderBrush}" Margin="0,0,0,8" />
+                            <Grid>
+                                <TextBlock Text="Driver Date" FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Text="{Binding PrimaryAdapter.Driver.DriverDateString, FallbackValue='Up to date'}" 
+                                           HorizontalAlignment="Right" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            </Grid>
                         </StackPanel>
-                        <TextBlock Text="Direct PnP Device Node control via Windows SetupAPI and CfgMgr32. Operates independently of Windows Bluetooth Services." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
-                    </StackPanel>
+                    </Border>
 
-                    <!-- Hardware ON/OFF Action Button -->
-                    <Button Grid.Column="2" 
-                            Command="{Binding ToggleRadioPowerCommand}"
-                            Padding="16,10"
-                            VerticalAlignment="Center"
-                            Cursor="Hand">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
-                                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-                                <Setter Property="BorderThickness" Value="1" />
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border x:Name="btnBorder"
-                                                    Background="{TemplateBinding Background}"
-                                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                                    CornerRadius="7"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="btnBorder" Property="Background" Value="{DynamicResource CardBgHoverBrush}" />
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                        <StackPanel Orientation="Horizontal">
-                            <Path Data="{StaticResource IconPowerPath}" Width="13" Height="13" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,8,0">
-                                <Path.Style>
-                                    <Style TargetType="Path">
-                                        <Setter Property="Fill" Value="#EF4444" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsRadioOn}" Value="False">
-                                                <Setter Property="Fill" Value="#10B981" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Path.Style>
-                            </Path>
-                            <TextBlock Text="{Binding RadioButtonText}" FontWeight="SemiBold" FontSize="13">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsRadioOn}" Value="False">
-                                                <Setter Property="Foreground" Value="#10B981" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
+                    <!-- Card 3: Windows Background Service -->
+                    <Border Grid.Column="4" Style="{DynamicResource CardPanel}" Padding="16,14">
+                        <StackPanel>
+                            <TextBlock Text="WINDOWS SERVICE" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,6" />
+                            <TextBlock Text="Bluetooth Support (bthserv)" FontWeight="SemiBold" FontSize="13.5" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding ServiceInfo.StartupType, StringFormat='Startup: {0}', FallbackValue='Automatic'}" 
+                                       FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,10" />
+                            <Separator Background="{DynamicResource BorderBrush}" Margin="0,0,0,8" />
+                            <Grid>
+                                <TextBlock Text="Service State" FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Text="{Binding ServiceInfo.Status, FallbackValue='Running'}" 
+                                           HorizontalAlignment="Right" FontSize="11.5" FontWeight="SemiBold" Foreground="#2EA043" />
+                            </Grid>
                         </StackPanel>
-                    </Button>
+                    </Border>
                 </Grid>
-            </Border>
 
-            <!-- 3 Core Metric Cards -->
-            <Grid Margin="0,0,0,20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="16" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="16" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+                <!-- ==========================================
+                     3. SECTION 2: WHICH DEVICES ARE CONNECTED?
+                     ========================================== -->
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Active Connected Peripherals" Style="{DynamicResource GroupedSectionHeader}" Margin="0" />
+                        <Border Background="{DynamicResource AccentSubtleBrush}" CornerRadius="10" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding ConnectedCount, StringFormat='{}{0} Connected'}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
+                        </Border>
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Manage All Devices →" 
+                            Command="{Binding NavigateToSectionCommand}" 
+                            CommandParameter="Bluetooth Devices" 
+                            Style="{DynamicResource CompactGhostButton}" 
+                            VerticalAlignment="Center" />
+                </Grid>
 
-                <!-- Adapter Card -->
-                <Border Grid.Column="0" Style="{StaticResource CardPanel}">
+                <Border Style="{DynamicResource GroupedCardContainer}" Margin="0,0,0,24">
                     <StackPanel>
-                        <TextBlock Text="ADAPTER HARDWARE" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,8" />
-                        <TextBlock Text="{Binding PrimaryAdapter.FriendlyName, FallbackValue='None'}" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
-                        <TextBlock Text="{Binding PrimaryAdapter.Manufacturer, FallbackValue='Unknown'}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,12" />
-                        
-                        <Separator Background="{StaticResource BorderBrush}" Margin="0,0,0,10" />
-                        <Grid>
-                            <TextBlock Text="Status" FontSize="12" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Text="{Binding PrimaryAdapter.Status}" HorizontalAlignment="Right" FontSize="12" FontWeight="SemiBold" Foreground="{Binding PrimaryAdapter.Status, Converter={StaticResource StatusToBrushConverter}}" />
-                        </Grid>
+                        <!-- Connected Devices List -->
+                        <ItemsControl ItemsSource="{Binding ConnectedDevices}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{DynamicResource GroupedDeviceRow}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Category Icon -->
+                                            <Border Grid.Column="0" Width="32" Height="32" CornerRadius="6" Background="{DynamicResource SurfaceElevatedBrush}" Margin="0,0,12,0" VerticalAlignment="Center">
+                                                <Path Data="{StaticResource IconHardwarePath}" Width="14" Height="14" Fill="{DynamicResource AccentBrush}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                    <TextBlock Text="Connected" FontSize="11.5" Foreground="#2EA043" />
+                                                    <TextBlock Text=" • " FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" />
+                                                    <TextBlock Text="{Binding BluetoothAddress}" FontSize="11" FontFamily="Consolas" Foreground="{DynamicResource TextMutedBrush}" />
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <Border Grid.Column="2" Background="{DynamicResource SuccessSubtleBrush}" BorderBrush="{DynamicResource SuccessBrush}" BorderThickness="1" CornerRadius="4" Padding="8,3" VerticalAlignment="Center">
+                                                <TextBlock Text="Active Link" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" />
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Empty State when 0 connected -->
+                        <Border Visibility="{Binding ConnectedCount, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter=0}" 
+                                Padding="20,24" HorizontalAlignment="Center">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="No Bluetooth peripherals currently connected." FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
+                                <TextBlock Text="Turn on your headphones, mouse, or accessories to establish connection." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" Margin="0,3,0,12" />
+                                <Button Content="Browse Paired Devices" 
+                                        Command="{Binding NavigateToSectionCommand}" 
+                                        CommandParameter="Bluetooth Devices" 
+                                        Style="{DynamicResource CompactSecondaryButton}" 
+                                        HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </Border>
 
-                <!-- Driver Card -->
-                <Border Grid.Column="2" Style="{StaticResource CardPanel}">
-                    <StackPanel>
-                        <TextBlock Text="DRIVER STATUS" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,8" />
-                        <TextBlock Text="{Binding PrimaryAdapter.Driver.DriverProvider, FallbackValue='Not Installed'}" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
-                        <TextBlock Text="{Binding PrimaryAdapter.Driver.DriverVersion, StringFormat='Version {0}', FallbackValue='Version unknown'}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,12" />
-                        
-                        <Separator Background="{StaticResource BorderBrush}" Margin="0,0,0,10" />
-                        <Grid>
-                            <TextBlock Text="Release Date" FontSize="12" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Text="{Binding PrimaryAdapter.Driver.DriverDateString, FallbackValue='N/A'}" HorizontalAlignment="Right" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
-                        </Grid>
-                    </StackPanel>
-                </Border>
+                <!-- ==========================================
+                     4. SECTION 3: IS ANYTHING WRONG? (Health & Diagnostics)
+                     ========================================== -->
+                <TextBlock Text="Diagnostics &amp; Connection Reliability" Style="{DynamicResource GroupedSectionHeader}" />
+                
+                <Grid Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="14" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                <!-- Service Card -->
-                <Border Grid.Column="4" Style="{StaticResource CardPanel}">
-                    <StackPanel>
-                        <TextBlock Text="WINDOWS SERVICE" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,8" />
-                        <TextBlock Text="Bluetooth Support Service" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
-                        <TextBlock Text="{Binding ServiceInfo.StartupType, StringFormat='Startup: {0}', FallbackValue='Manual'}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,12" />
-                        
-                        <Separator Background="{StaticResource BorderBrush}" Margin="0,0,0,10" />
-                        <Grid>
-                            <TextBlock Text="State" FontSize="12" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Text="{Binding ServiceInfo.Status, FallbackValue='Unknown'}" HorizontalAlignment="Right" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource SuccessBrush}" />
-                        </Grid>
-                    </StackPanel>
-                </Border>
-            </Grid>
+                    <!-- Left: Diagnostics Session Summary -->
+                    <Border Grid.Column="0" Style="{DynamicResource CardPanel}" Padding="18,16">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <TextBlock Text="SYSTEM DIAGNOSTICS" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                <Button Content="Diagnostic Center →" 
+                                        Command="{Binding NavigateToSectionCommand}" 
+                                        CommandParameter="Diagnostic Center" 
+                                        Style="{DynamicResource CompactGhostButton}" 
+                                        HorizontalAlignment="Right" />
+                            </Grid>
 
-            <!-- Technical Details Row -->
-            <Border Style="{StaticResource CardPanel}">
-                <StackPanel>
-                    <TextBlock Text="HARDWARE IDENTIFIERS" Style="{StaticResource CardHeaderTitle}" Margin="0,0,0,4" />
-                    <TextBlock Text="Exact hardware bus identifiers reported to Windows Configuration Manager." Style="{StaticResource CardSubtitle}" Margin="0,0,0,14" />
-                    
-                    <Grid Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Hardware ID" Foreground="{StaticResource TextMutedBrush}" />
-                        <TextBlock Grid.Column="1" Text="{Binding PrimaryAdapter.HardwareId, FallbackValue='None'}" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" FontFamily="Consolas, Courier New" />
-                    </Grid>
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="Latest Rule Engine Result" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Text="{Binding RecentSession.OverallStatus, FallbackValue='Diagnostics Ready'}" 
+                                                   FontSize="15" FontWeight="Bold" 
+                                                   Foreground="{Binding RecentSession.OverallStatus, Converter={StaticResource StatusToBrushConverter}}" 
+                                                   Margin="0,2,0,0" />
+                                    </StackPanel>
+                                    <Border Grid.Column="1" CornerRadius="4" Padding="6,2" Background="{DynamicResource AccentSubtleBrush}" VerticalAlignment="Center">
+                                        <TextBlock Text="12 Rules" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
+                                    </Border>
+                                </Grid>
+                            </Border>
 
-                    <Grid Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Device Instance ID" Foreground="{StaticResource TextMutedBrush}" />
-                        <TextBlock Grid.Column="1" Text="{Binding PrimaryAdapter.DeviceInstanceId, FallbackValue='None'}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontFamily="Consolas, Courier New" />
-                    </Grid>
+                            <TextBlock Text="Runs automated verification across driver nodes, RF power, radio registry keys, and background services." 
+                                       FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,12" />
 
-                    <Grid Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Radio MAC Address" Foreground="{StaticResource TextMutedBrush}" />
-                        <TextBlock Grid.Column="1" Text="{Binding PrimaryAdapter.RadioAddress, FallbackValue='Unavailable / Radio Off'}" Foreground="{StaticResource TextPrimaryBrush}" FontFamily="Consolas, Courier New" />
-                    </Grid>
-                </StackPanel>
-            </Border>
+                            <Button Content="Run Quick Check" 
+                                    Command="{Binding RunDiagnosisCommand}" 
+                                    Style="{DynamicResource CompactSecondaryButton}" 
+                                    HorizontalAlignment="Left" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Right: Connection Failures & Reliability -->
+                    <Border Grid.Column="2" Style="{DynamicResource CardPanel}" Padding="18,16">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <TextBlock Text="CONNECTION RELIABILITY" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                <Button Content="View History →" 
+                                        Command="{Binding NavigateToSectionCommand}" 
+                                        CommandParameter="Connection History" 
+                                        Style="{DynamicResource CompactGhostButton}" 
+                                        HorizontalAlignment="Right" />
+                            </Grid>
+
+                            <!-- Zero Failures State -->
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="14,12" 
+                                    Visibility="{Binding RecentFailuresCount, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter=0}">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="Zero Dropped Links" FontSize="13" FontWeight="SemiBold" Foreground="#2EA043" HorizontalAlignment="Center" />
+                                    <TextBlock Text="Windows Bluetooth telemetry shows no recent connection dropouts or handshake failures." 
+                                               FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Failures List if any -->
+                            <ItemsControl ItemsSource="{Binding RecentFailures}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{DynamicResource DangerSubtleBrush}" BorderBrush="{DynamicResource DangerBrush}" BorderThickness="1" CornerRadius="6" Padding="10,8" Margin="0,0,0,6">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding DeviceName}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding Details}" FontSize="11" Foreground="{DynamicResource DangerBrush}" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="1" Text="{Binding LocalTimestampDisplay}" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Top" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
-

@@ -34,6 +34,12 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.WindowsRuntime" />
+    <Reference Include="Windows">
+      <HintPath>$(MSBuildProgramFiles32)\Windows Kits\10\UnionMetadata\10.0.19041.0\Windows.winmd</HintPath>
+      <IsWinMDFile>true</IsWinMDFile>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BlueDoc.Core\BlueDoc.Core.csproj">
@@ -49,6 +55,8 @@
     <Compile Include="Abstractions\BluetoothManager.cs" />
     <Compile Include="Legacy\Win32BluetoothRadioProvider.cs" />
     <Compile Include="BLE\GattProfileCatalog.cs" />
+    <Compile Include="BLE\BleAdvertisementWatcherProvider.cs" />
+    <Compile Include="BLE\BlePairingProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

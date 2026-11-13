@@ -1,0 +1,816 @@
+<UserControl x:Class="BlueDoc.UI.Views.FixMyConnectionWizardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:common="clr-namespace:BlueDoc.UI.Common"
+             mc:Ignorable="d" 
+             d:DesignHeight="950" d:DesignWidth="1200"
+             Background="{DynamicResource SurfaceCanvasBrush}">
+
+    <UserControl.Resources>
+        <common:BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
+        <common:NullToVisibilityConverter x:Key="NullToVisConverter" />
+        <common:StatusToBrushConverter x:Key="StatusBrushConverter" />
+        <common:StatusToTextConverter x:Key="StatusTextConverter" />
+        <common:CountToVisibilityConverter x:Key="CountToVisConverter" />
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="24,20,24,32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" /> <!-- Header -->
+                <RowDefinition Height="Auto" /> <!-- Target Hero & Selector -->
+                <RowDefinition Height="*" />    <!-- Stepper & Active Stage -->
+            </Grid.RowDefinitions>
+
+            <!-- =========================================================
+                 ROW 0: PAGE HEADER & ACTION CONTROLS
+                 ========================================================= -->
+            <Grid Grid.Row="0" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,4">
+                        <Border Background="{DynamicResource AccentSubtleBrush}" 
+                                BorderBrush="{DynamicResource AccentBrush}" 
+                                BorderThickness="1" 
+                                CornerRadius="4" 
+                                Padding="8,3" 
+                                Margin="0,0,10,0">
+                            <TextBlock Text="NATIVE CONNECTION DOCTOR" 
+                                       FontSize="10" 
+                                       FontWeight="Bold" 
+                                       Foreground="{DynamicResource AccentBrush}" />
+                        </Border>
+                        <TextBlock Text="10-Step Automated Pipeline" 
+                                   FontSize="13" 
+                                   Foreground="{DynamicResource TextMutedBrush}" 
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Fix My Bluetooth Connection" 
+                               FontSize="24" 
+                               FontWeight="SemiBold" 
+                               Foreground="{DynamicResource TextPrimaryBrush}" 
+                               Margin="0,0,0,4" />
+
+                    <TextBlock Text="Diagnose connection hangs, handle native PIN / numeric authentication, resolve audio profile contention, and apply verified safe repairs." 
+                               FontSize="13" 
+                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                </StackPanel>
+
+                <!-- Header Actions -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{DynamicResource GhostButtonStyle}"
+                            Command="{Binding ResetWizardCommand}"
+                            Visibility="{Binding CanReset, Converter={StaticResource BoolToVisConverter}}"
+                            Margin="0,0,10,0"
+                            Padding="12,8">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="↺" Margin="0,0,6,0" FontWeight="Bold" />
+                            <TextBlock Text="Reset Wizard" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Style="{DynamicResource DangerButtonStyle}"
+                            Command="{Binding CancelWizardCommand}"
+                            Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisConverter}}"
+                            Margin="0,0,10,0"
+                            Padding="14,8">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✕" Margin="0,0,6,0" FontWeight="Bold" />
+                            <TextBlock Text="Cancel" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Style="{DynamicResource PrimaryButtonStyle}"
+                            Command="{Binding StartWizardCommand}"
+                            Visibility="{Binding CanStart, Converter={StaticResource BoolToVisConverter}}"
+                            Padding="18,9">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⚡" Margin="0,0,8,0" FontSize="14" />
+                            <TextBlock Text="Start Connection Doctor" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Style="{DynamicResource PrimaryButtonStyle}"
+                            Command="{Binding RetryCommand}"
+                            Visibility="{Binding IsCompleted, Converter={StaticResource BoolToVisConverter}}"
+                            Padding="18,9">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🔄" Margin="0,0,8,0" FontSize="14" />
+                            <TextBlock Text="Run Pipeline Again" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- =========================================================
+                 ROW 1: TARGET PERIPHERAL HERO BANNER & FLYOUT SELECTOR
+                 ========================================================= -->
+            <StackPanel Grid.Row="1" Margin="0,0,0,24">
+                <!-- Target Peripheral Hero Card -->
+                <Border Background="{DynamicResource CardBgBrush}" 
+                        BorderBrush="{DynamicResource BorderBrush}" 
+                        BorderThickness="1" 
+                        CornerRadius="8" 
+                        Padding="18,14">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Device Icon Avatar -->
+                        <Border Width="48" Height="48" 
+                                Background="{DynamicResource SurfaceElevatedBrush}" 
+                                BorderBrush="{DynamicResource BorderSubtleBrush}" 
+                                BorderThickness="1" 
+                                CornerRadius="8" 
+                                Margin="0,0,16,0"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="{Binding TargetCategoryIcon}" 
+                                       FontSize="24" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" />
+                        </Border>
+
+                        <!-- Target Metadata -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,3">
+                                <TextBlock Text="{Binding TargetDisplayName}" 
+                                           FontSize="16" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="{DynamicResource TextPrimaryBrush}" 
+                                           Margin="0,0,10,0"/>
+
+                                <Border Background="{DynamicResource SurfaceSunkenBrush}" 
+                                        BorderBrush="{DynamicResource BorderSubtleBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="4" 
+                                        Padding="6,1" 
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding TargetCategoryName}" 
+                                               FontSize="11" 
+                                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                                </Border>
+
+                                <Border Margin="8,0,0,0"
+                                        CornerRadius="4" 
+                                        Padding="6,1" 
+                                        VerticalAlignment="Center">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource SurfaceSunkenBrush}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding TargetDevice.IsConnected}" Value="True">
+                                                    <Setter Property="Background" Value="{DynamicResource SuccessSubtleBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock FontSize="11" FontWeight="SemiBold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Disconnected" />
+                                                <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding TargetDevice.IsConnected}" Value="True">
+                                                        <Setter Property="Text" Value="Connected" />
+                                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="MAC Address: " 
+                                           FontSize="12" 
+                                           Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Text="{Binding TargetAddress}" 
+                                           FontSize="12" 
+                                           FontFamily="Consolas" 
+                                           Foreground="{DynamicResource TextSecondaryBrush}" 
+                                           Margin="0,0,16,0" />
+
+                                <TextBlock Text="Bonding: " 
+                                           FontSize="12" 
+                                           Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Text="{Binding TargetDevice.IsPaired, Converter={StaticResource StatusTextConverter}}" 
+                                           FontSize="12" 
+                                           Foreground="{DynamicResource TextSecondaryBrush}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Change Target Button -->
+                        <Button Grid.Column="2" 
+                                Style="{DynamicResource SecondaryButtonStyle}"
+                                Command="{Binding ToggleDeviceSelectionCommand}"
+                                VerticalAlignment="Center"
+                                Padding="12,6">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Select Another Device" Margin="0,0,6,0" />
+                                <TextBlock Text="▾" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Expandable Device Selection Drawer -->
+                <Border Background="{DynamicResource SurfaceSunkenBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1,0,1,1"
+                        CornerRadius="0,0,8,8"
+                        Padding="16,14"
+                        Visibility="{Binding IsDeviceSelectionOpen, Converter={StaticResource BoolToVisConverter}}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,10">
+                            <TextBlock Text="SELECT TARGET PERIPHERAL" 
+                                       FontSize="11" 
+                                       FontWeight="Bold" 
+                                       Foreground="{DynamicResource TextMutedBrush}" />
+
+                            <Button HorizontalAlignment="Right"
+                                    Style="{DynamicResource GhostButtonStyle}"
+                                    Command="{Binding RefreshCandidatesCommand}"
+                                    Padding="8,2">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="🔄" Margin="0,0,4,0" FontSize="11" />
+                                    <TextBlock Text="Refresh Paired Devices" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <!-- Candidate Devices Grid -->
+                        <ItemsControl ItemsSource="{Binding CandidateDevices}" Margin="0,0,0,12">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Command="{Binding DataContext.SelectDeviceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Margin="0,0,10,10"
+                                            Padding="12,8"
+                                            Background="{DynamicResource CardBgBrush}"
+                                            BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1"
+                                            HorizontalContentAlignment="Left">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="6"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding CategoryIcon}" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                                            <TextBlock Text="{Binding BluetoothAddress}" FontFamily="Consolas" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Or Specify Manual Address -->
+                        <Border BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,1,0,0" Padding="0,10,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="220" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Or Enter MAC Address:" 
+                                           FontSize="12" 
+                                           Foreground="{DynamicResource TextSecondaryBrush}" 
+                                           VerticalAlignment="Center" 
+                                           Margin="0,0,10,0"/>
+
+                                <TextBox Grid.Column="1" 
+                                         Text="{Binding ManualAddressInput, UpdateSourceTrigger=PropertyChanged}"
+                                         Background="{DynamicResource CardBgBrush}"
+                                         Foreground="{DynamicResource TextPrimaryBrush}"
+                                         BorderBrush="{DynamicResource BorderBrush}"
+                                         FontFamily="Consolas"
+                                         Padding="8,5"
+                                         VerticalAlignment="Center" />
+
+                                <Button Grid.Column="2" 
+                                        Style="{DynamicResource SecondaryButtonStyle}"
+                                        Command="{Binding AddManualDeviceCommand}"
+                                        Margin="8,0,0,0"
+                                        Padding="12,6"
+                                        Content="Set Target" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- =========================================================
+                 ROW 2: STEPPER (LEFT) & ACTIVE INTERACTIVE STAGE (RIGHT)
+                 ========================================================= -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="340" />
+                    <ColumnDefinition Width="24" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- LEFT COLUMN: 10 GUIDED STEPS LIST -->
+                <Border Grid.Column="0" 
+                        Background="{DynamicResource CardBgBrush}" 
+                        BorderBrush="{DynamicResource BorderBrush}" 
+                        BorderThickness="1" 
+                        CornerRadius="8" 
+                        Padding="16,14">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" 
+                                   Text="10-POINT DIAGNOSTIC PIPELINE" 
+                                   FontSize="11" 
+                                   FontWeight="Bold" 
+                                   Foreground="{DynamicResource TextMutedBrush}" 
+                                   Margin="0,0,0,12" />
+
+                        <ItemsControl ItemsSource="{Binding Steps}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,0,8" 
+                                            Padding="10,8" 
+                                            CornerRadius="6">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Setter Property="BorderThickness" Value="1" />
+                                                <Setter Property="BorderBrush" Value="Transparent" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}" />
+                                                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Step Number Circle Badge -->
+                                            <Border Width="24" Height="24" 
+                                                    CornerRadius="12" 
+                                                    Background="{Binding Status, Converter={StaticResource StatusBrushConverter}}"
+                                                    Margin="0,0,10,0"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding StepNumber}" 
+                                                           FontSize="11" 
+                                                           FontWeight="Bold" 
+                                                           Foreground="#FFFFFF" 
+                                                           HorizontalAlignment="Center" 
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+
+                                            <!-- Title & Message -->
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Title}" 
+                                                           FontSize="12" 
+                                                           FontWeight="SemiBold" 
+                                                           Foreground="{DynamicResource TextPrimaryBrush}" 
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding StatusMessage}" 
+                                                           FontSize="11" 
+                                                           Foreground="{DynamicResource TextMutedBrush}" 
+                                                           TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+
+                                            <!-- Status Text Pill -->
+                                            <Border Grid.Column="2" 
+                                                    Background="{DynamicResource SurfaceSunkenBrush}" 
+                                                    BorderBrush="{DynamicResource BorderSubtleBrush}" 
+                                                    BorderThickness="1" 
+                                                    CornerRadius="4" 
+                                                    Padding="6,2" 
+                                                    VerticalAlignment="Center"
+                                                    Margin="4,0,0,0">
+                                                <TextBlock Text="{Binding Status, Converter={StaticResource StatusTextConverter}}" 
+                                                           FontSize="9" 
+                                                           FontWeight="Bold" 
+                                                           Foreground="{Binding Status, Converter={StaticResource StatusBrushConverter}}" />
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DockPanel>
+                </Border>
+
+                <!-- RIGHT COLUMN: INTERACTIVE STAGE & DIAGNOSTIC CARD -->
+                <StackPanel Grid.Column="2">
+                    
+                    <!-- Top Status Banner -->
+                    <Border Background="{DynamicResource SurfaceElevatedBrush}" 
+                            BorderBrush="{DynamicResource BorderBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="8" 
+                            Padding="20,16" 
+                            Margin="0,0,0,16">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,6">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="ACTIVE STAGE — STEP " 
+                                               FontSize="11" 
+                                               FontWeight="Bold" 
+                                               Foreground="{DynamicResource AccentBrush}" />
+                                    <TextBlock Text="{Binding CurrentStepNumber}" 
+                                               FontSize="11" 
+                                               FontWeight="Bold" 
+                                               Foreground="{DynamicResource AccentBrush}" />
+                                    <TextBlock Text=" OF 10" 
+                                               FontSize="11" 
+                                               FontWeight="Bold" 
+                                               Foreground="{DynamicResource AccentBrush}" />
+                                </StackPanel>
+
+                                <TextBlock HorizontalAlignment="Right"
+                                           Text="{Binding CurrentStepStatus, Converter={StaticResource StatusTextConverter}}" 
+                                           FontSize="11" 
+                                           FontWeight="Bold" 
+                                           Foreground="{Binding CurrentStepStatus, Converter={StaticResource StatusBrushConverter}}" />
+                            </Grid>
+
+                            <TextBlock Text="{Binding CurrentStepTitle}" 
+                                       FontSize="18" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="{DynamicResource TextPrimaryBrush}" 
+                                       Margin="0,0,0,6" />
+
+                            <TextBlock Text="{Binding CurrentStepDescription}" 
+                                       FontSize="13" 
+                                       Foreground="{DynamicResource TextSecondaryBrush}" 
+                                       TextWrapping="Wrap" 
+                                       Margin="0,0,0,12" />
+
+                            <!-- Live Evidence & Progress Detail -->
+                            <Border Background="{DynamicResource SurfaceSunkenBrush}" 
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}" 
+                                    BorderThickness="1" 
+                                    CornerRadius="6" 
+                                    Padding="14,10">
+                                <StackPanel>
+                                    <TextBlock Text="HARDWARE TELEMETRY &amp; EXECUTION EVIDENCE:" 
+                                               FontSize="10" 
+                                               FontWeight="Bold" 
+                                               Foreground="{DynamicResource TextMutedBrush}" 
+                                               Margin="0,0,0,4"/>
+
+                                    <TextBlock Text="{Binding CurrentStepEvidence}" 
+                                               FontSize="12" 
+                                               FontFamily="Consolas" 
+                                               Foreground="{DynamicResource TextPrimaryBrush}" 
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- =========================================================
+                         INTERACTIVE AUTHENTICATION: PIN PROMPT
+                         ========================================================= -->
+                    <Border Background="{DynamicResource CardBgBrush}" 
+                            BorderBrush="{DynamicResource AccentBrush}" 
+                            BorderThickness="1.5" 
+                            CornerRadius="8" 
+                            Padding="20" 
+                            Margin="0,0,0,16"
+                            Visibility="{Binding IsPinPromptVisible, Converter={StaticResource BoolToVisConverter}}">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <TextBlock Text="🔑" FontSize="18" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <TextBlock Text="PIN Authentication Required" 
+                                           FontSize="16" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="{DynamicResource TextPrimaryBrush}" 
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <TextBlock Text="{Binding PinPromptMessage}" 
+                                       FontSize="13" 
+                                       Foreground="{DynamicResource TextSecondaryBrush}" 
+                                       TextWrapping="Wrap" 
+                                       Margin="0,0,0,14" />
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                                <TextBlock Text="PIN Code:" 
+                                           FontSize="13" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="{DynamicResource TextPrimaryBrush}" 
+                                           VerticalAlignment="Center" 
+                                           Margin="0,0,12,0" />
+
+                                <TextBox Text="{Binding EnteredPin, UpdateSourceTrigger=PropertyChanged}" 
+                                         Width="180" 
+                                         FontSize="16" 
+                                         FontFamily="Consolas" 
+                                         FontWeight="Bold" 
+                                         HorizontalContentAlignment="Center" 
+                                         Padding="8,6" 
+                                         Background="{DynamicResource SurfaceSunkenBrush}" 
+                                         Foreground="{DynamicResource TextPrimaryBrush}" 
+                                         BorderBrush="{DynamicResource BorderFocusBrush}" />
+
+                                <TextBlock Text="(Default for audio peripherals is usually 0000 or 1234)" 
+                                           FontSize="12" 
+                                           Foreground="{DynamicResource TextMutedBrush}" 
+                                           VerticalAlignment="Center" 
+                                           Margin="12,0,0,0" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Button Style="{DynamicResource PrimaryButtonStyle}" 
+                                        Command="{Binding SubmitPinCommand}" 
+                                        Content="Submit PIN &amp; Complete Pairing" 
+                                        Padding="16,8" 
+                                        Margin="0,0,10,0" />
+
+                                <Button Style="{DynamicResource GhostButtonStyle}" 
+                                        Command="{Binding CancelPinCommand}" 
+                                        Content="Cancel Pairing" 
+                                        Padding="14,8" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- =========================================================
+                         INTERACTIVE AUTHENTICATION: NUMERIC COMPARISON
+                         ========================================================= -->
+                    <Border Background="{DynamicResource CardBgBrush}" 
+                            BorderBrush="{DynamicResource AccentBrush}" 
+                            BorderThickness="1.5" 
+                            CornerRadius="8" 
+                            Padding="20" 
+                            Margin="0,0,0,16"
+                            Visibility="{Binding IsNumericPromptVisible, Converter={StaticResource BoolToVisConverter}}">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="Confirm Passkey Match" 
+                                       FontSize="16" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="{DynamicResource TextPrimaryBrush}" 
+                                       HorizontalAlignment="Center" 
+                                       Margin="0,0,0,6" />
+
+                            <TextBlock Text="{Binding NumericPromptMessage}" 
+                                       FontSize="13" 
+                                       Foreground="{DynamicResource TextSecondaryBrush}" 
+                                       HorizontalAlignment="Center" 
+                                       Margin="0,0,0,16" />
+
+                            <!-- Big 6-Digit Passkey Box -->
+                            <Border Background="{DynamicResource SurfaceSunkenBrush}" 
+                                    BorderBrush="{DynamicResource AccentBrush}" 
+                                    BorderThickness="2" 
+                                    CornerRadius="8" 
+                                    Padding="28,12" 
+                                    Margin="0,0,0,18" 
+                                    HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding NumericPasskey}" 
+                                           FontSize="32" 
+                                           FontWeight="Bold" 
+                                           FontFamily="Consolas" 
+                                           Foreground="{DynamicResource AccentBrush}" />
+                            </Border>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Style="{DynamicResource PrimaryButtonStyle}" 
+                                        Command="{Binding ConfirmPasskeyCommand}" 
+                                        Content="✓ Yes, Code Matches" 
+                                        Padding="20,10" 
+                                        Margin="0,0,12,0" />
+
+                                <Button Style="{DynamicResource DangerButtonStyle}" 
+                                        Command="{Binding RejectPasskeyCommand}" 
+                                        Content="✕ No, Reject" 
+                                        Padding="16,10" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- =========================================================
+                         AUDIO PROFILE CONTENTION NOTICE (HFP VS A2DP)
+                         ========================================================= -->
+                    <Border Background="{DynamicResource WarningSubtleBrush}" 
+                            BorderBrush="{DynamicResource WarningBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="8" 
+                            Padding="16,12" 
+                            Margin="0,0,0,16"
+                            Visibility="{Binding HasAudioContentionNotice, Converter={StaticResource BoolToVisConverter}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="⚠️" FontSize="20" Margin="0,0,12,0" VerticalAlignment="Top" />
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Bluetooth Telephony Microphone Contention Detected" 
+                                           FontSize="13" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="{DynamicResource WarningBrush}" 
+                                           Margin="0,0,0,3" />
+
+                                <TextBlock Text="{Binding AudioContentionNotice}" 
+                                           FontSize="12" 
+                                           Foreground="{DynamicResource TextPrimaryBrush}" 
+                                           TextWrapping="Wrap" 
+                                           Margin="0,0,0,6" />
+
+                                <TextBlock Text="Tip: Configure Discord, Teams, or Zoom voice settings to use your PC built-in mic so your headphones stay in high-fidelity stereo mode." 
+                                           FontSize="11" 
+                                           Foreground="{DynamicResource TextSecondaryBrush}" 
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- =========================================================
+                         FAILURE DIAGNOSIS & SAFE REPAIR CARD
+                         ========================================================= -->
+                    <Border Background="{DynamicResource CardBgBrush}" 
+                            BorderBrush="{DynamicResource DangerBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="8" 
+                            Padding="20" 
+                            Margin="0,0,0,16"
+                            Visibility="{Binding HasDiagnosis, Converter={StaticResource BoolToVisConverter}}">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="🚨" FontSize="18" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="Root Cause Identified" 
+                                               FontSize="15" 
+                                               FontWeight="SemiBold" 
+                                               Foreground="{DynamicResource DangerBrush}" 
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- Confidence Badge -->
+                                <Border HorizontalAlignment="Right"
+                                        Background="{DynamicResource SurfaceElevatedBrush}" 
+                                        BorderBrush="{DynamicResource DangerBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="4" 
+                                        Padding="8,3">
+                                    <TextBlock Text="{Binding ConfidenceDisplay}" 
+                                               FontSize="10" 
+                                               FontWeight="Bold" 
+                                               Foreground="{DynamicResource DangerBrush}" />
+                                </Border>
+                            </Grid>
+
+                            <TextBlock Text="{Binding FailureDiagnosis.PrimaryRootCause}" 
+                                       FontSize="16" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="{DynamicResource TextPrimaryBrush}" 
+                                       Margin="0,0,0,6" />
+
+                            <TextBlock Text="{Binding FailureDiagnosis.DetailedEvidence}" 
+                                       FontSize="12" 
+                                       Foreground="{DynamicResource TextSecondaryBrush}" 
+                                       TextWrapping="Wrap" 
+                                       Margin="0,0,0,14" />
+
+                            <!-- Suggested Safe Repair Box -->
+                            <Border Background="{DynamicResource SurfaceSunkenBrush}" 
+                                    BorderBrush="{DynamicResource BorderBrush}" 
+                                    BorderThickness="1" 
+                                    CornerRadius="6" 
+                                    Padding="16,12" 
+                                    Visibility="{Binding HasSuggestedRepair, Converter={StaticResource BoolToVisConverter}}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="RECOMMENDED SAFE REPAIR:" 
+                                                   FontSize="10" 
+                                                   FontWeight="Bold" 
+                                                   Foreground="{DynamicResource AccentBrush}" 
+                                                   Margin="0,0,0,3" />
+
+                                        <TextBlock Text="{Binding SuggestedRepairTitle}" 
+                                                   FontSize="14" 
+                                                   FontWeight="SemiBold" 
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" 
+                                                   Margin="0,0,0,3" />
+
+                                        <TextBlock Text="{Binding SuggestedRepairExplanation}" 
+                                                   FontSize="12" 
+                                                   Foreground="{DynamicResource TextSecondaryBrush}" 
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+
+                                    <!-- 1-Click Safe Repair Button -->
+                                    <Button Grid.Column="1" 
+                                            Style="{DynamicResource PrimaryButtonStyle}"
+                                            Command="{Binding ExecuteSafeRepairCommand}"
+                                            VerticalAlignment="Center"
+                                            Margin="16,0,0,0"
+                                            Padding="16,10">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="🛠️" Margin="0,0,8,0" FontSize="13" />
+                                            <TextBlock Text="Apply Safe Repair" FontWeight="SemiBold" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                            </Border>
+
+                            <TextBlock Text="{Binding RepairExecutionMessage}" 
+                                       FontSize="12" 
+                                       Foreground="{DynamicResource AccentBrush}" 
+                                       Margin="0,10,0,0"
+                                       Visibility="{Binding RepairExecutionMessage, Converter={StaticResource NullToVisConverter}}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- =========================================================
+                         SUCCESS BANNER
+                         ========================================================= -->
+                    <Border Background="{DynamicResource SuccessSubtleBrush}" 
+                            BorderBrush="{DynamicResource SuccessBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="8" 
+                            Padding="20" 
+                            Visibility="{Binding IsSuccess, Converter={StaticResource BoolToVisConverter}}">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <TextBlock Text="🎉" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Peripheral Successfully Connected!" 
+                                           FontSize="16" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="{DynamicResource SuccessBrush}" 
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <TextBlock Text="{Binding SummaryBanner}" 
+                                       FontSize="13" 
+                                       Foreground="{DynamicResource TextPrimaryBrush}" 
+                                       TextWrapping="Wrap" 
+                                       Margin="0,0,0,12" />
+
+                            <Border Background="{DynamicResource SurfaceCanvasBrush}" 
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}" 
+                                    BorderThickness="1" 
+                                    CornerRadius="6" 
+                                    Padding="14,10">
+                                <StackPanel>
+                                    <TextBlock Text="VERIFIED CONNECTION DETAILS:" 
+                                               FontSize="10" 
+                                               FontWeight="Bold" 
+                                               Foreground="{DynamicResource TextMutedBrush}" 
+                                               Margin="0,0,0,4" />
+
+                                    <TextBlock Text="{Binding ProtocolName, StringFormat='Active Protocol: {0}'}" 
+                                               FontSize="12" 
+                                               FontWeight="SemiBold" 
+                                               Foreground="{DynamicResource TextPrimaryBrush}" 
+                                               Margin="0,0,0,2"/>
+
+                                    <TextBlock Text="{Binding CurrentStepEvidence}" 
+                                               FontSize="11" 
+                                               FontFamily="Consolas" 
+                                               Foreground="{DynamicResource TextSecondaryBrush}" 
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

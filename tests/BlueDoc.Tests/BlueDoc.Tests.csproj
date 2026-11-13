@@ -34,6 +34,9 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -88,6 +91,11 @@
     <Compile Include="Unit\Phase8TechnicianAndSaaSIntegrationTests.cs" />
     <Compile Include="Unit\Phase9AudioTraceAndTrayGuardTests.cs" />
     <Compile Include="Unit\Phase10SaasFleetAndApiGatewayTests.cs" />
+    <Compile Include="Unit\DeviceScannerAndPairingTests.cs" />
+    <Compile Include="Unit\FixConnectionDoctorAndPairingTests.cs" />
+    <Compile Include="Unit\AccessibilityVerificationTests.cs" />
+    <Compile Include="Performance\PerformanceBenchmarkHarness.cs" />
+    <Compile Include="Integration\BluetoothFunctionalMatrixTests.cs" />
     <Compile Include="Integration\RealHardwareInspectionTests.cs" />
     <Compile Include="Integration\RealDeviceDiscoveryTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

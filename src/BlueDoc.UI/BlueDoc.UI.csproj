@@ -96,7 +96,39 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Styles\Typography.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Spacing.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Animations.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Styles\Icons.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Buttons.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Controls.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Cards.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Navigation.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Loading.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -176,6 +208,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\FixMyConnectionWizardView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\BluetoothMainView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -188,7 +228,10 @@
     <Compile Include="Common\RelayCommand.cs" />
     <Compile Include="Common\Converters.cs" />
     <Compile Include="Common\ThemeManager.cs" />
+    <Compile Include="Common\NotificationService.cs" />
+    <Compile Include="Common\MotionManager.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\BluetoothMainViewModel.cs" />
     <Compile Include="ViewModels\DashboardViewModel.cs" />
     <Compile Include="ViewModels\HardwareInspectorViewModel.cs" />
     <Compile Include="ViewModels\DiagnosticCenterViewModel.cs" />
@@ -206,6 +249,7 @@
     <Compile Include="ViewModels\TechnicianToolkitViewModel.cs" />
     <Compile Include="ViewModels\AudioDiagnosticsViewModel.cs" />
     <Compile Include="ViewModels\SaasFleetDashboardViewModel.cs" />
+    <Compile Include="ViewModels\FixMyConnectionWizardViewModel.cs" />
     <Compile Include="Tray\TrayGuardManager.cs" />
     <Compile Include="Cli\CliRunner.cs" />
     <Compile Include="Views\DashboardView.xaml.cs">
@@ -261,6 +305,12 @@
     </Compile>
     <Compile Include="Views\SaasFleetDashboardView.xaml.cs">
       <DependentUpon>SaasFleetDashboardView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FixMyConnectionWizardView.xaml.cs">
+      <DependentUpon>FixMyConnectionWizardView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BluetoothMainView.xaml.cs">
+      <DependentUpon>BluetoothMainView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -63,6 +63,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Services\AdapterService.cs" />
+    <Compile Include="Services\BluetoothConnectionOrchestrator.cs" />
+    <Compile Include="Services\BluetoothStartupHealthService.cs" />
+    <Compile Include="Services\ConnectionFailureDiagnosticEngine.cs" />
+    <Compile Include="Services\FixMyConnectionWizardService.cs" />
     <Compile Include="Services\DiagnosticsService.cs" />
     <Compile Include="Services\DeviceDiscoveryService.cs" />
     <Compile Include="Services\DeviceManagementService.cs" />

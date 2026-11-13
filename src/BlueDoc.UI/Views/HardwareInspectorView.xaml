@@ -4,46 +4,105 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="900">
+             d:DesignHeight="850" d:DesignWidth="1100">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="28,24,28,32">
             <!-- Header -->
-            <Grid Margin="0,0,0,24">
+            <Grid Margin="0,0,0,22">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock Text="Advanced Hardware Inspector" Style="{StaticResource PageTitleText}" />
-                    <TextBlock Text="Low-level PnP hardware enumeration, vendor identification, and driver inspection via SetupAPI." Style="{StaticResource PageSubtitleText}" />
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Advanced Hardware Inspector" Style="{DynamicResource PageTitleText}" Margin="0,0,12,0" />
+                        <Border Background="{DynamicResource AccentSubtleBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" CornerRadius="12" Padding="10,3" VerticalAlignment="Center">
+                            <TextBlock Text="PnP &amp; SetupAPI Diagnostic Probe" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Low-level Plug and Play device enumeration, hardware bus IDs, chipset identification, and driver binding state." 
+                               Style="{DynamicResource PageSubtitleText}" Margin="0,4,0,0" />
                 </StackPanel>
-                <Button Grid.Column="1" Content="Re-scan Hardware" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButton}" VerticalAlignment="Top" />
+
+                <!-- Actions -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                    <Border Visibility="{Binding IsRefreshing, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                            Background="{DynamicResource AccentSubtleBrush}" 
+                            BorderBrush="{DynamicResource AccentBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="10" 
+                            Padding="8,3" 
+                            Margin="0,0,10,0" 
+                            VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconRefreshPath}" Width="10" Height="10" Fill="{DynamicResource AccentBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,5,0" RenderTransformOrigin="0.5,0.5">
+                                <Path.RenderTransform><RotateTransform Angle="0" /></Path.RenderTransform>
+                                <Path.Style>
+                                    <Style TargetType="Path">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRefreshing}" Value="True">
+                                                <DataTrigger.EnterActions><BeginStoryboard Storyboard="{StaticResource SpinnerRotateStoryboard}" /></DataTrigger.EnterActions>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Path.Style>
+                            </Path>
+                            <TextBlock Text="Scanning..." FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                    <Button Content="Re-scan Hardware" Command="{Binding RefreshCommand}" Style="{DynamicResource PrimaryButton}" Padding="16,6" />
+                </StackPanel>
             </Grid>
 
+            <!-- SKELETON LOADING STATE -->
+            <Control Template="{StaticResource HardwareInspectorSkeletonTemplate}" 
+                     Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                     Margin="0,0,0,20" />
+
             <!-- Main Inspector Content -->
-            <Grid>
+            <Grid Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverse'}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="320" />
+                    <!-- Left: Detected Adapters Tree -->
+                    <ColumnDefinition Width="340" MinWidth="280" />
                     <ColumnDefinition Width="20" />
-                    <ColumnDefinition Width="*" />
+                    <!-- Right: Deep Technical Inspector Sheet -->
+                    <ColumnDefinition Width="*" MinWidth="480" />
                 </Grid.ColumnDefinitions>
 
                 <!-- Left Column: Detected Adapters List -->
-                <Border Grid.Column="0" Style="{StaticResource CardPanel}">
+                <Border Grid.Column="0" Style="{DynamicResource CardPanel}" Padding="16">
                     <StackPanel>
-                        <TextBlock Text="DETECTED BLUETOOTH DEVICES" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,12" />
+                        <TextBlock Text="DETECTED BLUETOOTH NODES" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,12" />
                         
                         <ListBox ItemsSource="{Binding Adapters}" SelectedItem="{Binding SelectedAdapter}" Background="Transparent" BorderThickness="0">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0,0,0,8" />
+                                    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <ContentPresenter />
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#1C273C" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,8">
+                                    <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12,10">
                                         <StackPanel>
-                                            <TextBlock Text="{Binding FriendlyName}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{Binding Manufacturer}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,4" />
+                                            <TextBlock Text="{Binding FriendlyName}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Manufacturer}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,4" />
                                             <Grid>
-                                                <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding Status, Converter={StaticResource StatusToBrushConverter}}" />
-                                                <TextBlock Text="{Binding HardwareDetails.BusType}" FontSize="11" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" />
+                                                <Border Background="{Binding Status, Converter={StaticResource StatusToBrushConverter}}" CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
+                                                    <TextBlock Text="{Binding Status}" FontSize="10" FontWeight="Bold" Foreground="White" />
+                                                </Border>
+                                                <TextBlock Text="{Binding HardwareDetails.BusType}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                                             </Grid>
                                         </StackPanel>
                                     </Border>
@@ -51,141 +110,192 @@
                             </ListBox.ItemTemplate>
                         </ListBox>
 
-                        <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,8,0,0" TextWrapping="Wrap" />
                     </StackPanel>
                 </Border>
 
                 <!-- Right Column: Deep Hardware & Driver Property Sheet -->
-                <Border Grid.Column="2" Style="{StaticResource CardPanel}">
-                    <StackPanel>
-                        <TextBlock Text="HARDWARE SPECIFICATIONS" Style="{StaticResource CardHeaderTitle}" Margin="0,0,0,4" />
-                        <TextBlock Text="Verified hardware details retrieved from device node registry and Configuration Manager." Style="{StaticResource CardSubtitle}" Margin="0,0,0,16" />
+                <Border Grid.Column="2" Style="{DynamicResource CardPanel}" Padding="20">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <!-- Header Info -->
+                            <Grid Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedAdapter.FriendlyName, FallbackValue='No Adapter Selected'}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <TextBlock Text="{Binding SelectedAdapter.DeviceDescription, FallbackValue='PnP Device Node'}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                                </StackPanel>
+                                <Border Grid.Column="1" Background="{Binding SelectedAdapter.Status, Converter={StaticResource StatusToBrushConverter}}" CornerRadius="4" Padding="10,4" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding SelectedAdapter.StatusDisplay, FallbackValue='Unknown'}" FontSize="11" FontWeight="Bold" Foreground="White" />
+                                </Border>
+                            </Grid>
 
-                        <!-- Property Grid -->
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Device Name" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.FriendlyName, FallbackValue='None'}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                        </Grid>
+                            <!-- SECTION 1: CONFIRMED HARDWARE IDENTIFIERS -->
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,12">
+                                        <TextBlock Text="CONFIRMED HARDWARE IDENTIFIERS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+                                        <Border Background="{DynamicResource SuccessSubtleBrush}" BorderBrush="{DynamicResource SuccessBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2" HorizontalAlignment="Right">
+                                            <TextBlock Text="CONFIRMED" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" />
+                                        </Border>
+                                    </Grid>
 
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Manufacturer" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.Manufacturer, FallbackValue='Unknown'}" Foreground="{StaticResource TextPrimaryBrush}" />
-                        </Grid>
+                                    <!-- Hardware ID -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="170" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Hardware ID" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.HardwareId, FallbackValue='None'}" Style="{DynamicResource TextHardwareId}" Foreground="{DynamicResource AccentHoverBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                        <Button Grid.Column="2" Content="Copy" Command="{Binding CopyHardwareIdCommand}" Style="{DynamicResource GhostButton}" Padding="8,2" FontSize="11" VerticalAlignment="Center" />
+                                    </Grid>
 
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Hardware ID" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.HardwareId, FallbackValue='None'}" FontFamily="Consolas, Courier New" Foreground="#60A5FA" TextWrapping="Wrap" />
-                        </Grid>
+                                    <!-- Vendor ID -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="170" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Vendor ID (VID)" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.HardwareDetails.VendorId, StringFormat='0x{0}', FallbackValue='N/A'}" Style="{DynamicResource TextHardwareId}" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Grid>
 
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Vendor ID (VID)" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.HardwareDetails.VendorId, StringFormat='0x{0}', FallbackValue='N/A'}" FontFamily="Consolas, Courier New" Foreground="{StaticResource TextPrimaryBrush}" />
-                        </Grid>
+                                    <!-- Product ID -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="170" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Product ID (PID)" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.HardwareDetails.ProductId, StringFormat='0x{0}', FallbackValue='N/A'}" Style="{DynamicResource TextHardwareId}" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Grid>
 
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Product ID (PID)" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.HardwareDetails.ProductId, StringFormat='0x{0}', FallbackValue='N/A'}" FontFamily="Consolas, Courier New" Foreground="{StaticResource TextPrimaryBrush}" />
-                        </Grid>
+                                    <!-- Bus Type -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="170" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Physical Bus Interface" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.HardwareDetails.BusType, FallbackValue='USB'}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Grid>
 
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Identified Chipset" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.HardwareDetails.IdentifiedChipsetFamily, FallbackValue='Standard Bluetooth Controller'}" Foreground="{StaticResource TextPrimaryBrush}" />
-                        </Grid>
+                                    <!-- Instance ID -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="170" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Device Instance ID" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.DeviceInstanceId, FallbackValue='None'}" Style="{DynamicResource TextHardwareId}" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                        <Button Grid.Column="2" Content="Copy" Command="{Binding CopyInstanceIdCommand}" Style="{DynamicResource GhostButton}" Padding="8,2" FontSize="11" VerticalAlignment="Center" />
+                                    </Grid>
 
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Bus Type" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.HardwareDetails.BusType, FallbackValue='Unknown'}" Foreground="{StaticResource TextPrimaryBrush}" />
-                        </Grid>
+                                    <!-- Radio MAC Address -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="170" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Physical MAC Address" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.RadioAddress, FallbackValue='Unavailable / Radio Off'}" Style="{DynamicResource TextHardwareId}" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
 
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Device Instance ID" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.DeviceInstanceId, FallbackValue='None'}" FontFamily="Consolas, Courier New" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
-                        </Grid>
+                            <!-- SECTION 2: INFERRED CHIPSET & HARDWARE CAPABILITIES -->
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,12">
+                                        <TextBlock Text="INFERRED HARDWARE &amp; CAPABILITIES" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" VerticalAlignment="Center" />
+                                        <Border Background="{DynamicResource WarningSubtleBrush}" BorderBrush="{DynamicResource WarningBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2" HorizontalAlignment="Right">
+                                            <TextBlock Text="INFERRED" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" />
+                                        </Border>
+                                    </Grid>
 
-                        <Separator Background="{StaticResource BorderBrush}" Margin="0,14,0,14" />
+                                    <!-- Chipset Family -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="170" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Chipset Family" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.HardwareDetails.IdentifiedChipsetFamily, FallbackValue='Unknown Silicon Architecture'}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Grid>
 
-                        <TextBlock Text="DRIVER &amp; OPERATIONAL HEALTH" Style="{StaticResource CardHeaderTitle}" Margin="0,0,0,12" />
+                                    <!-- Verified Manufacturer -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="170" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Silicon Vendor" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.HardwareDetails.IdentifiedManufacturer, FallbackValue='Generic OEM'}" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Grid>
 
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Driver Provider" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.Driver.DriverProvider, FallbackValue='Not Installed'}" Foreground="{StaticResource TextPrimaryBrush}" />
-                        </Grid>
+                                    <!-- LMP Version -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="170" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="LMP Core Specification" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.LmpVersion, FallbackValue='Querying Controller...'}" Style="{DynamicResource TextHardwareId}" Foreground="{DynamicResource AccentHoverBrush}" />
+                                    </Grid>
 
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Driver Version" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.Driver.DriverVersion, FallbackValue='Unknown'}" Foreground="{StaticResource TextPrimaryBrush}" />
-                        </Grid>
+                                    <!-- Section 15 Non-Destructive Inferred Notice -->
+                                    <Border Background="{DynamicResource SurfaceCardBrush}" CornerRadius="6" Padding="10" Margin="0,6,0,0">
+                                        <TextBlock Text="Section 15 Policy: Inferred capabilities are derived from PnP hardware identifiers and driver LMP telemetry, not destructive bus probes." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" />
+                                    </Border>
+                                </StackPanel>
+                            </Border>
 
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Driver Date" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.Driver.DriverDateString, FallbackValue='N/A'}" Foreground="{StaticResource TextPrimaryBrush}" />
-                        </Grid>
+                            <!-- SECTION 3: DRIVER & CONFIGURATION MANAGER STATE -->
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                                <StackPanel>
+                                    <TextBlock Text="DRIVER &amp; CONFIGURATION MANAGER BINDINGS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,12" />
 
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Problem Code" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.ProblemCode, StringFormat='Code {0}'}" FontWeight="SemiBold" Foreground="{Binding SelectedAdapter.Status, Converter={StaticResource StatusToBrushConverter}}" />
-                        </Grid>
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="170" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Driver Provider" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.Driver.DriverProvider, FallbackValue='Not Installed'}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Grid>
 
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Status Explanation" Foreground="{StaticResource TextMutedBrush}" />
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.ProblemDescription, FallbackValue='Device is functioning normally.'}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
-                        </Grid>
-                    </StackPanel>
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="170" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Driver Version" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.Driver.DriverVersion, FallbackValue='N/A'}" Style="{DynamicResource TextHardwareId}" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="170" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Driver Date" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.Driver.DriverDateString, FallbackValue='N/A'}" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="170" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                        <TextBlock Text="PnP Problem Code" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.ProblemCode, StringFormat='Code {0}'}" FontWeight="SemiBold" Foreground="{Binding SelectedAdapter.Status, Converter={StaticResource StatusToBrushConverter}}" />
+                                    </Grid>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="170" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Status Explanation" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedAdapter.ProblemDescription, FallbackValue='Device is functioning normally.'}" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
                 </Border>
             </Grid>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
-

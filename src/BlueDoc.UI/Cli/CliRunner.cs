@@ -38,8 +38,25 @@ namespace BlueDoc.UI.Cli
         public static bool IsCliInvocation(string[] args)
         {
             if (args == null || args.Length == 0) return false;
-            var first = args[0].ToLowerInvariant();
-            return first.StartsWith("-") || first.StartsWith("/");
+
+            // Only treat as CLI invocation if running directly inside BlueDoc or BlueDoc.Tests process
+            try
+            {
+                var procName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
+                if (!procName.StartsWith("BlueDoc", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+            catch { }
+
+            var first = args[0].ToLowerInvariant().TrimStart('-', '/');
+            return first == "diagnose" || first == "d" ||
+                   first == "inspect" || first == "i" ||
+                   first == "benchmark" || first == "b" ||
+                   first == "kb" || first == "repair" ||
+                   first == "version" || first == "v" ||
+                   first == "help" || first == "h" || first == "?";
         }
 
         public static async Task<int> RunAsync(string[] args)

@@ -34,7 +34,15 @@ namespace BlueDoc.UI.ViewModels
 
         private readonly List<BluetoothDeviceInfo> _allMonitoredDevices = new List<BluetoothDeviceInfo>();
 
+        private BluetoothDeviceInfo _selectedDevice;
+
         public ObservableCollection<BluetoothDeviceInfo> FilteredDevices { get; } = new ObservableCollection<BluetoothDeviceInfo>();
+
+        public BluetoothDeviceInfo SelectedDevice
+        {
+            get => _selectedDevice;
+            set => SetProperty(ref _selectedDevice, value);
+        }
 
         public bool IsMonitoring
         {
@@ -230,6 +238,11 @@ namespace BlueDoc.UI.ViewModels
             foreach (var d in query)
             {
                 FilteredDevices.Add(d);
+            }
+
+            if (FilteredDevices.Count > 0 && SelectedDevice == null)
+            {
+                SelectedDevice = FilteredDevices[0];
             }
         }
 

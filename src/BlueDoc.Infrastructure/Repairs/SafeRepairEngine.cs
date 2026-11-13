@@ -18,6 +18,13 @@ namespace BlueDoc.Infrastructure.Repairs
         public string Consequences { get; set; }
         public bool RequiresAdmin { get; set; }
         public string TargetComponent { get; set; }
+
+        // Structured 5-point safety assessment
+        public string IssueDescription { get; set; }
+        public string ActionDescription => Description;
+        public string PermissionsRequired => RequiresAdmin ? "Administrator Privileges Required (Elevated UAC Token)" : "Standard User Rights (Non-Elevated)";
+        public string ConsequencesDescription => Consequences;
+        public string VerificationProcedure { get; set; }
     }
 
     public class SafeRepairEngine
@@ -74,7 +81,9 @@ namespace BlueDoc.Infrastructure.Repairs
                         Description = "Stops and cleanly restarts the core Windows Bluetooth Support Service (bthserv) to resolve connection hangs or unresponsive inquiry states.",
                         Consequences = "Active Bluetooth connections will be momentarily dropped and re-established automatically within a few seconds.",
                         RequiresAdmin = true,
-                        TargetComponent = "bthserv"
+                        TargetComponent = "bthserv",
+                        IssueDescription = "Bluetooth Support Service (bthserv) has hung, failed to respond to RPC requests, or entered an invalid state blocking device connections.",
+                        VerificationProcedure = "Queries Windows Service Control Manager to confirm bthserv status transitioned to 'Running' (SERVICE_RUNNING)."
                     };
 
                 case "RestartAudioGateway":
@@ -85,7 +94,9 @@ namespace BlueDoc.Infrastructure.Repairs
                         Description = "Restarts Bluetooth audio routing services (BthHFSrv and BTAGService) to resolve distorted audio, microphone mute issues, and A2DP sync drops.",
                         Consequences = "Bluetooth audio streaming and voice calls will pause momentarily.",
                         RequiresAdmin = true,
-                        TargetComponent = "BthHFSrv / BTAGService"
+                        TargetComponent = "BthHFSrv / BTAGService",
+                        IssueDescription = "Audio gateway profile services (BTAGService / BthHFSrv) have desynchronized, causing mute mic, robotic sound, or silent output.",
+                        VerificationProcedure = "Verifies both audio gateway services return to operational state and re-bind active CoreAudio endpoints."
                     };
 
                 case "CycleBluetoothRadio":
@@ -96,7 +107,9 @@ namespace BlueDoc.Infrastructure.Repairs
                         Description = "Instructs the Bluetooth driver to cycle radio transceiver power off and on to clear hardware FIFO stalls and controller firmware desynchronization.",
                         Consequences = "All Bluetooth devices will disconnect for 3 to 5 seconds during radio cycling.",
                         RequiresAdmin = true,
-                        TargetComponent = "Bluetooth Controller Radio"
+                        TargetComponent = "Bluetooth Controller Radio",
+                        IssueDescription = "Controller radio transceiver hardware has experienced an internal FIFO buffer overflow or firmware desynchronization.",
+                        VerificationProcedure = "Toggles radio power via radio manager and verifies radio status successfully returns to 'On'."
                     };
 
                 case "LaunchTroubleshooter":
@@ -107,7 +120,9 @@ namespace BlueDoc.Infrastructure.Repairs
                         Description = "Invokes the native Windows Automated Diagnostic Troubleshooter for Bluetooth (msdt.exe or modern Settings Troubleshooter).",
                         Consequences = "Windows diagnostic engine will inspect system parameters and may propose automated registry corrections.",
                         RequiresAdmin = false,
-                        TargetComponent = "Windows Troubleshooter"
+                        TargetComponent = "Windows Troubleshooter",
+                        IssueDescription = "Operating system-level service registry keys, GPO policies, or firewall rules are blocking Bluetooth subsystem.",
+                        VerificationProcedure = "Launches Windows troubleshooter executable and confirms diagnostic process initialization."
                     };
 
                 case "OpenDeviceManager":
@@ -118,7 +133,9 @@ namespace BlueDoc.Infrastructure.Repairs
                         Description = "Launches the Windows Device Manager (devmgmt.msc) directly to inspect Bluetooth adapter hardware nodes, driver properties, and PnP problem codes.",
                         Consequences = "Opens Device Manager window. No system configuration or driver state is modified.",
                         RequiresAdmin = false,
-                        TargetComponent = "devmgmt.msc"
+                        TargetComponent = "devmgmt.msc",
+                        IssueDescription = "Device node reports a Configuration Manager Problem Code (e.g. Code 10, Code 43) or yellow warning triangle.",
+                        VerificationProcedure = "Launches Microsoft Management Console for Device Manager directly into active desktop session."
                     };
 
                 case "OpenBluetoothSettings":
@@ -129,7 +146,9 @@ namespace BlueDoc.Infrastructure.Repairs
                         Description = "Navigates directly to the Windows Bluetooth & Devices settings page (or classic bthprops.cpl on Windows 7).",
                         Consequences = "Opens settings window. Does not modify system files.",
                         RequiresAdmin = false,
-                        TargetComponent = "Windows Settings"
+                        TargetComponent = "Windows Settings",
+                        IssueDescription = "Windows global Bluetooth toggle is switched off or needs manual user pairing confirmation.",
+                        VerificationProcedure = "Directly executes URI ms-settings:bluetooth or bthprops.cpl to bring native settings to foreground."
                     };
 
                 case "GuideDriverRollback":
@@ -140,7 +159,9 @@ namespace BlueDoc.Infrastructure.Repairs
                         Description = "Provides step-by-step guidance for safely rolling back a problematic or corrupted Bluetooth driver to the previous working manufacturer driver version.",
                         Consequences = "Opens Device Manager properties. Rolling back a driver replaces the active driver binary with the previously installed version.",
                         RequiresAdmin = false,
-                        TargetComponent = "Adapter Driver Rollback"
+                        TargetComponent = "Adapter Driver Rollback",
+                        IssueDescription = "Recent Windows Update or OEM driver package caused adapter instability, dropouts, or device discovery failure.",
+                        VerificationProcedure = "Presents step-by-step rollback workflow and inspects active driver version post-rollback."
                     };
 
                 case "ClearDeviceCache":
@@ -151,7 +172,9 @@ namespace BlueDoc.Infrastructure.Repairs
                         Description = "Clears stale and phantom discovered Bluetooth device records from BlueDoc's local SQLite database to force a clean discovery cycle.",
                         Consequences = "Temporary discovery history is cleared. Paired Windows devices remain paired and undisturbed.",
                         RequiresAdmin = false,
-                        TargetComponent = "Local SQLite Cache"
+                        TargetComponent = "Local SQLite Cache",
+                        IssueDescription = "Ghost or phantom Bluetooth devices appear in discovery lists due to accumulated offline device cache.",
+                        VerificationProcedure = "Queries SQLite device repository to verify unbonded cached records count is zero."
                     };
 
                 default:

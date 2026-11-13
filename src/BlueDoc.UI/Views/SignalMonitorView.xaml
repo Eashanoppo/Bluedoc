@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" 
-             d:DesignHeight="750" d:DesignWidth="950">
+             d:DesignHeight="850" d:DesignWidth="1100">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="28,24,28,32">
@@ -15,11 +15,11 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock Text="Signal and Discovery Monitor" Style="{StaticResource PageTitleText}" />
+                    <TextBlock Text="Signal &amp; Discovery Monitor" Style="{StaticResource PageTitleText}" />
                     <TextBlock Text="Continuous real-time discovery tracking beacon intervals, visibility, and hardware-reported RSSI." Style="{StaticResource PageSubtitleText}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
-                    <CheckBox Content="Continuous Loop" IsChecked="{Binding ContinuousMode}" VerticalAlignment="Center" Margin="0,0,16,0" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <CheckBox Content="Continuous Loop" IsChecked="{Binding ContinuousMode}" VerticalAlignment="Center" Margin="0,0,16,0" Foreground="{DynamicResource TextSecondaryBrush}" />
                     <Button Content="Start Monitor" Command="{Binding StartMonitorCommand}" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Visibility="{Binding IsMonitoring, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverse'}" />
                     <Button Content="Stop Monitor" Command="{Binding StopMonitorCommand}" Style="{StaticResource DangerButton}" Margin="0,0,10,0" Visibility="{Binding IsMonitoring, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     <Button Content="Export CSV" Command="{Binding ExportCsvCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" />
@@ -39,90 +39,166 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Style="{StaticResource CardPanel}">
+                <Border Grid.Column="0" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,14">
                     <StackPanel>
-                        <TextBlock Text="MONITOR TIME" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
-                        <TextBlock Text="{Binding ElapsedTimeDisplay}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" Margin="0,6,0,0" />
+                        <TextBlock Text="MONITOR TIME" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" />
+                        <TextBlock Text="{Binding ElapsedTimeDisplay}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" Margin="0,6,0,0" />
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2" Style="{StaticResource CardPanel}">
+                <Border Grid.Column="2" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,14">
                     <StackPanel>
-                        <TextBlock Text="DEVICES OBSERVED" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
-                        <TextBlock Text="{Binding TotalObserved}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,6,0,0" />
+                        <TextBlock Text="DEVICES OBSERVED" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" />
+                        <TextBlock Text="{Binding TotalObserved}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,6,0,0" />
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="4" Style="{StaticResource CardPanel}">
+                <Border Grid.Column="4" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,14">
                     <StackPanel>
-                        <TextBlock Text="WITH REPORTED RSSI" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
-                        <TextBlock Text="{Binding DevicesWithRssiCount}" FontSize="24" FontWeight="Bold" Foreground="#10B981" Margin="0,6,0,0" />
+                        <TextBlock Text="WITH REPORTED RSSI" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" />
+                        <TextBlock Text="{Binding DevicesWithRssiCount}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" Margin="0,6,0,0" />
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="6" Style="{StaticResource CardPanel}">
+                <Border Grid.Column="6" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,14">
                     <StackPanel>
-                        <TextBlock Text="AVERAGE RSSI" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
-                        <TextBlock Text="{Binding AverageRssiDisplay}" FontSize="24" FontWeight="Bold" Foreground="#38BDF8" Margin="0,6,0,0" />
+                        <TextBlock Text="AVERAGE RSSI" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" />
+                        <TextBlock Text="{Binding AverageRssiDisplay}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" Margin="0,6,0,0" />
                     </StackPanel>
                 </Border>
             </Grid>
 
             <!-- Status Banner -->
-            <Border Background="#1C273C" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,16">
+            <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,16">
                 <Grid>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="●" FontSize="14" Foreground="{Binding IsMonitoring, Converter={StaticResource StatusToBrushConverter}}" Margin="0,0,8,0" />
-                        <TextBlock Text="{Binding MonitorStatus}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Text="{Binding MonitorStatus}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
                     </StackPanel>
-                    <TextBlock Text="Section 15 Policy: Signal metrics reflect verifiable driver reports. BlueDoc never fabricates RSSI." FontSize="11" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    <TextBlock Text="Section 15 Policy: Signal metrics reflect verifiable driver reports. BlueDoc never fabricates RSSI." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                 </Grid>
             </Border>
 
             <!-- Filter Search Bar -->
-            <Border Style="{StaticResource CardPanel}" Margin="0,0,0,16" Padding="12,10">
+            <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Margin="0,0,0,16" Padding="14,10">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBox Text="{Binding SearchFilter, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterTextBox}" Height="34" VerticalContentAlignment="Center" Padding="10,0" />
-                    <TextBlock Grid.Column="1" Text="{Binding FilteredDevices.Count, StringFormat='Showing {0} records'}" FontSize="12" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="16,0,0,0" />
+                    <TextBlock Grid.Column="1" Text="{Binding FilteredDevices.Count, StringFormat='Showing {0} records'}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="16,0,0,0" />
                 </Grid>
             </Border>
 
-            <!-- Live Stream DataGrid -->
-            <Border Style="{StaticResource CardPanel}">
-                <StackPanel>
-                    <TextBlock Text="LIVE DISCOVERY &amp; TELEMETRY STREAM" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,12" />
+            <!-- Live Stream & Comparison Inspector -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
 
-                    <DataGrid ItemsSource="{Binding FilteredDevices}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" Background="Transparent" BorderThickness="0" RowBackground="#162238" AlternatingRowBackground="#1A2842" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{StaticResource BorderBrush}" HeadersVisibility="Column" MaxHeight="450" ScrollViewer.VerticalScrollBarVisibility="Auto">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Device Name" Binding="{Binding DisplayName}" Width="200" />
-                            <DataGridTextColumn Header="Address (MAC)" Binding="{Binding BluetoothAddress}" Width="150" />
-                            <DataGridTextColumn Header="Category" Binding="{Binding CategoryName}" Width="140" />
-                            
-                            <!-- Custom Signal Quality & RSSI Column -->
-                            <DataGridTemplateColumn Header="Signal Strength / Quality" Width="180">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6,2">
-                                            <TextBlock Text="{Binding SignalBars}" FontFamily="Consolas" FontSize="12" FontWeight="Bold" Foreground="{Binding SignalBadgeColor}" Margin="0,0,8,0" />
-                                            <TextBlock Text="{Binding SignalStrengthDisplay}" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,6,0" />
-                                            <Border Background="{Binding SignalBadgeColor}" CornerRadius="3" Padding="4,1" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding SignalQualityBadge}" FontSize="9" FontWeight="Bold" Foreground="#FFFFFF" />
-                                            </Border>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                <!-- Left Column: Live Stream DataGrid -->
+                <Border Grid.Column="0" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="18">
+                    <StackPanel>
+                        <TextBlock Text="LIVE DISCOVERY &amp; TELEMETRY STREAM" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,12" />
 
-                            <DataGridTextColumn Header="Status" Binding="{Binding StatusDisplay}" Width="100" />
-                            <DataGridTextColumn Header="Last Seen (Local)" Binding="{Binding LastSeen, StringFormat='HH:mm:ss'}" Width="*" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </StackPanel>
-            </Border>
+                        <!-- Empty state -->
+                        <Border Background="{DynamicResource SurfaceSunkenBrush}" CornerRadius="6" Padding="24" Margin="0,4,0,0"
+                                Visibility="{Binding FilteredDevices.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter='Inverse'}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="📡" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8" />
+                                <TextBlock Text="No broadcast beacons captured yet" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                                <TextBlock Text="Click 'Start Monitor' to begin listening for nearby Bluetooth Classic and BLE advertisements." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <DataGrid ItemsSource="{Binding FilteredDevices}" 
+                                  SelectedItem="{Binding SelectedDevice}"
+                                  AutoGenerateColumns="False" 
+                                  CanUserAddRows="False" 
+                                  IsReadOnly="True" 
+                                  Background="Transparent" 
+                                  BorderThickness="0" 
+                                  GridLinesVisibility="Horizontal" 
+                                  HorizontalGridLinesBrush="{DynamicResource BorderSubtleBrush}" 
+                                  HeadersVisibility="Column" 
+                                  MaxHeight="460" 
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Device Name" Binding="{Binding DisplayName}" Width="180" />
+                                <DataGridTextColumn Header="Address (MAC)" Binding="{Binding BluetoothAddress}" Width="140" />
+                                <DataGridTextColumn Header="Category" Binding="{Binding CategoryName}" Width="130" />
+                                
+                                <!-- Custom Signal Quality & RSSI Column -->
+                                <DataGridTemplateColumn Header="Signal Strength / Quality" Width="180">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6,2">
+                                                <TextBlock Text="{Binding SignalBars}" FontFamily="Consolas" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" Margin="0,0,8,0" />
+                                                <TextBlock Text="{Binding SignalStrengthDisplay}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,6,0" />
+                                                <Border Background="{DynamicResource AccentSubtleBrush}" CornerRadius="3" Padding="4,1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding SignalQualityBadge}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+                                                </Border>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTextColumn Header="Status" Binding="{Binding StatusDisplay}" Width="90" />
+                                <DataGridTextColumn Header="Last Seen" Binding="{Binding LastSeen, StringFormat='HH:mm:ss'}" Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Right Column: Device Comparison & Signal Inspector -->
+                <Border Grid.Column="2" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="18">
+                    <StackPanel>
+                        <TextBlock Text="SIGNAL TELEMETRY INSPECTOR" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16" />
+
+                        <!-- Placeholder when no device selected -->
+                        <Border Background="{DynamicResource SurfaceSunkenBrush}" CornerRadius="6" Padding="20"
+                                Visibility="{Binding SelectedDevice, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter='Inverse'}">
+                            <TextBlock Text="Select a device from the telemetry stream to inspect hardware signal dBm levels and beacon intervals." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextAlignment="Center" TextWrapping="Wrap" />
+                        </Border>
+
+                        <StackPanel Visibility="{Binding SelectedDevice, Converter={StaticResource NullToVisibilityConverter}}">
+                            <TextBlock Text="{Binding SelectedDevice.DisplayName, FallbackValue='Selected Peripheral'}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                            <TextBlock Text="{Binding SelectedDevice.BluetoothAddress}" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}" Margin="0,0,0,14" />
+
+                            <!-- Real RSSI dBm readout -->
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" CornerRadius="6" Padding="14" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="SIGNAL STRENGTH (HARDWARE RSSI)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4" />
+                                    <TextBlock Text="{Binding SelectedDevice.SignalStrengthDisplay}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+                                    <TextBlock Text="{Binding SelectedDevice.SignalQualityBadge, StringFormat='Quality Rating: {0}'}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="DEVICE CATEGORY &amp; RADIO" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,2" />
+                                    <TextBlock Text="{Binding SelectedDevice.CategoryName}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <TextBlock Text="{Binding SelectedDevice.DeviceTypeDisplay}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,14">
+                                <StackPanel>
+                                    <TextBlock Text="PAIRING &amp; CONNECTION STATE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,2" />
+                                    <TextBlock Text="{Binding SelectedDevice.StatusDisplay}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{DynamicResource SurfaceSunkenBrush}" CornerRadius="6" Padding="10">
+                                <TextBlock Text="Note: Classic Bluetooth controller inquiries do not return RSSI on all chipsets. Bluetooth Low Energy (BLE) advertisements provide continuous calibrated dBm values." FontSize="10" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" />
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

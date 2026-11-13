@@ -30,6 +30,15 @@ namespace BlueDoc.UI.ViewModels
         private bool _isGatewayActive;
         private bool _isSyncing;
         private bool _isLocalEnterpriseServer = false;
+        private int _pendingTelemetryCount = 0;
+
+        public int PendingTelemetryCount
+        {
+            get => _pendingTelemetryCount;
+            set => SetProperty(ref _pendingTelemetryCount, value);
+        }
+
+        public string LocalMachineHostname => Environment.MachineName;
 
         public string CloudEndpointUrl
         {

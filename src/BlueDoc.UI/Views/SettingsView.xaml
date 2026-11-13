@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="900">
+             d:DesignHeight="1200" d:DesignWidth="1100">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="28,24,28,32">
@@ -15,44 +15,240 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock Text="Settings &amp; Configuration" Style="{StaticResource PageTitleText}" />
-                    <TextBlock Text="Manage application preferences, diagnostic scan timings, SQLite local storage, and privacy controls." Style="{StaticResource PageSubtitleText}" />
+                    <TextBlock Text="Settings &amp; Preferences" Style="{StaticResource PageTitleText}" />
+                    <TextBlock Text="Configure appearance, scanning parameters, hardware behavior, performance, and privacy controls." Style="{StaticResource PageSubtitleText}" />
                 </StackPanel>
                 <Button Grid.Column="1" Content="Save Preferences" Command="{Binding SaveSettingsCommand}" Style="{StaticResource PrimaryButton}" VerticalAlignment="Top" />
             </Grid>
 
-            <!-- Preferences Panel -->
-            <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+            <!-- 1. APPEARANCE -->
+            <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,20">
                 <StackPanel>
-                    <TextBlock Text="APPLICATION PREFERENCES" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16" />
+                    <TextBlock Text="1. APPEARANCE &amp; VISUAL SYSTEM" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16" />
 
-                    <!-- Scan Timeout -->
+                    <!-- Theme Selector -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="200" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Color Theme" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Select between Dark Mode (default deep navy) and Light Mode." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" SelectedValue="{Binding Theme}" SelectedValuePath="Content" Height="36" VerticalContentAlignment="Center">
+                            <ComboBoxItem Content="Dark (Default)" />
+                            <ComboBoxItem Content="Light" />
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Motion / Animations -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Enable Smooth Animations &amp; Transitions" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Controls sidebar transitions, shimmer effects, and UI card reveals. Automatically disabled in safe mode." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding EnableAnimations}" VerticalAlignment="Center" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 2. GENERAL -->
+            <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="2. GENERAL APPLICATION PREFERENCES" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16" />
+
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Launch BlueDoc on Windows Startup" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Starts the BlueDoc background transceiver monitor when Windows boots." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding StartWithWindows}" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Minimize to System Notification Tray" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Closing the main window keeps BlueDoc active in the taskbar notification tray." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding MinimizeToTray}" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Show Connection &amp; Diagnostic Toast Notifications" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Displays Windows desktop toast alerts when peripherals connect or encounter communication drops." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding EnableNotificationToasts}" VerticalAlignment="Center" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 3. SCANNING -->
+            <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="3. DEVICE DISCOVERY &amp; SCANNING ENGINE" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16" />
+
                     <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="160" />
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="Discovery Scan Timeout (Seconds)" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                            <TextBlock Text="Default active inquiry scan duration before completing discovery." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                            <TextBlock Text="Default Inquiry Timeout (Seconds)" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Recommended: 10 to 15 seconds for optimal peripheral capture without bus saturation." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
                         </StackPanel>
                         <TextBox Grid.Column="1" Text="{Binding ScanTimeout, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterTextBox}" Height="34" VerticalContentAlignment="Center" Padding="8,0" />
                     </Grid>
 
-                    <!-- History Retention -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Enable Continuous Scanning Loop by Default" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Continuously queries the transceiver for newly powered-on devices until manually stopped." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding ContinuousScanningDefault}" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Automatic Device Deduplication" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Merges Classic inquiry records with BLE advertisement packets sharing the same MAC address." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding AutoDeduplicateDevices}" VerticalAlignment="Center" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 4. BLUETOOTH BEHAVIOR -->
+            <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="4. BLUETOOTH BEHAVIOR &amp; AUDIO PROFILES" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16" />
+
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Auto-Reconnect Paired Peripherals" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Attempts verified connection reconnection when a paired audio device or mouse advertises availability." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding AutoReconnectTrustedDevices}" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="220" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Audio Profile Prioritization" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Enforces priority to avoid Hands-Free (HFP) 8kHz voice degradation during media playback." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" SelectedValue="{Binding AudioProfilePrioritization}" SelectedValuePath="Content" Height="36" VerticalContentAlignment="Center">
+                            <ComboBoxItem Content="Balanced Automatic" />
+                            <ComboBoxItem Content="Prefer A2DP Stereo Music" />
+                            <ComboBoxItem Content="Prefer HFP Hands-Free Voice" />
+                        </ComboBox>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 5. DIAGNOSTICS -->
+            <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="5. DIAGNOSTIC SUITE &amp; AUDIT SETTINGS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16" />
+
                     <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="160" />
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="Diagnostic History Retention (Days)" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                            <TextBlock Text="Number of days to preserve diagnostic sessions and connection audit records in SQLite." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                            <TextBlock Text="Diagnostic History Retention (Days)" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Number of days to preserve test session results and event traces in local SQLite." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
                         </StackPanel>
                         <TextBox Grid.Column="1" Text="{Binding HistoryRetentionDays, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterTextBox}" Height="34" VerticalContentAlignment="Center" Padding="8,0" />
                     </Grid>
 
-                    <!-- Privacy Controls -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Automated Diagnostic Rule Validation" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Executes all 12 non-destructive hardware tests concurrently when opening the Diagnostic Center." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding AutomatedDiagnosticValidation}" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="200" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Windows Event Telemetry Filtering Level" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Granularity of BTHUSB, bthserv, and driver timeout records retrieved from System Event Log." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" SelectedValue="{Binding EtwLoggingLevel}" SelectedValuePath="Content" Height="36" VerticalContentAlignment="Center">
+                            <ComboBoxItem Content="Informational" />
+                            <ComboBoxItem Content="Errors &amp; Warnings Only" />
+                            <ComboBoxItem Content="Critical Outages Only" />
+                        </ComboBox>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 6. PERFORMANCE -->
+            <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="6. PERFORMANCE &amp; BACKGROUND PROFILES" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Low-Resource Diagnostic Mode" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Throttles background poll timers and optimizes memory allocation for dual-core legacy processors." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding LowResourceMode}" VerticalAlignment="Center" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 7. PRIVACY -->
+            <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="7. PRIVACY &amp; LOCAL SQLITE STORAGE" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16" />
+
                     <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -60,19 +256,42 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel>
                             <TextBlock Text="Anonymize Bluetooth MAC Addresses in Exported Reports" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
-                            <TextBlock Text="Mask device physical addresses (e.g. 28:52:XX:XX:XX:84) in generated shareable reports for privacy." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                            <TextBlock Text="Replaces physical MAC addresses with masked strings (e.g. 28:52:XX:XX:XX:84) in PDF/HTML exports." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
                         </StackPanel>
                         <CheckBox Grid.Column="1" IsChecked="{Binding AnonymizeMacs}" VerticalAlignment="Center" />
                     </Grid>
+
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Database Path:" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Column="1" Text="{Binding DatabasePath}" FontSize="12" FontFamily="Consolas" Foreground="{DynamicResource AccentBrush}" TextWrapping="Wrap" />
+                    </Grid>
+
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Database File Size:" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Column="1" Text="{Binding DatabaseSize}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Grid>
+
+                    <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Padding="14" Margin="0,0,0,16">
+                        <TextBlock Text="Zero-Cloud Privacy Policy: BlueDoc operates 100% locally on your computer. Your device names, paired encryption keys, and diagnostic traces are stored in your personal SQLite database and never uploaded without explicit consent." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                    </Border>
+
+                    <Button Content="Clear All Local SQLite Records" Command="{Binding ClearDatabaseCommand}" Style="{StaticResource DangerButton}" Height="36" HorizontalAlignment="Left" Padding="16,0" />
                 </StackPanel>
             </Border>
 
-            <!-- Legacy Hardware, CPU & GPU Compatibility Panel -->
-            <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+            <!-- 8. LEGACY HARDWARE COMPATIBILITY -->
+            <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,20">
                 <StackPanel>
-                    <TextBlock Text="LEGACY HARDWARE &amp; CPU COMPATIBILITY (GEN 1 CORE i3 / i5)" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16" />
+                    <TextBlock Text="8. LEGACY HARDWARE COMPATIBILITY (GEN 1 CORE i3 / i5 &amp; WDDM 1.1)" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16" />
 
-                    <!-- Software Rendering Mode -->
                     <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -85,61 +304,46 @@
                         <CheckBox Grid.Column="1" IsChecked="{Binding SoftwareRenderingMode}" VerticalAlignment="Center" />
                     </Grid>
 
-                    <!-- Low Resource Diagnostic Mode -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Windows 7 Native Stack Fallback (32feet / bthprops)" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Enables graceful fallback to Win32 bthprops.cpl entry points when modern Windows.Devices.Bluetooth APIs are absent." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding LegacyWin7StackFallback}" VerticalAlignment="Center" />
+                    </Grid>
+
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="Low-Resource Diagnostic Mode" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
-                            <TextBlock Text="Optimizes background diagnostic timers and eliminates GPU visual effects for dual-core legacy CPUs (Core i3-330M, i5-520M, Core 2 Duo)." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                            <TextBlock Text="Disable Heavy GPU DropShadows" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="Replaces complex pixel shader drop shadows with lightweight border outlines for Tier-0 software rendering performance." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
                         </StackPanel>
-                        <CheckBox Grid.Column="1" IsChecked="{Binding LowResourceMode}" VerticalAlignment="Center" />
+                        <CheckBox Grid.Column="1" IsChecked="{Binding DisableGpuDropShadows}" VerticalAlignment="Center" />
                     </Grid>
                 </StackPanel>
             </Border>
 
-            <!-- Local SQLite Database Storage Panel -->
-            <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+            <!-- 9. ABOUT BLUEDOC -->
+            <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
                 <StackPanel>
-                    <TextBlock Text="LOCAL SQLITE DATABASE" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,14" />
+                    <TextBlock Text="9. ABOUT BLUEDOC" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,14" />
+                    <TextBlock Text="{Binding AppName}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <TextBlock Text="{Binding AppVersion}" FontSize="13" Foreground="{DynamicResource AccentBrush}" Margin="0,2,0,8" />
+                    
+                    <TextBlock Text="Company: UNLEFT LLC" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                    <TextBlock Text="Lead Engineer: Golam Morshed Eashan" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                    <TextBlock Text="Compatible Platforms: Windows 7 SP1, Windows 10, Windows 11 (x86 &amp; x64)" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,12" />
 
-                    <Grid Margin="0,0,0,12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Database Path:" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
-                        <TextBlock Grid.Column="1" Text="{Binding DatabasePath}" FontSize="12" FontFamily="Consolas" Foreground="{StaticResource AccentBrush}" TextWrapping="Wrap" />
-                    </Grid>
-
-                    <Grid Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Database File Size:" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
-                        <TextBlock Grid.Column="1" Text="{Binding DatabaseSize}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                    </Grid>
-
-                    <Border Background="#1C273C" CornerRadius="6" Padding="14" Margin="0,0,0,16">
-                        <TextBlock Text="BlueDoc operates completely locally and never transmits your Bluetooth device names, MAC addresses, or diagnostic logs to external servers." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                    <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Padding="14">
+                        <TextBlock Text="Section 15 Non-Destructive Warranty: BlueDoc is engineered strictly as a non-destructive diagnostic, repair, and peripheral connection manager. It never flashes unauthorized firmware, deletes critical system keys, or reports fabricated telemetry." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" />
                     </Border>
-
-                    <Button Content="Clear All Local SQLite Records" Command="{Binding ClearDatabaseCommand}" Style="{StaticResource DangerButton}" Height="36" HorizontalAlignment="Left" Padding="16,0" />
-                </StackPanel>
-            </Border>
-
-            <!-- Application About Info -->
-            <Border Style="{StaticResource CardPanel}">
-                <StackPanel>
-                    <TextBlock Text="ABOUT BLUEDOC" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,12" />
-                    <TextBlock Text="BlueDoc - A Bluetooth Doctor for Windows" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
-                    <TextBlock Text="Version: 1.0.0 (Production Release)" FontSize="13" Foreground="{StaticResource AccentBrush}" Margin="0,2,0,6" />
-                    <TextBlock Text="Company: UNLEFT LLC" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
-                    <TextBlock Text="Developer: Golam Morshed Eashan" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
-                    <TextBlock Text="Target Architecture: Windows 7 SP1, Windows 10, Windows 11 (x86 &amp; x64)" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                 </StackPanel>
             </Border>
         </StackPanel>

@@ -1,0 +1,170 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- =========================================================================
+         BlueDoc Design System - Typography Tokens & Styles
+         Typography Scale: Segoe UI Variable with resilient system fallbacks
+         Monospace: Cascadia Code / Consolas for hardware MAC/UUID/Hex telemetry
+         ========================================================================= -->
+
+    <!-- Font Families -->
+    <FontFamily x:Key="FontFamilyBase">Segoe UI Variable Text, Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif</FontFamily>
+    <FontFamily x:Key="FontFamilyDisplay">Segoe UI Variable Display, Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif</FontFamily>
+    <FontFamily x:Key="FontFamilyMono">Cascadia Code, Consolas, Courier New, monospace</FontFamily>
+
+    <!-- Font Size Tokens -->
+    <sys:Double x:Key="FontSizeMicro">10.0</sys:Double>
+    <sys:Double x:Key="FontSizeSmall">11.0</sys:Double>
+    <sys:Double x:Key="FontSizeSecondary">12.0</sys:Double>
+    <sys:Double x:Key="FontSizeBody">13.0</sys:Double>
+    <sys:Double x:Key="FontSizeSubheading">14.0</sys:Double>
+    <sys:Double x:Key="FontSizeHeading">16.0</sys:Double>
+    <sys:Double x:Key="FontSizeTitle">20.0</sys:Double>
+    <sys:Double x:Key="FontSizeDisplay">24.0</sys:Double>
+    <sys:Double x:Key="FontSizeHero">28.0</sys:Double>
+
+    <!-- Font Weights -->
+    <FontWeight x:Key="FontWeightRegular">Normal</FontWeight>
+    <FontWeight x:Key="FontWeightMedium">Medium</FontWeight>
+    <FontWeight x:Key="FontWeightSemiBold">SemiBold</FontWeight>
+    <FontWeight x:Key="FontWeightBold">Bold</FontWeight>
+
+    <!-- Base TextBlock Style (Implicitly applied or inherited) -->
+    <Style TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyBase}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+
+    <!-- ==========================================
+         PAGE & SECTION HEADINGS
+         ========================================== -->
+
+    <!-- Page Title (Compatible with existing views) -->
+    <Style x:Key="PageTitleText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyDisplay}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeTitle}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
+
+    <!-- Page Subtitle (Compatible with existing views) -->
+    <Style x:Key="PageSubtitleText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyBase}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="Margin" Value="0,0,0,16" />
+    </Style>
+
+    <!-- Hero / Display Text (for high-impact dashboard metric or overview) -->
+    <Style x:Key="TextDisplay" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyDisplay}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeDisplay}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+
+    <!-- Section Category Header (Uppercase, muted, crisp tracker) -->
+    <Style x:Key="TextSectionHeader" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyBase}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMicro}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+
+    <!-- ==========================================
+         CARD & MODULE TYPOGRAPHY
+         ========================================== -->
+
+    <!-- Card Header Title (Compatible with existing views) -->
+    <Style x:Key="CardHeaderTitle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyDisplay}" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="Margin" Value="0,0,0,2" />
+    </Style>
+
+    <!-- Card Subtitle (Compatible with existing views) -->
+    <Style x:Key="CardSubtitle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyBase}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSecondary}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+    </Style>
+
+    <!-- Metric Value (Large Diagnostic Number) -->
+    <Style x:Key="TextMetricValue" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyDisplay}" />
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+
+    <!-- Metric Label -->
+    <Style x:Key="TextMetricLabel" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyBase}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+
+    <!-- ==========================================
+         BODY, LABELS & METADATA
+         ========================================== -->
+
+    <!-- Primary Body -->
+    <Style x:Key="TextBody" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyBase}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+
+    <!-- Secondary Body -->
+    <Style x:Key="TextBodySecondary" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyBase}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSecondary}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+
+    <!-- Muted Helper Text / Microcopy -->
+    <Style x:Key="TextMuted" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyBase}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+    </Style>
+
+    <!-- Caption / Timestamp -->
+    <Style x:Key="TextCaption" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyBase}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMicro}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+    </Style>
+
+    <!-- Hardware Identifier / Bluetooth Address / UUID (Monospace) -->
+    <Style x:Key="TextHardwareId" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyMono}" />
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+
+    <Style x:Key="TextMonospace" TargetType="TextBlock" BasedOn="{StaticResource TextHardwareId}" />
+
+    <!-- Status Badge Text -->
+    <Style x:Key="TextStatusBadge" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyBase}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- ==========================================
+         BACKWARD COMPATIBILITY ALIASES
+         ========================================== -->
+    <Style x:Key="HeaderTextStyle" TargetType="TextBlock" BasedOn="{StaticResource PageTitleText}" />
+    <Style x:Key="SubHeaderTextStyle" TargetType="TextBlock" BasedOn="{StaticResource PageSubtitleText}" />
+
+</ResourceDictionary>
+

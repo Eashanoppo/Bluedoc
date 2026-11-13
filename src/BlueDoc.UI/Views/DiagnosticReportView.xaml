@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="900">
+             d:DesignHeight="850" d:DesignWidth="1050">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="28,24,28,32">
@@ -22,19 +22,19 @@
             </Grid>
 
             <!-- Export Toolbar -->
-            <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+            <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,20">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="160" />
-                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="14" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="10" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Export Format:" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                    <TextBlock Text="Export Format:" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
                     
                     <ComboBox Grid.Column="1" SelectedValue="{Binding SelectedFormat}" SelectedValuePath="Content" Height="36" VerticalContentAlignment="Center">
                         <ComboBoxItem Content="PDF" IsSelected="True" />
@@ -46,21 +46,76 @@
                     <Button Grid.Column="3" Content="Save Report As..." Command="{Binding SaveReportCommand}" Style="{StaticResource PrimaryButton}" Height="36" Padding="16,0" />
                     <Button Grid.Column="5" Content="Copy Text" Command="{Binding CopyReportCommand}" Style="{StaticResource SecondaryButton}" Height="36" Padding="14,0" />
 
-                    <TextBlock Grid.Column="6" Text="{Binding StatusMessage}" FontSize="12" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="6" Text="{Binding StatusMessage}" FontSize="12" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" />
                 </Grid>
             </Border>
 
-            <!-- Report Live Preview -->
-            <Border Style="{StaticResource CardPanel}">
-                <StackPanel>
-                    <Grid Margin="0,0,0,12">
-                        <TextBlock Text="DIAGNOSTIC REPORT LIVE PREVIEW" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding CurrentReport.GeneratedAtUtc, StringFormat='Generated: {0:yyyy-MM-dd HH:mm:ss UTC}'}" FontSize="11" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" />
-                    </Grid>
+            <!-- SKELETON LOADING STATE WHILE GENERATING REPORT -->
+            <Control Template="{StaticResource ReportSkeletonTemplate}" 
+                     Visibility="{Binding IsGenerating, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                     Margin="0,0,0,20" />
 
-                    <TextBox Text="{Binding ReportPreviewText, Mode=OneWay}" Background="#0F172A" Foreground="#CBD5E1" FontFamily="Consolas" FontSize="11" Padding="16" IsReadOnly="True" TextWrapping="Wrap" Height="460" VerticalScrollBarVisibility="Auto" />
+            <!-- Report Live Preview & Summary -->
+            <Grid Visibility="{Binding IsGenerating, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverse'}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Column: Report Live Preview -->
+                <Border Grid.Column="0" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="18">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <TextBlock Text="DIAGNOSTIC REPORT LIVE PREVIEW" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding CurrentReport.GeneratedAtUtc, StringFormat='Generated: {0:yyyy-MM-dd HH:mm:ss UTC}'}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Right" />
+                        </Grid>
+
+                        <TextBox Text="{Binding ReportPreviewText, Mode=OneWay}" 
+                                 Background="{DynamicResource SurfaceSunkenBrush}" 
+                                 Foreground="{DynamicResource TextSecondaryBrush}" 
+                                 BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                 FontFamily="Consolas, Courier New" 
+                                 FontSize="11" 
+                                 Padding="16" 
+                                 IsReadOnly="True" 
+                                 TextWrapping="Wrap" 
+                                 Height="500" 
+                                 VerticalScrollBarVisibility="Auto" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Right Column: Report Metadata & Quick Inspector -->
+                <StackPanel Grid.Column="2">
+                    <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="18" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="REPORT METADATA" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,12" />
+
+                            <TextBlock Text="Report Identifier" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                            <TextBlock Text="{Binding CurrentReport.ReportId, FallbackValue='Pending compilation'}" FontSize="11" FontFamily="Consolas" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,10" />
+
+                            <TextBlock Text="Overall Health Verdict" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                            <TextBlock Text="{Binding CurrentReport.OverallHealthSummary, FallbackValue='Not Run'}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" Margin="0,2,0,10" />
+
+                            <TextBlock Text="Evaluated Diagnostic Tests" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                            <TextBlock Text="{Binding CurrentReport.Session.Results.Count, FallbackValue='0', StringFormat='{}{0} rules evaluated'}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,2,0,10" />
+
+                            <TextBlock Text="Active Operating System" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                            <TextBlock Text="{Binding CurrentReport.OsVersion.OperatingSystemName, FallbackValue='Detecting...'}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,2,0,10" />
+
+                            <TextBlock Text="Bluetooth Adapter" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                            <TextBlock Text="{Binding CurrentReport.Adapter.FriendlyName, FallbackValue='Detecting...'}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="ZERO-DEPENDENCY EXPORT" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,8" />
+                            <TextBlock Text="All BlueDoc reports are generated natively with pure vector PDF, HTML5, or JSON structures. No external printer drivers, word processors, or cloud renderers required." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
-            </Border>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

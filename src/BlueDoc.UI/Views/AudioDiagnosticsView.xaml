@@ -4,77 +4,226 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="800" d:DesignWidth="1000">
+             d:DesignHeight="850" d:DesignWidth="1100">
 
-    <Grid Background="{StaticResource DarkBgBrush}" Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <!-- Header -->
-        <Border Grid.Row="0" Margin="0,0,0,20">
-            <Grid>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="28,24,28,32">
+            <!-- Header -->
+            <Grid Margin="0,0,0,22">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="Audio Diagnostics, Driver Matrix &amp; Packet Tracer" Style="{StaticResource HeaderTextStyle}" />
-                    <TextBlock Text="Deep audio stream inspection, A2DP/HFP profile contention detection, driver regression analysis, and raw HCI packet tracing." 
-                               Style="{StaticResource SubHeaderTextStyle}" Margin="0,4,0,0" />
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Audio &amp; Packet Diagnostics" Style="{DynamicResource PageTitleText}" Margin="0,0,12,0" />
+                        <Border Background="{DynamicResource AccentSubtleBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" CornerRadius="12" Padding="10,3" VerticalAlignment="Center">
+                            <TextBlock Text="A2DP / HFP &amp; HCI ETW Stream" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Deep audio endpoint inspection, A2DP vs Hands-Free (HFP) profile contention, driver regression matrix, and raw HCI ETW packet tracing." 
+                               Style="{DynamicResource PageSubtitleText}" Margin="0,4,0,0" />
                 </StackPanel>
 
-                <!-- Status Badge -->
-                <Border Grid.Column="1" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="12,6" VerticalAlignment="Center">
-                    <TextBlock Text="🎧 AUDIO &amp; ETW ENGINE" Foreground="#A855F7" FontWeight="SemiBold" FontSize="12" />
-                </Border>
+                <!-- Actions -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                    <Button Content="Refresh Audio Analysis" Command="{Binding RefreshAudioCommand}" Style="{DynamicResource PrimaryButton}" Padding="16,6" />
+                </StackPanel>
             </Grid>
-        </Border>
 
-        <!-- Tabbed Interface -->
-        <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTabIndex}" Background="Transparent" BorderThickness="0">
-            <TabControl.Resources>
-                <Style TargetType="TabItem">
-                    <Setter Property="Background" Value="Transparent" />
-                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
-                    <Setter Property="FontSize" Value="14" />
-                    <Setter Property="FontWeight" Value="SemiBold" />
-                    <Setter Property="Padding" Value="16,10" />
-                    <Setter Property="BorderThickness" Value="0,0,0,2" />
-                    <Setter Property="BorderBrush" Value="Transparent" />
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="TabItem">
-                                <Border x:Name="TabBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" 
-                                        BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Margin="0,0,8,12">
-                                    <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <!-- Navigation Tabs -->
+            <TabControl SelectedIndex="{Binding SelectedTabIndex}" Background="Transparent" BorderThickness="0">
+                <TabControl.Resources>
+                    <Style TargetType="TabItem">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+                        <Setter Property="FontSize" Value="13" />
+                        <Setter Property="FontWeight" Value="SemiBold" />
+                        <Setter Property="Padding" Value="16,8" />
+                        <Setter Property="BorderThickness" Value="0,0,0,2" />
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TabItem">
+                                    <Border x:Name="TabBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" 
+                                            BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Margin="0,0,8,12" CornerRadius="4,4,0,0">
+                                        <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                            <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                            <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </TabControl.Resources>
+
+                <!-- =========================================================================
+                     TAB 1: Audio Stream & Profile Coexistence
+                     ========================================================================= -->
+                <TabItem Header="🎧 Audio Endpoints &amp; Profile Contention">
+                    <StackPanel Margin="0,12,0,0">
+                        <!-- Profile Contention & Coexistence Guidance Card -->
+                        <Border Style="{DynamicResource CardPanel}" Margin="0,0,0,18">
+                            <StackPanel>
+                                <TextBlock Text="BLUETOOTH AUDIO PROFILE COEXISTENCE &amp; TELEPHONY CONTENTION" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" Margin="0,0,0,6" />
+                                <TextBlock Text="{Binding AudioAnalysis.CoexistenceNotice}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,12" LineHeight="19" />
+
+                                <!-- Recommended Setup Callout -->
+                                <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="14,10">
+                                    <StackPanel>
+                                        <TextBlock Text="Recommended Audio Configuration:" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource AccentHoverBrush}" />
+                                        <TextBlock Text="{Binding AudioAnalysis.Recommendation}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,3,0,0" />
+                                    </StackPanel>
                                 </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Foreground" Value="#38BDF8" />
-                                        <Setter TargetName="TabBorder" Property="BorderBrush" Value="#38BDF8" />
-                                        <Setter TargetName="TabBorder" Property="Background" Value="#1E293B" />
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </TabControl.Resources>
+                            </StackPanel>
+                        </Border>
 
-            <!-- TAB 1: Audio Stream & Profile Coexistence -->
-            <TabItem Header="🎧 Audio Stream &amp; Profiles">
-                <Grid Margin="0,12,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                        <!-- Connected Bluetooth Audio Endpoints Table Card -->
+                        <Border Style="{DynamicResource CardPanel}">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,12">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="CONNECTED BLUETOOTH AUDIO ENDPOINTS" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,8,0" />
+                                        <TextBlock Text="{Binding AudioEndpoints.Count, StringFormat='({0} active)'}" FontSize="11" Foreground="{DynamicResource AccentBrush}" />
+                                    </StackPanel>
+                                    <TextBlock Text="Verified through Windows Audio Session API &amp; PnP Enumeration" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                </Grid>
 
-                    <!-- Coexistence & Contention Alert Card -->
-                    <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="20" Margin="0,0,0,16">
-                        <StackPanel>
+                                <!-- Empty State when no audio endpoints -->
+                                <Border Background="{DynamicResource SurfaceElevatedBrush}" CornerRadius="6" Padding="24" Visibility="{Binding AudioEndpoints.Count, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter=0}">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="No Active Bluetooth Audio Endpoints Detected" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                                        <TextBlock Text="Connect a Bluetooth speaker, headphone, or headset to inspect real-time A2DP / HFP stream telemetry." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Endpoints DataGrid -->
+                                <DataGrid ItemsSource="{Binding AudioEndpoints}" AutoGenerateColumns="False" IsReadOnly="True"
+                                          Background="Transparent" BorderThickness="0" 
+                                          GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource BorderBrush}" 
+                                          HeadersVisibility="Column" CanUserAddRows="False">
+                                    <DataGrid.ColumnHeaderStyle>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                            <Setter Property="FontSize" Value="11" />
+                                            <Setter Property="Padding" Value="10,6" />
+                                            <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                                        </Style>
+                                    </DataGrid.ColumnHeaderStyle>
+                                    <DataGrid.RowStyle>
+                                        <Style TargetType="DataGridRow">
+                                            <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                                            <Setter Property="Margin" Value="0,0,0,4" />
+                                        </Style>
+                                    </DataGrid.RowStyle>
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Device / Endpoint Name" Binding="{Binding Name}" Width="220" />
+                                        <DataGridTextColumn Header="Active Profile" Binding="{Binding ActiveProfile}" Width="180" />
+                                        <DataGridTextColumn Header="Direction" Binding="{Binding Direction}" Width="120" />
+                                        <DataGridTextColumn Header="Audio Quality Rating" Binding="{Binding QualityRating}" Width="200" />
+                                        <DataGridTextColumn Header="Contention State" Binding="{Binding ContentionNotice}" Width="*" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </TabItem>
+
+                <!-- =========================================================================
+                     TAB 2: Driver Version Matrix & Known Regressions
+                     ========================================================================= -->
+                <TabItem Header="🔄 Driver Version Matrix">
+                    <StackPanel Margin="0,12,0,0">
+                        <Border Style="{DynamicResource CardPanel}" Margin="0,0,0,18">
+                            <StackPanel>
+                                <TextBlock Text="HARDWARE LIFECYCLE &amp; KNOWN REGRESSIONS CATALOG" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" Margin="0,0,0,4" />
+                                <TextBlock Text="Compares your installed Bluetooth driver version against confirmed stable OEM revisions and known crash regressions." 
+                                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12.5" Margin="0,0,0,16" />
+
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="14" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="14" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Chipset Vendor -->
+                                    <Border Grid.Column="0" Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="14">
+                                        <StackPanel>
+                                            <TextBlock Text="CHIPSET VENDOR" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                                            <TextBlock Text="{Binding DriverComparison.VendorName, FallbackValue='Detecting...'}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,4,0,0" />
+                                            <TextBlock Text="{Binding DriverComparison.VendorId, StringFormat='VID: {0}', FallbackValue='VID: --'}" Style="{DynamicResource TextHardwareId}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Installed Version -->
+                                    <Border Grid.Column="2" Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="14">
+                                        <StackPanel>
+                                            <TextBlock Text="INSTALLED DRIVER VERSION" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                                            <TextBlock Text="{Binding DriverComparison.InstalledVersion, FallbackValue='Checking...'}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" Margin="0,4,0,0" />
+                                            <TextBlock Text="{Binding DriverComparison.Status, FallbackValue='Analyzing'}" FontSize="11.5" FontWeight="SemiBold"
+                                                       Foreground="{Binding DriverComparison.Status, Converter={StaticResource StatusToBrushConverter}}" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Recommended Version -->
+                                    <Border Grid.Column="4" Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="14">
+                                        <StackPanel>
+                                            <TextBlock Text="RECOMMENDED STABLE OEM BASELINE" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                                            <TextBlock Text="{Binding DriverComparison.RecommendedVersion, FallbackValue='Verified Baseline'}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" Margin="0,4,0,0" />
+                                            <TextBlock Text="Verified Manufacturer Release" FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Actions -->
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Re-Check Driver Status" Command="{Binding CheckDriverVersionCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,10,0" Padding="14,6" />
+                                    <Button Content="Visit Official Download Portal" Command="{Binding OpenManufacturerPortalCommand}" Style="{DynamicResource PrimaryButton}" Padding="16,6" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Stability Assessment Card -->
+                        <Border Style="{DynamicResource CardPanel}">
+                            <StackPanel>
+                                <TextBlock Text="DRIVER STABILITY &amp; CRASH ASSESSMENT" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,8" />
+                                <TextBlock Text="{Binding DriverComparison.ActionRecommendation}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12.5" TextWrapping="Wrap" LineHeight="19" />
+
+                                <!-- Known Regression Alert (if any) -->
+                                <Border Background="{DynamicResource DangerSubtleBrush}" BorderBrush="{DynamicResource DangerBrush}" BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,14,0,0"
+                                        Visibility="{Binding DriverComparison.HasKnownRegression, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <StackPanel>
+                                        <TextBlock Text="⚠️ CONFIRMED DRIVER REGRESSION IDENTIFIED" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource DangerBrush}" />
+                                        <TextBlock Text="{Binding DriverComparison.KnownRegressionDetails}" Foreground="{DynamicResource DangerBrush}" FontSize="11.5" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </TabItem>
+
+                <!-- =========================================================================
+                     TAB 3: HCI Packet Tracer (ETW Trace)
+                     ========================================================================= -->
+                <TabItem Header="📡 HCI Packet Tracer">
+                    <StackPanel Margin="0,12,0,0">
+                        <Border Style="{DynamicResource CardPanel}" Margin="0,0,0,18">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -82,189 +231,32 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Bluetooth Audio Profile Health &amp; Telephony Contention" FontWeight="Bold" FontSize="16" Foreground="{StaticResource TextPrimaryBrush}" />
-                                    <TextBlock Text="{Binding AudioAnalysis.CoexistenceNotice}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" TextWrapping="Wrap" Margin="0,4,0,0" LineHeight="19" />
+                                    <TextBlock Text="WINDOWS BLUETOOTH ETW / HCI PACKET CAPTURE" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+                                    <TextBlock Text="Capture raw Host Controller Interface (HCI) commands, ACL data, and connection events into a Microsoft Event Trace Log (.etl)." 
+                                               Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12.5" Margin="0,4,0,8" />
+                                    <TextBlock Text="{Binding TraceSession.Status}" Foreground="{DynamicResource AccentHoverBrush}" FontWeight="SemiBold" FontSize="12" />
                                 </StackPanel>
 
-                                <Button Grid.Column="1" Content="Refresh Audio" Command="{Binding RefreshAudioCommand}" 
-                                        Style="{StaticResource PrimaryButtonStyle}" Padding="16,8" VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Content="Start HCI Trace" Command="{Binding StartTraceCommand}" Style="{DynamicResource PrimaryButton}" 
+                                            IsEnabled="{Binding IsTracingActive, Converter={StaticResource BoolToSuccessConverter}}" Margin="0,0,10,0" Padding="16,7" />
+                                    <Button Content="Stop &amp; Save Trace" Command="{Binding StopTraceCommand}" Style="{DynamicResource DangerButton}" 
+                                            IsEnabled="{Binding IsTracingActive}" Padding="16,7" />
+                                </StackPanel>
                             </Grid>
+                        </Border>
 
-                            <!-- Remediation Callout -->
-                            <Border Background="#0F172A" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,12,0,0">
-                                <StackPanel>
-                                    <TextBlock Text="Recommended Audio Setup:" FontWeight="Bold" FontSize="12" Foreground="#38BDF8" />
-                                    <TextBlock Text="{Binding AudioAnalysis.Recommendation}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Endpoints List -->
-                    <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" Padding="16">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0" Text="Connected Bluetooth Audio Endpoints" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,12" />
-
-                            <DataGrid Grid.Row="1" ItemsSource="{Binding AudioEndpoints}" AutoGenerateColumns="False" IsReadOnly="True"
-                                      Background="Transparent" BorderThickness="0" RowBackground="#0F172A" AlternatingRowBackground="#1E293B"
-                                      GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#334155" Foreground="{StaticResource TextPrimaryBrush}"
-                                      CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column">
-                                <DataGrid.ColumnHeaderStyle>
-                                    <Style TargetType="DataGridColumnHeader">
-                                        <Setter Property="Background" Value="#1E293B" />
-                                        <Setter Property="Foreground" Value="#94A3B8" />
-                                        <Setter Property="FontWeight" Value="SemiBold" />
-                                        <Setter Property="Padding" Value="12,8" />
-                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                        <Setter Property="BorderBrush" Value="#334155" />
-                                    </Style>
-                                </DataGrid.ColumnHeaderStyle>
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Device / Endpoint Name" Binding="{Binding Name}" Width="240" />
-                                    <DataGridTextColumn Header="Active Profile" Binding="{Binding ActiveProfile}" Width="200" />
-                                    <DataGridTextColumn Header="Stream Direction" Binding="{Binding Direction}" Width="130" />
-                                    <DataGridTextColumn Header="Audio Quality" Binding="{Binding QualityRating}" Width="220" />
-                                    <DataGridTextColumn Header="Contention / Status" Binding="{Binding ContentionNotice}" Width="*" />
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </Grid>
-                    </Border>
-                </Grid>
-            </TabItem>
-
-            <!-- TAB 2: Driver Version Matrix & Regressions -->
-            <TabItem Header="🔄 Driver Version Matrix">
-                <Grid Margin="0,12,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <!-- Driver Comparison Summary Card -->
-                    <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="20" Margin="0,0,0,16">
-                        <StackPanel>
-                            <TextBlock Text="Hardware Lifecycle &amp; Known Regressions Catalog" FontWeight="Bold" FontSize="16" Foreground="{StaticResource TextPrimaryBrush}" />
-                            <TextBlock Text="Compares your installed Bluetooth driver version against confirmed stable OEM revisions and known crash regressions." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,4,0,16" />
-
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Vendor & Device -->
-                                <Border Grid.Column="0" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="14" Margin="0,0,12,0">
-                                    <StackPanel>
-                                        <TextBlock Text="CHIPSET VENDOR" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" />
-                                        <TextBlock Text="{Binding DriverComparison.VendorName}" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,4,0,0" />
-                                        <TextBlock Text="{Binding DriverComparison.VendorId, StringFormat='VID: {0}'}" FontSize="12" Foreground="#64748B" Margin="0,2,0,0" />
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- Installed Version -->
-                                <Border Grid.Column="1" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="14" Margin="0,0,12,0">
-                                    <StackPanel>
-                                        <TextBlock Text="INSTALLED VERSION" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" />
-                                        <TextBlock Text="{Binding DriverComparison.InstalledVersion}" FontSize="15" FontWeight="Bold" Foreground="#38BDF8" Margin="0,4,0,0" />
-                                        <TextBlock Text="{Binding DriverComparison.Status}" FontSize="12" FontWeight="SemiBold"
-                                                   Foreground="{Binding DriverComparison.Status, Converter={StaticResource StatusToBrushConverter}}" Margin="0,2,0,0" />
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- Recommended Version -->
-                                <Border Grid.Column="2" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="14">
-                                    <StackPanel>
-                                        <TextBlock Text="RECOMMENDED STABLE" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" />
-                                        <TextBlock Text="{Binding DriverComparison.RecommendedVersion}" FontSize="15" FontWeight="Bold" Foreground="#10B981" Margin="0,4,0,0" />
-                                        <TextBlock Text="Verified Baseline" FontSize="12" Foreground="#64748B" Margin="0,2,0,0" />
-                                    </StackPanel>
-                                </Border>
-                            </Grid>
-
-                            <!-- Actions -->
-                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button Content="Re-Check Driver Status" Command="{Binding CheckDriverVersionCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,12,0" Padding="16,8" />
-                                <Button Content="Visit Official Download Portal" Command="{Binding OpenManufacturerPortalCommand}" Style="{StaticResource PrimaryButtonStyle}" Padding="16,8" />
+                        <!-- Wireshark Instructions -->
+                        <Border Style="{DynamicResource CardPanel}">
+                            <StackPanel>
+                                <TextBlock Text="WIRESHARK &amp; PKTMON ANALYSIS GUIDE" Style="{DynamicResource CardHeaderTitle}" Margin="0,0,0,4" />
+                                <TextBlock Text="Instructions for converting and inspecting the generated .etl packet trace in Wireshark with the Bluetooth HCI dissector." Style="{DynamicResource CardSubtitle}" Margin="0,0,0,14" />
+                                <TextBox Text="{Binding WiresharkGuide, Mode=OneWay}" Background="{DynamicResource SurfaceCardBrush}" Foreground="{DynamicResource TextSecondaryBrush}" FontFamily="Consolas, Courier New" FontSize="11.5" Padding="14" IsReadOnly="True" TextWrapping="Wrap" Height="220" VerticalScrollBarVisibility="Auto" />
                             </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Analysis & Action Advice -->
-                    <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" Padding="20">
-                        <StackPanel>
-                            <TextBlock Text="Driver Stability Assessment" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}" />
-                            <TextBlock Text="{Binding DriverComparison.ActionRecommendation}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" TextWrapping="Wrap" Margin="0,8,0,0" LineHeight="20" />
-
-                            <!-- Known Regression Warning Callout (if any) -->
-                            <Border Background="#450A0A" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,16,0,0"
-                                    Visibility="{Binding DriverComparison.HasKnownRegression, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <StackPanel>
-                                    <TextBlock Text="⚠️ CONFIRMED DRIVER REGRESSION IDENTIFIED" FontWeight="Bold" FontSize="13" Foreground="#FCA5A5" />
-                                    <TextBlock Text="{Binding DriverComparison.KnownRegressionDetails}" Foreground="#FEE2E2" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-            </TabItem>
-
-            <!-- TAB 3: HCI Packet Trace (ETW Wireshark) -->
-            <TabItem Header="📡 HCI Packet Tracer">
-                <Grid Margin="0,12,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <!-- Control Card -->
-                    <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="20" Margin="0,0,0,16">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Windows Bluetooth ETW / HCI Packet Capture" FontWeight="Bold" FontSize="16" Foreground="{StaticResource TextPrimaryBrush}" />
-                                <TextBlock Text="Capture raw Host Controller Interface (HCI) commands, ACL data, and connection events into a Microsoft Event Trace Log (.etl)." 
-                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,4,0,8" />
-                                <TextBlock Text="{Binding TraceSession.Status}" Foreground="#38BDF8" FontWeight="SemiBold" FontSize="13" />
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button Content="Start HCI Trace" Command="{Binding StartTraceCommand}" Style="{StaticResource PrimaryButtonStyle}" 
-                                        IsEnabled="{Binding IsTracingActive, Converter={StaticResource BoolToSuccessConverter}}" Margin="0,0,10,0" Padding="16,8" />
-                                <Button Content="Stop &amp; Save Trace" Command="{Binding StopTraceCommand}" Style="{StaticResource DangerButtonStyle}" 
-                                        IsEnabled="{Binding IsTracingActive}" Padding="16,8" />
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-
-                    <!-- Wireshark Analysis Instructions -->
-                    <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" Padding="20">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0" Text="Wireshark &amp; Packet Analysis Guide" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,10" />
-
-                            <TextBox Grid.Row="1" Text="{Binding WiresharkGuide}" IsReadOnly="True" TextWrapping="Wrap"
-                                     Background="#0F172A" Foreground="#38BDF8" BorderBrush="#334155" FontFamily="Consolas" FontSize="12" 
-                                     Padding="14" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" />
-                        </Grid>
-                    </Border>
-                </Grid>
-            </TabItem>
-        </TabControl>
-    </Grid>
+                        </Border>
+                    </StackPanel>
+                </TabItem>
+            </TabControl>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>
-

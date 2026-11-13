@@ -3,26 +3,48 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:common="clr-namespace:BlueDoc.UI.Common"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="900">
+             d:DesignHeight="780" d:DesignWidth="1050">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <common:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="28,24,28,32">
-            <!-- Header -->
-            <Grid Margin="0,0,0,24">
+            <!-- Header Row -->
+            <Grid Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock Text="Diagnostic Test Center" Style="{StaticResource PageTitleText}" />
-                    <TextBlock Text="Deterministic, 12-stage rule-based diagnostic engine for identifying Bluetooth failures and root causes." Style="{StaticResource PageSubtitleText}" />
+                    <TextBlock Text="Bluetooth Diagnostic Center" Style="{DynamicResource PageTitleText}" />
+                    <TextBlock Text="Automated 12-point hardware, driver, service, and security evaluation rules." Style="{DynamicResource PageSubtitleText}" />
                 </StackPanel>
-                <Button Grid.Column="1" Content="Run Full Diagnosis" Command="{Binding RunFullDiagnosticsCommand}" Style="{StaticResource PrimaryButton}" VerticalAlignment="Top" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                    <!-- Cancel Button -->
+                    <Button Content="Cancel" 
+                            Command="{Binding CancelDiagnosticsCommand}" 
+                            Style="{DynamicResource DangerButton}" 
+                            Margin="0,0,10,0" 
+                            Padding="14,6" 
+                            Visibility="{Binding CanCancelDiagnostics, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                    <!-- Run Diagnosis Action -->
+                    <Button Content="Run Full Diagnosis" 
+                            Command="{Binding RunFullDiagnosticsCommand}" 
+                            Style="{DynamicResource PrimaryButton}" 
+                            Padding="16,6"
+                            IsEnabled="{Binding CanRunDiagnostics}" />
+                </StackPanel>
             </Grid>
 
             <!-- Test Score Metric Cards -->
-            <Grid Margin="0,0,0,20">
+            <Grid Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="16" />
@@ -33,63 +55,97 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Style="{StaticResource CardPanel}">
+                <Border Grid.Column="0" Style="{DynamicResource CardPanel}" Padding="14">
                     <StackPanel>
-                        <TextBlock Text="PASSED TESTS" FontSize="11" FontWeight="SemiBold" Foreground="#4ADE80" />
-                        <TextBlock Text="{Binding PassedCount}" FontSize="26" FontWeight="Bold" Foreground="#4ADE80" Margin="0,4,0,0" />
+                        <TextBlock Text="PASSED TESTS" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" />
+                        <TextBlock Text="{Binding PassedCount}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2" Style="{StaticResource CardPanel}">
+                <Border Grid.Column="2" Style="{DynamicResource CardPanel}" Padding="14">
                     <StackPanel>
-                        <TextBlock Text="WARNINGS" FontSize="11" FontWeight="SemiBold" Foreground="#FACC15" />
-                        <TextBlock Text="{Binding WarningCount}" FontSize="26" FontWeight="Bold" Foreground="#FACC15" Margin="0,4,0,0" />
+                        <TextBlock Text="WARNINGS" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource WarningBrush}" />
+                        <TextBlock Text="{Binding WarningCount}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="4" Style="{StaticResource CardPanel}">
+                <Border Grid.Column="4" Style="{DynamicResource CardPanel}" Padding="14">
                     <StackPanel>
-                        <TextBlock Text="FAILURES" FontSize="11" FontWeight="SemiBold" Foreground="#F87171" />
-                        <TextBlock Text="{Binding FailedCount}" FontSize="26" FontWeight="Bold" Foreground="#F87171" Margin="0,4,0,0" />
+                        <TextBlock Text="FAILURES" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource DangerBrush}" />
+                        <TextBlock Text="{Binding FailedCount}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}" Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="6" Style="{StaticResource CardPanel}">
+                <Border Grid.Column="6" Style="{DynamicResource CardPanel}" Padding="14">
                     <StackPanel>
-                        <TextBlock Text="OVERALL STATUS" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
-                        <TextBlock Text="{Binding CurrentSession.OverallStatus, FallbackValue='Pending'}" FontSize="20" FontWeight="Bold" Foreground="{Binding CurrentSession.OverallStatus, Converter={StaticResource StatusToBrushConverter}}" Margin="0,8,0,0" />
+                        <TextBlock Text="OVERALL STATUS" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" />
+                        <TextBlock Text="{Binding CurrentSession.OverallStatus, FallbackValue='Ready'}" FontSize="18" FontWeight="Bold" Foreground="{Binding CurrentSession.OverallStatus, Converter={StaticResource StatusToBrushConverter}}" Margin="0,6,0,0" />
                     </StackPanel>
                 </Border>
             </Grid>
 
-            <!-- Progress Bar Card -->
-            <Border Background="#121A28" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,12" Margin="0,0,0,20">
+            <!-- Diagnostic Progress & Live Telemetry Card -->
+            <Border Background="{DynamicResource SurfaceCardBrush}" 
+                    BorderBrush="{DynamicResource BorderBrush}" 
+                    BorderThickness="1" 
+                    CornerRadius="8" 
+                    Padding="16,14" 
+                    Margin="0,0,0,18">
                 <StackPanel>
-                    <Grid Margin="0,0,0,6">
-                        <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
-                        <TextBlock Text="{Binding ProgressPercentage, StringFormat='{}{0}%'}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right" />
+                    <Grid Margin="0,0,0,8">
+                        <!-- Left: Live Action Status & Rule Title -->
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{Binding StatusMessage}" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="{Binding CurrentTestName}" FontSize="11" Foreground="{DynamicResource AccentHoverBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+
+                        <!-- Right: Progress %, Ratio & Estimated Time -->
+                        <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBlock Text="{Binding TestsProgressDisplay}" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,10,0" />
+                                <TextBlock Text="{Binding ProgressPercentage, StringFormat='{}{0}%'}" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding EstimatedRemainingDisplay}" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Right" Margin="0,2,0,0" />
+                        </StackPanel>
                     </Grid>
-                    <ProgressBar Height="6" Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Background="#1E2838" Foreground="{StaticResource AccentBrush}" BorderThickness="0" />
+
+                    <ProgressBar Height="6" Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" />
                 </StackPanel>
             </Border>
 
             <!-- Two-Column Diagnostic Results Layout -->
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="420" />
+                    <ColumnDefinition Width="440" />
                     <ColumnDefinition Width="20" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <!-- Left Column: Test Results List with Individual Execution -->
-                <Border Grid.Column="0" Style="{StaticResource CardPanel}">
+                <Border Grid.Column="0" Style="{DynamicResource CardPanel}" Padding="16">
                     <StackPanel>
-                        <TextBlock Text="DIAGNOSTIC TEST CATALOG (12 TESTS)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,12" />
+                        <TextBlock Text="DIAGNOSTIC TEST CATALOG (12 TESTS)" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,12" />
 
-                        <ListBox ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedResult}" Background="Transparent" BorderThickness="0" MaxHeight="520" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <!-- SKELETON PLACEHOLDER WHILE INITIALIZING CATALOG -->
+                        <Control Template="{StaticResource DiagnosticResultListSkeletonTemplate}"
+                                 Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                        <!-- REAL RESULTS LISTBOX -->
+                        <ListBox ItemsSource="{Binding Results}" 
+                                 SelectedItem="{Binding SelectedResult}" 
+                                 Background="Transparent" 
+                                 BorderThickness="0" 
+                                 MaxHeight="520" 
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverse'}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#1C273C" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,8">
+                                    <Border Background="{DynamicResource SurfaceElevatedBrush}" 
+                                            BorderBrush="{DynamicResource BorderBrush}" 
+                                            BorderThickness="1" 
+                                            CornerRadius="6" 
+                                            Padding="12,10" 
+                                            Margin="0,0,0,8">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
@@ -97,9 +153,9 @@
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <StackPanel VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding TestName}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                                                <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{StaticResource AccentBrush}" Margin="0,2,0,0" />
-                                                <TextBlock Text="{Binding Summary}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding TestName}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                                <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource AccentBrush}" Margin="0,2,0,0" />
+                                                <TextBlock Text="{Binding Summary}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />
                                             </StackPanel>
 
                                             <!-- Status Pill -->
@@ -108,76 +164,85 @@
                                             </Border>
 
                                             <!-- Run Individual Test Button -->
-                                            <Button Grid.Column="2" Content="▶" Command="{Binding DataContext.RunSingleTestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource SecondaryButton}" Padding="8,4" VerticalAlignment="Center" ToolTip="Run this test individually" />
+                                            <Button Grid.Column="2" 
+                                                    Content="▶" 
+                                                    Command="{Binding DataContext.RunSingleTestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                    CommandParameter="{Binding}" 
+                                                    Style="{DynamicResource SecondaryButton}" 
+                                                    Padding="8,4" 
+                                                    VerticalAlignment="Center" 
+                                                    ToolTip="Run this test individually" />
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
 
-                        <TextBlock Text="Click any test above to review detailed evidence or run individual tests with the ▶ button." FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="Click any test above to review detailed evidence or run individual tests with the ▶ button." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,8,0,0" TextWrapping="Wrap" />
                     </StackPanel>
                 </Border>
 
-                <!-- Right Column: Evidence & Action Report -->
-                <Border Grid.Column="2" Style="{StaticResource CardPanel}">
-                    <StackPanel>
-                        <TextBlock Text="TEST FINDINGS &amp; EVIDENCE" Style="{StaticResource CardHeaderTitle}" Margin="0,0,0,4" />
-                        <TextBlock Text="Evidence-based analysis. Distinguishes confirmed facts from possible hypotheses." Style="{StaticResource CardSubtitle}" Margin="0,0,0,16" />
+                <!-- Right Column: Selected Test Evidence & Recommended Repair -->
+                <Border Grid.Column="2" Style="{DynamicResource CardPanel}" Padding="20">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="TEST EVIDENCE &amp; REMEDIATION" Style="{DynamicResource CardHeaderTitle}" Margin="0,0,0,4" />
+                            <TextBlock Text="Detailed findings, problem indicators, and automated remediation steps." Style="{DynamicResource CardSubtitle}" Margin="0,0,0,16" />
 
-                        <StackPanel Visibility="{Binding SelectedResult, Converter={StaticResource NullToVisibilityConverter}}">
-                            <Grid Margin="0,0,0,12">
+                            <!-- Selected Test Header -->
+                            <Grid Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
                                 <StackPanel>
-                                    <TextBlock Text="{Binding SelectedResult.TestName}" FontWeight="Bold" FontSize="18" Foreground="{StaticResource TextPrimaryBrush}" />
-                                    <TextBlock Text="{Binding SelectedResult.Category, StringFormat='Category: {0}'}" FontSize="11" Foreground="{StaticResource AccentBrush}" Margin="0,2,0,0" />
+                                    <TextBlock Text="{Binding SelectedResult.TestName, FallbackValue='Select a test'}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <TextBlock Text="{Binding SelectedResult.Category, StringFormat='Category: {0}', FallbackValue='Diagnostic Rule'}" FontSize="11" Foreground="{DynamicResource AccentBrush}" Margin="0,2,0,0" />
                                 </StackPanel>
-                                <Border CornerRadius="4" Padding="8,4" Background="{Binding SelectedResult.Status, Converter={StaticResource StatusToBrushConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                    <TextBlock Text="{Binding SelectedResult.Status, Converter={StaticResource StatusToTextConverter}}" FontSize="11" FontWeight="Bold" Foreground="White" />
+                                <Border Grid.Column="1" CornerRadius="4" Padding="10,4" Background="{Binding SelectedResult.Status, Converter={StaticResource StatusToBrushConverter}}" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding SelectedResult.Status, Converter={StaticResource StatusToTextConverter}, FallbackValue='Not Tested'}" FontSize="11" FontWeight="Bold" Foreground="White" />
                                 </Border>
                             </Grid>
 
-                            <!-- Summary Block -->
-                            <Border Background="#1C273C" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+                            <Separator Background="{DynamicResource BorderBrush}" Margin="0,0,0,14" />
+
+                            <!-- Summary -->
+                            <TextBlock Text="SUMMARY" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4" />
+                            <TextBlock Text="{Binding SelectedResult.Summary, FallbackValue='No summary available.'}" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" Margin="0,0,0,14" />
+
+                            <!-- Detailed Findings -->
+                            <TextBlock Text="DETAILED FINDINGS &amp; EVIDENCE" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4" />
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,14">
+                                <TextBlock Text="{Binding SelectedResult.Details, FallbackValue='No findings recorded.'}" FontFamily="Consolas, Courier New" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                            </Border>
+
+                            <!-- Remediation Recommendation -->
+                            <TextBlock Text="RECOMMENDED REMEDIATION" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,4" />
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,14">
                                 <StackPanel>
-                                    <TextBlock Text="OBSERVED FINDING" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,4" />
-                                    <TextBlock Text="{Binding SelectedResult.Summary}" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding SelectedResult.Recommendation, FallbackValue='No action required.'}" FontSize="12.5" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" />
+                                    <Button Content="Launch Safe Repair Center →" Command="{Binding NavigateToRepairCommand}" Style="{DynamicResource PrimaryButton}" HorizontalAlignment="Left" Margin="0,12,0,0" Padding="16,6" Visibility="{Binding SelectedResult.RequiresAdmin, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 </StackPanel>
                             </Border>
 
-                            <!-- Technical Details & Evidence -->
-                            <Border Background="#1C273C" CornerRadius="6" Padding="12" Margin="0,0,0,12">
-                                <StackPanel>
-                                    <TextBlock Text="TECHNICAL DETAILS &amp; EVIDENCE" FontSize="11" FontWeight="SemiBold" Foreground="#38BDF8" Margin="0,0,0,4" />
-                                    <TextBlock Text="{Binding SelectedResult.TechnicalDetails}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,4" />
-                                    <TextBlock Text="{Binding SelectedResult.Evidence, StringFormat='Evidence: {0}'}" FontSize="11" FontFamily="Consolas" Foreground="#94A3B8" TextWrapping="Wrap" />
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Possible Cause (if any) -->
-                            <Border Background="#1C273C" CornerRadius="6" Padding="12" Margin="0,0,0,12" Visibility="{Binding SelectedResult.PossibleCause, Converter={StaticResource NullToVisibilityConverter}}">
-                                <StackPanel>
-                                    <TextBlock Text="POSSIBLE CAUSE" FontSize="11" FontWeight="SemiBold" Foreground="#FACC15" Margin="0,0,0,4" />
-                                    <TextBlock Text="{Binding SelectedResult.PossibleCause}" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" />
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Recommended Action & Safe Repair Link -->
-                            <Border Background="#1C273C" CornerRadius="6" Padding="12" Margin="0,0,0,16">
-                                <StackPanel>
-                                    <TextBlock Text="RECOMMENDED ACTION" FontSize="11" FontWeight="SemiBold" Foreground="#4ADE80" Margin="0,0,0,4" />
-                                    <TextBlock Text="{Binding SelectedResult.RecommendedAction}" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" />
-                                    <Button Content="Launch Safe Repair Center →" Command="{Binding NavigateToRepairCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Margin="0,12,0,0" Padding="16,6" Visibility="{Binding SelectedResult.RequiresAdmin, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Evaluation Confidence -->
+                            <!-- Rule ID & Severity Metadata -->
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="140" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="Rule Identifier" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Grid.Column="1" Text="{Binding SelectedResult.RuleId, FallbackValue='None'}" FontFamily="Consolas, Courier New" FontSize="11" Foreground="{DynamicResource AccentHoverBrush}" />
+                            </Grid>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="140" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="Requires Admin" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Grid.Column="1" Text="{Binding SelectedResult.RequiresAdmin, StringFormat='Admin: {0}', FallbackValue='No'}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            </Grid>
                             <Grid>
-                                <TextBlock Text="Certainty:" FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding SelectedResult.Confidence}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="60,0,0,0" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding SelectedResult.ExecutedAt, StringFormat='Evaluated at: {0:HH:mm:ss UTC}'}" FontSize="11" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="140" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="Execution Timestamp" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Grid.Column="1" Text="{Binding SelectedResult.ExecutionTimestamp, FallbackValue='Not executed'}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
                             </Grid>
                         </StackPanel>
-                    </StackPanel>
+                    </ScrollViewer>
                 </Border>
             </Grid>
         </StackPanel>

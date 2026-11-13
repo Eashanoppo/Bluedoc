@@ -61,6 +61,12 @@ namespace BlueDoc.UI.ViewModels
         public ICommand OpenSupportPageCommand { get; }
         public ICommand OpenSettingsCommand { get; }
 
+        public ICommand OpenIntelPortalCommand { get; }
+        public ICommand OpenRealtekPortalCommand { get; }
+        public ICommand OpenBroadcomPortalCommand { get; }
+        public ICommand OpenQualcommPortalCommand { get; }
+        public ICommand OpenMicrosoftPortalCommand { get; }
+
         public DriverAssistantViewModel(AdapterService adapterService = null, DriverService driverService = null)
         {
             _adapterService = adapterService ?? new AdapterService();
@@ -68,14 +74,24 @@ namespace BlueDoc.UI.ViewModels
 
             RefreshCommand = new RelayCommand(async () => await LoadDriverInfoAsync());
             OpenDeviceManagerCommand = new RelayCommand(() => _driverService.OpenDeviceManager());
-            OpenSupportPageCommand = new RelayCommand(() =>
-            {
-                if (!string.IsNullOrWhiteSpace(SupportUrl))
-                {
-                    try { Process.Start(new ProcessStartInfo { FileName = SupportUrl, UseShellExecute = true }); } catch { }
-                }
-            });
+            OpenSupportPageCommand = new RelayCommand(() => OpenUrl(SupportUrl));
             OpenSettingsCommand = new RelayCommand(() => _driverService.OpenWindowsBluetoothSettings());
+
+            OpenIntelPortalCommand = new RelayCommand(() => OpenUrl("https://www.intel.com/content/www/us/en/support/articles/000005489/wireless.html"));
+            OpenRealtekPortalCommand = new RelayCommand(() => OpenUrl("https://www.realtek.com/en/component/zoo/category/pci-wireless-lan-pci-express-software"));
+            OpenBroadcomPortalCommand = new RelayCommand(() => OpenUrl("https://www.broadcom.com/support"));
+            OpenQualcommPortalCommand = new RelayCommand(() => OpenUrl("https://www.qualcomm.com/products/features/bluetooth"));
+            OpenMicrosoftPortalCommand = new RelayCommand(() => OpenUrl("https://support.microsoft.com/en-us/windows/fix-bluetooth-problems-in-windows-723e05f8-0376-46a4-73ac-eeb2d8442a66"));
+        }
+
+        private void OpenUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return;
+            try
+            {
+                Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+            }
+            catch { }
         }
 
         public async Task LoadDriverInfoAsync()

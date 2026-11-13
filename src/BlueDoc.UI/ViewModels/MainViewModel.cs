@@ -33,6 +33,7 @@ namespace BlueDoc.UI.ViewModels
         private bool _isRadioOn = true;
 
         public DashboardViewModel DashboardVM { get; }
+        public BluetoothMainViewModel BluetoothMainVM { get; }
         public HardwareInspectorViewModel HardwareInspectorVM { get; }
         public DiagnosticCenterViewModel DiagnosticCenterVM { get; }
         public CompatibilityViewModel CompatibilityVM { get; }
@@ -49,6 +50,7 @@ namespace BlueDoc.UI.ViewModels
         public TechnicianToolkitViewModel TechnicianToolkitVM { get; }
         public AudioDiagnosticsViewModel AudioDiagnosticsVM { get; }
         public SaasFleetDashboardViewModel SaasFleetDashboardVM { get; }
+        public FixMyConnectionWizardViewModel FixMyConnectionWizardVM { get; }
 
         public object CurrentViewModel
         {
@@ -122,8 +124,32 @@ namespace BlueDoc.UI.ViewModels
 
         public string RadioStateDisplay => IsRadioOn ? "Bluetooth ON" : "Bluetooth OFF";
 
+        private bool _isSidebarCollapsed = false;
+
+        public bool IsSidebarCollapsed
+        {
+            get => _isSidebarCollapsed;
+            set
+            {
+                if (SetProperty(ref _isSidebarCollapsed, value))
+                {
+                    OnPropertyChanged(nameof(IsSidebarExpanded));
+                    OnPropertyChanged(nameof(SidebarWidth));
+                    OnPropertyChanged(nameof(SidebarToggleTooltip));
+                }
+            }
+        }
+
+        public bool IsSidebarExpanded => !IsSidebarCollapsed;
+        public double SidebarWidth => IsSidebarCollapsed ? 68.0 : 270.0;
+        public string SidebarToggleTooltip => IsSidebarCollapsed ? "Expand sidebar (Ctrl+[)" : "Collapse sidebar (Ctrl+[)";
+        public ICommand ToggleSidebarCommand => new RelayCommand(() => IsSidebarCollapsed = !IsSidebarCollapsed);
+
+        public NotificationService Notifications => NotificationService.Instance;
+
         public ICommand NavigateCommand { get; }
         public ICommand QuickDiagnosisCommand { get; }
+        public ICommand OpenFixConnectionWizardCommand { get; }
         public ICommand SetThemeCommand { get; }
         public ICommand ToggleRadioPowerCommand { get; }
 
@@ -152,12 +178,13 @@ namespace BlueDoc.UI.ViewModels
             _osVersion = OperatingSystemInspector.GetOperatingSystemInfo();
 
             // Instantiate ViewModels
-            DashboardVM = new DashboardViewModel(_adapterService, _diagnosticsService, () => NavigateTo("Diagnostic Test Center"));
+            DashboardVM = new DashboardViewModel(_adapterService, _diagnosticsService, () => NavigateTo("Diagnostic Test Center"), _managementService, _discoveryService, _historyService, target => NavigateTo(target));
+            BluetoothMainVM = new BluetoothMainViewModel(_managementService, _discoveryService, _adapterService, target => NavigateTo(target));
             HardwareInspectorVM = new HardwareInspectorViewModel(_adapterService);
             DiagnosticCenterVM = new DiagnosticCenterViewModel(_diagnosticsService, target => NavigateTo(target));
             CompatibilityVM = new CompatibilityViewModel();
-            BluetoothDevicesVM = new BluetoothDevicesViewModel(_managementService);
-            DeviceScannerVM = new DeviceScannerViewModel(_discoveryService, _managementService);
+            BluetoothDevicesVM = new BluetoothDevicesViewModel(_managementService, target => NavigateTo(target));
+            DeviceScannerVM = new DeviceScannerViewModel(_discoveryService, _managementService, target => NavigateTo(target));
             BluetoothEventAnalyzerVM = new BluetoothEventAnalyzerViewModel(_eventService);
             DriverAssistantVM = new DriverAssistantViewModel(_adapterService, _driverService);
             SafeRepairCenterVM = new SafeRepairCenterViewModel(_repairService);
@@ -169,8 +196,17 @@ namespace BlueDoc.UI.ViewModels
             TechnicianToolkitVM = new TechnicianToolkitViewModel(_adapterService, _diagnosticsService, target => NavigateTo(target));
             AudioDiagnosticsVM = new AudioDiagnosticsViewModel(_adapterService);
             SaasFleetDashboardVM = new SaasFleetDashboardViewModel(_adapterService);
+            FixMyConnectionWizardVM = new FixMyConnectionWizardViewModel(_managementService, _discoveryService, _adapterService, target => NavigateTo(target));
 
             NavigateCommand = new RelayCommand(param => NavigateTo(param?.ToString() ?? "Dashboard"));
+            OpenFixConnectionWizardCommand = new RelayCommand(param =>
+            {
+                if (param is BluetoothDeviceInfo dev)
+                {
+                    FixMyConnectionWizardVM.PreSelectDevice(dev);
+                }
+                NavigateTo("Fix My Bluetooth Connection");
+            });
             SetThemeCommand = new RelayCommand(param =>
             {
                 var themeStr = param?.ToString();
@@ -186,14 +222,47 @@ namespace BlueDoc.UI.ViewModels
             QuickDiagnosisCommand = new RelayCommand(async () =>
             {
                 NavigateTo("Diagnostic Test Center");
-                await DiagnosticCenterVM.ExecuteFullDiagnosticsAsync();
+                var op = Notifications.ShowRunning("Quick Diagnostics", "Executing comprehensive 12-rule hardware and service diagnostic pipeline...");
+                try
+                {
+                    await DiagnosticCenterVM.ExecuteFullDiagnosticsAsync();
+                    int passed = DiagnosticCenterVM.PassedCount;
+                    int failed = DiagnosticCenterVM.FailedCount;
+                    int warnings = DiagnosticCenterVM.WarningCount;
+                    if (failed > 0)
+                    {
+                        op.CompleteError("Diagnosis Alert", $"Diagnostics completed with {failed} failure(s) and {warnings} warning(s).");
+                    }
+                    else if (warnings > 0)
+                    {
+                        op.CompleteSuccess("Diagnosis Passed with Warnings", $"All checks passed with {warnings} advisory warning(s).");
+                    }
+                    else
+                    {
+                        op.CompleteSuccess("Diagnostics Healthy", $"All {passed} diagnostic rules passed successfully.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    op.CompleteError("Diagnostics Error", ex.Message);
+                }
             });
 
             ToggleRadioPowerCommand = new RelayCommand(async () =>
             {
-                await DashboardVM.ToggleRadioPowerAsync();
-                IsRadioOn = DashboardVM.IsRadioOn;
-                PrimaryAdapter = DashboardVM.PrimaryAdapter;
+                string target = !IsRadioOn ? "ON" : "OFF";
+                var op = Notifications.ShowRunning("Bluetooth Radio", $"Switching radio power {target} via Hardware Bus...");
+                try
+                {
+                    await DashboardVM.ToggleRadioPowerAsync();
+                    IsRadioOn = DashboardVM.IsRadioOn;
+                    PrimaryAdapter = DashboardVM.PrimaryAdapter;
+                    op.CompleteSuccess("Radio Power Updated", $"Bluetooth controller radio is now {RadioStateDisplay}.");
+                }
+                catch (Exception ex)
+                {
+                    op.CompleteError("Radio Power Error", ex.Message);
+                }
             });
 
             DashboardVM.PropertyChanged += (s, e) =>
@@ -219,8 +288,22 @@ namespace BlueDoc.UI.ViewModels
                 PrimaryAdapter = await _adapterService.GetPrimaryAdapterAsync();
                 await DashboardVM.LoadDataAsync();
                 IsRadioOn = DashboardVM.IsRadioOn;
+
+                var startupHealthService = new BluetoothStartupHealthService(_adapterService);
+                var health = await startupHealthService.InspectSystemHealthAsync();
+                if (!health.IsHealthy)
+                {
+                    Notifications.ShowWarning("Bluetooth Health Alert", health.OverallMessage);
+                }
+                else
+                {
+                    Notifications.ShowInfo("BlueDoc Ready", $"System: {_osVersion?.OperatingSystemName ?? "Windows"} • Adapter: {PrimaryAdapter?.FriendlyName ?? "Operational"}");
+                }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"[MainViewModel.InitializeAsync] Non-fatal startup warning: {ex.Message}");
+            }
         }
 
         public void NavigateTo(string sectionName)
@@ -230,42 +313,67 @@ namespace BlueDoc.UI.ViewModels
             switch (sectionName)
             {
                 case "Dashboard":
+                case "Overview":
+                case "Bluetooth":
                 case "Bluetooth Devices":
                 case "Device Scanner":
-                case "Advanced Hardware Inspector":
-                    ActiveGroup = "OVERVIEW & HARDWARE";
+                    ActiveGroup = "GENERAL";
                     break;
-                case "Diagnostic Test Center":
-                case "Audio & Packet Diagnostics":
-                case "Bluetooth Event Analyzer":
+                case "Advanced Hardware Inspector":
+                case "Hardware Inspector":
                 case "Driver Assistant":
                 case "Compatibility Checker":
-                    ActiveGroup = "DIAGNOSTIC LAB";
+                case "Compatibility":
+                    ActiveGroup = "DEVICES & HARDWARE";
                     break;
+                case "Diagnostic Test Center":
+                case "Diagnostic Center":
+                case "Audio & Packet Diagnostics":
+                case "Audio Diagnostics":
+                case "Bluetooth Event Analyzer":
+                case "Event Analyzer":
+                case "Signal & Discovery Monitor":
+                case "Signal Monitor":
+                case "Device Connection History":
+                case "Connection History":
+                    ActiveGroup = "DIAGNOSTICS";
+                    break;
+                case "Fix My Bluetooth Connection":
+                case "Fix Connection Doctor":
                 case "Safe Repair Center":
                 case "Diagnostic Reports":
-                case "Device Connection History":
-                    ActiveGroup = "SAFE REPAIR & AUDIT";
+                    ActiveGroup = "MAINTENANCE";
                     break;
-                case "Signal & Discovery Monitor":
                 case "Bluetooth LE Explorer":
+                case "BLE Explorer":
                 case "Technician Toolkit":
-                    ActiveGroup = "TELEMETRY & PROTOCOLS";
-                    break;
                 case "SaaS Fleet Portal":
+                case "SaaS Fleet Dashboard":
+                    ActiveGroup = "ADVANCED TOOLS";
+                    break;
                 case "Settings":
-                    ActiveGroup = "ENTERPRISE & CLOUD";
+                    ActiveGroup = "PREFERENCES";
                     break;
                 default:
-                    ActiveGroup = "OVERVIEW & HARDWARE";
+                    ActiveGroup = "GENERAL";
                     break;
             }
 
             switch (sectionName)
             {
                 case "Dashboard":
+                case "Overview":
                     CurrentViewModel = DashboardVM;
                     _ = DashboardVM.LoadDataAsync();
+                    break;
+                case "Bluetooth":
+                    CurrentViewModel = BluetoothMainVM;
+                    _ = BluetoothMainVM.LoadDataAsync();
+                    break;
+                case "Fix My Bluetooth Connection":
+                case "Fix Connection Doctor":
+                    CurrentViewModel = FixMyConnectionWizardVM;
+                    _ = FixMyConnectionWizardVM.LoadCandidatesAsync();
                     break;
                 case "Bluetooth Devices":
                     CurrentViewModel = BluetoothDevicesVM;
@@ -275,13 +383,16 @@ namespace BlueDoc.UI.ViewModels
                     CurrentViewModel = DeviceScannerVM;
                     break;
                 case "Advanced Hardware Inspector":
+                case "Hardware Inspector":
                     CurrentViewModel = HardwareInspectorVM;
                     _ = HardwareInspectorVM.LoadAdaptersAsync();
                     break;
                 case "Diagnostic Test Center":
+                case "Diagnostic Center":
                     CurrentViewModel = DiagnosticCenterVM;
                     break;
                 case "Bluetooth Event Analyzer":
+                case "Event Analyzer":
                     CurrentViewModel = BluetoothEventAnalyzerVM;
                     _ = BluetoothEventAnalyzerVM.LoadEventsAsync();
                     break;
@@ -290,6 +401,7 @@ namespace BlueDoc.UI.ViewModels
                     _ = DriverAssistantVM.LoadDriverInfoAsync();
                     break;
                 case "Compatibility Checker":
+                case "Compatibility":
                     CurrentViewModel = CompatibilityVM;
                     break;
                 case "Safe Repair Center":
@@ -301,13 +413,16 @@ namespace BlueDoc.UI.ViewModels
                     _ = DiagnosticReportVM.GenerateReportAsync();
                     break;
                 case "Device Connection History":
+                case "Connection History":
                     CurrentViewModel = ConnectionHistoryVM;
                     _ = ConnectionHistoryVM.LoadHistoryAsync();
                     break;
                 case "Signal & Discovery Monitor":
+                case "Signal Monitor":
                     CurrentViewModel = SignalMonitorVM;
                     break;
                 case "Bluetooth LE Explorer":
+                case "BLE Explorer":
                     CurrentViewModel = BleExplorerVM;
                     _ = BleExplorerVM.LoadBleDevicesAsync();
                     break;
@@ -319,10 +434,12 @@ namespace BlueDoc.UI.ViewModels
                     CurrentViewModel = TechnicianToolkitVM;
                     break;
                 case "Audio & Packet Diagnostics":
+                case "Audio Diagnostics":
                     CurrentViewModel = AudioDiagnosticsVM;
                     _ = AudioDiagnosticsVM.LoadAllDataAsync();
                     break;
                 case "SaaS Fleet Portal":
+                case "SaaS Fleet Dashboard":
                     CurrentViewModel = SaasFleetDashboardVM;
                     SaasFleetDashboardVM.RefreshFleetData();
                     break;

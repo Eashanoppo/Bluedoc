@@ -1,4 +1,6 @@
 using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using BlueDoc.Application.Services;
@@ -14,7 +16,11 @@ namespace BlueDoc.UI.ViewModels
     {
         private readonly AdapterService _adapterService;
         private readonly DiagnosticsService _diagnosticsService;
+        private readonly DeviceManagementService _managementService;
+        private readonly DeviceDiscoveryService _discoveryService;
+        private readonly HistoryService _historyService;
         private readonly Action _navigateToDiagnostics;
+        private readonly Action<string> _navigateAction;
         private readonly HardwareRadioManager _radioManager;
 
         private BluetoothAdapterInfo _primaryAdapter;
@@ -22,8 +28,14 @@ namespace BlueDoc.UI.ViewModels
         private OsVersionInfo _osVersion;
         private DiagnosticSession _recentSession;
         private bool _isLoading;
+        private bool _isRefreshing;
+        private bool _isQuickScanning;
         private bool _isRadioOn = true;
         private string _statusMessage = "Ready";
+
+        public ObservableCollection<BluetoothDeviceInfo> ConnectedDevices { get; } = new ObservableCollection<BluetoothDeviceInfo>();
+        public ObservableCollection<ConnectionHistoryRecord> RecentFailures { get; } = new ObservableCollection<ConnectionHistoryRecord>();
+        public ObservableCollection<BluetoothDeviceInfo> NearbyDevices { get; } = new ObservableCollection<BluetoothDeviceInfo>();
 
         public BluetoothAdapterInfo PrimaryAdapter
         {
@@ -55,6 +67,26 @@ namespace BlueDoc.UI.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
+        public bool IsRefreshing
+        {
+            get => _isRefreshing;
+            set => SetProperty(ref _isRefreshing, value);
+        }
+
+        public bool IsQuickScanning
+        {
+            get => _isQuickScanning;
+            set
+            {
+                if (SetProperty(ref _isQuickScanning, value))
+                {
+                    OnPropertyChanged(nameof(QuickScanButtonText));
+                }
+            }
+        }
+
+        public string QuickScanButtonText => IsQuickScanning ? "Scanning..." : "Quick Device Scan";
+
         public bool IsRadioOn
         {
             get => _isRadioOn;
@@ -75,20 +107,39 @@ namespace BlueDoc.UI.ViewModels
             set => SetProperty(ref _statusMessage, value);
         }
 
+        public int ConnectedCount => ConnectedDevices.Count;
+        public int RecentFailuresCount => RecentFailures.Count;
+        public int NearbyCount => NearbyDevices.Count;
+
         public ICommand RefreshCommand { get; }
         public ICommand RunDiagnosisCommand { get; }
+        public ICommand QuickScanCommand { get; }
         public ICommand ToggleRadioPowerCommand { get; }
+        public ICommand NavigateToSectionCommand { get; }
 
-        public DashboardViewModel(AdapterService adapterService, DiagnosticsService diagnosticsService, Action navigateToDiagnostics)
+        public DashboardViewModel(
+            AdapterService adapterService, 
+            DiagnosticsService diagnosticsService, 
+            Action navigateToDiagnostics,
+            DeviceManagementService managementService = null,
+            DeviceDiscoveryService discoveryService = null,
+            HistoryService historyService = null,
+            Action<string> navigateAction = null)
         {
             _adapterService = adapterService;
             _diagnosticsService = diagnosticsService;
             _navigateToDiagnostics = navigateToDiagnostics;
+            _managementService = managementService ?? new DeviceManagementService();
+            _discoveryService = discoveryService ?? new DeviceDiscoveryService();
+            _historyService = historyService ?? new HistoryService();
+            _navigateAction = navigateAction ?? (target => _navigateToDiagnostics?.Invoke());
             _radioManager = new HardwareRadioManager();
 
             RefreshCommand = new RelayCommand(async () => await LoadDataAsync());
             RunDiagnosisCommand = new RelayCommand(() => _navigateToDiagnostics?.Invoke());
+            QuickScanCommand = new RelayCommand(async () => await ExecuteQuickScanAsync(), () => !IsQuickScanning);
             ToggleRadioPowerCommand = new RelayCommand(async () => await ToggleRadioPowerAsync());
+            NavigateToSectionCommand = new RelayCommand(param => _navigateAction?.Invoke(param?.ToString() ?? "Dashboard"));
 
             _osVersion = OperatingSystemInspector.GetOperatingSystemInfo();
         }
@@ -113,7 +164,14 @@ namespace BlueDoc.UI.ViewModels
 
         public async Task LoadDataAsync()
         {
-            IsLoading = true;
+            if (PrimaryAdapter == null)
+            {
+                IsLoading = true;
+            }
+            else
+            {
+                IsRefreshing = true;
+            }
 
             try
             {
@@ -130,6 +188,24 @@ namespace BlueDoc.UI.ViewModels
                 StatusMessage = IsRadioOn
                     ? "Bluetooth hardware operational."
                     : "Bluetooth radio is currently powered off.";
+
+                // Load real connected devices
+                var paired = await _managementService.GetPairedDevicesAsync();
+                ConnectedDevices.Clear();
+                foreach (var d in paired.Where(x => x.IsConnected))
+                {
+                    ConnectedDevices.Add(d);
+                }
+                OnPropertyChanged(nameof(ConnectedCount));
+
+                // Load real recent connection failures from SQLite audit trail
+                var history = await _historyService.GetHistoryAsync(50);
+                RecentFailures.Clear();
+                foreach (var h in history.Where(x => !x.IsSuccess).Take(5))
+                {
+                    RecentFailures.Add(h);
+                }
+                OnPropertyChanged(nameof(RecentFailuresCount));
             }
             catch (Exception ex)
             {
@@ -138,6 +214,36 @@ namespace BlueDoc.UI.ViewModels
             finally
             {
                 IsLoading = false;
+                IsRefreshing = false;
+            }
+        }
+
+        public async Task ExecuteQuickScanAsync()
+        {
+            if (IsQuickScanning) return;
+            IsQuickScanning = true;
+            StatusMessage = "Running fast 6-second inquiry discovery for nearby peripherals...";
+
+            try
+            {
+                var discovered = await _discoveryService.StartScanningAsync(6);
+                NearbyDevices.Clear();
+                foreach (var d in discovered.Take(6))
+                {
+                    NearbyDevices.Add(d);
+                }
+                OnPropertyChanged(nameof(NearbyCount));
+                StatusMessage = NearbyDevices.Count > 0 
+                    ? $"Quick scan found {NearbyDevices.Count} nearby peripheral(s)." 
+                    : "Quick scan complete. No active discoverable devices found.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Quick scan notice: {ex.Message}";
+            }
+            finally
+            {
+                IsQuickScanning = false;
             }
         }
     }

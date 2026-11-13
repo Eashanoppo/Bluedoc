@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="900">
+             d:DesignHeight="850" d:DesignWidth="1050">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="28,24,28,32">
@@ -19,40 +19,149 @@
                     <TextBlock Text="Local persistent SQLite audit trail of all device discovery, pairing, and connection events." Style="{StaticResource PageSubtitleText}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                    <Button Content="Export CSV" Command="{Binding ExportCsvCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" />
                     <Button Content="Clear History" Command="{Binding ClearHistoryCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" />
                     <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource PrimaryButton}" />
                 </StackPanel>
             </Grid>
 
             <!-- Search and Filter Bar -->
-            <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+            <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,12" Margin="0,0,0,20">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="20" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox Text="{Binding SearchFilter, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FilterTextBox}" Height="36" VerticalContentAlignment="Center" Padding="10,0" />
-                    <TextBlock Grid.Column="1" Text="{Binding TotalEvents, StringFormat='Total Logged Events: {0}'}" FontSize="12" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="16,0,0,0" />
+                    
+                    <TextBox Text="{Binding SearchFilter, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{StaticResource FilterTextBox}" 
+                             Height="36" 
+                             VerticalContentAlignment="Center" 
+                             Padding="10,0" />
+
+                    <!-- Filter Pills -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Content="All Events" 
+                                Command="{Binding SetFilterCommand}" 
+                                CommandParameter="All" 
+                                Style="{StaticResource FilterPillButton}" 
+                                Margin="0,0,6,0" />
+                        <Button Content="Connected" 
+                                Command="{Binding SetFilterCommand}" 
+                                CommandParameter="Connected" 
+                                Style="{StaticResource FilterPillButton}" 
+                                Margin="0,0,6,0" />
+                        <Button Content="Failed Attempts" 
+                                Command="{Binding SetFilterCommand}" 
+                                CommandParameter="Failed" 
+                                Style="{StaticResource FilterPillButton}" 
+                                Margin="0,0,6,0" />
+                        <Button Content="Discovered" 
+                                Command="{Binding SetFilterCommand}" 
+                                CommandParameter="Discovered" 
+                                Style="{StaticResource FilterPillButton}" />
+                    </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- History Table -->
-            <Border Style="{StaticResource CardPanel}">
-                <StackPanel>
-                    <TextBlock Text="HISTORICAL CONNECTION AUDIT TRAIL" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,12" />
+            <!-- SKELETON LOADING STATE -->
+            <Control Template="{StaticResource ConnectionHistorySkeletonTemplate}" 
+                     Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                     Margin="0,0,0,20" />
 
-                    <DataGrid ItemsSource="{Binding HistoryRecords}" SelectedItem="{Binding SelectedRecord}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" Background="Transparent" BorderThickness="0" RowBackground="#162238" AlternatingRowBackground="#1A2842" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{StaticResource BorderBrush}" HeadersVisibility="Column">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Timestamp" Binding="{Binding LocalTimestampDisplay}" Width="150" />
-                            <DataGridTextColumn Header="Device Name" Binding="{Binding DeviceName}" Width="180" />
-                            <DataGridTextColumn Header="Bluetooth Address" Binding="{Binding DeviceAddress}" Width="150" />
-                            <DataGridTextColumn Header="Event Type" Binding="{Binding EventType}" Width="120" />
-                            <DataGridTextColumn Header="Outcome" Binding="{Binding IsSuccess, Converter={StaticResource BoolToSuccessConverter}}" Width="100" />
-                            <DataGridTextColumn Header="Technical Details" Binding="{Binding Details}" Width="*" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </StackPanel>
-            </Border>
+            <!-- History Master-Detail Content -->
+            <Grid Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverse'}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Column: History Table -->
+                <Border Grid.Column="0" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="18">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <TextBlock Text="HISTORICAL CONNECTION AUDIT TRAIL" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding HistoryRecords.Count, StringFormat='{}{0} logged events'}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        </Grid>
+
+                        <!-- Empty State -->
+                        <Border Background="{DynamicResource SurfaceSunkenBrush}" CornerRadius="6" Padding="24" Margin="0,4,0,0"
+                                Visibility="{Binding HistoryRecords.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter='Inverse'}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="📋" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8" />
+                                <TextBlock Text="No connection records found" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                                <TextBlock Text="Discovered devices and connection attempts will be automatically recorded here." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <DataGrid ItemsSource="{Binding HistoryRecords}" 
+                                  SelectedItem="{Binding SelectedRecord}" 
+                                  AutoGenerateColumns="False" 
+                                  CanUserAddRows="False" 
+                                  IsReadOnly="True" 
+                                  Background="Transparent" 
+                                  BorderThickness="0" 
+                                  GridLinesVisibility="Horizontal" 
+                                  HorizontalGridLinesBrush="{DynamicResource BorderSubtleBrush}" 
+                                  HeadersVisibility="Column" 
+                                  MaxHeight="480" 
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Timestamp" Binding="{Binding LocalTimestampDisplay}" Width="140" />
+                                <DataGridTextColumn Header="Device Name" Binding="{Binding DeviceName}" Width="160" />
+                                <DataGridTextColumn Header="Bluetooth Address" Binding="{Binding DeviceAddress}" Width="130" />
+                                <DataGridTextColumn Header="Event Type" Binding="{Binding EventType}" Width="100" />
+                                <DataGridTextColumn Header="Outcome" Binding="{Binding IsSuccess, Converter={StaticResource BoolToSuccessConverter}}" Width="80" />
+                                <DataGridTextColumn Header="Technical Details" Binding="{Binding Details}" Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Right Column: Detail Inspector Sheet -->
+                <Border Grid.Column="2" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="18">
+                    <StackPanel>
+                        <TextBlock Text="SELECTED EVENT DETAILS" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,16" />
+
+                        <!-- Placeholder when no event selected -->
+                        <Border Background="{DynamicResource SurfaceSunkenBrush}" CornerRadius="6" Padding="20"
+                                Visibility="{Binding SelectedRecord, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter='Inverse'}">
+                            <TextBlock Text="Select an event from the audit trail to inspect hardware parameters and session details." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextAlignment="Center" TextWrapping="Wrap" />
+                        </Border>
+
+                        <StackPanel Visibility="{Binding SelectedRecord, Converter={StaticResource NullToVisibilityConverter}}">
+                            <TextBlock Text="{Binding SelectedRecord.DeviceName, FallbackValue='Unknown Peripheral'}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                            <TextBlock Text="{Binding SelectedRecord.DeviceAddress}" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}" Margin="0,0,0,14" />
+
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="EVENT TYPE &amp; STATUS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,2" />
+                                    <TextBlock Text="{Binding SelectedRecord.EventType}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <TextBlock Text="{Binding SelectedRecord.IsSuccess, Converter={StaticResource BoolToSuccessConverter}, StringFormat='Result: {0}'}" FontSize="12" Foreground="{DynamicResource SuccessBrush}" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="DEVICE CLASSIFICATION" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,2" />
+                                    <TextBlock Text="{Binding SelectedRecord.DeviceType, FallbackValue='Classic / BLE Device'}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{DynamicResource SurfaceElevatedBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,14">
+                                <StackPanel>
+                                    <TextBlock Text="TECHNICAL PARAMETERS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,2" />
+                                    <TextBlock Text="{Binding SelectedRecord.Details}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock Text="{Binding SelectedRecord.LocalTimestampDisplay, StringFormat='Logged at: {0}'}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

@@ -12,6 +12,7 @@ namespace BlueDoc.UI.Common
         private static readonly SolidColorBrush PassedBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
         private static readonly SolidColorBrush WarningBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B"));
         private static readonly SolidColorBrush FailedBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444"));
+        private static readonly SolidColorBrush InProgressBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3B82F6"));
         private static readonly SolidColorBrush InconclusiveBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#64748B"));
         private static readonly SolidColorBrush NotSupportedBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#475569"));
         private static readonly SolidColorBrush NeutralBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#334155"));
@@ -21,6 +22,7 @@ namespace BlueDoc.UI.Common
             PassedBrush.Freeze();
             WarningBrush.Freeze();
             FailedBrush.Freeze();
+            InProgressBrush.Freeze();
             InconclusiveBrush.Freeze();
             NotSupportedBrush.Freeze();
             NeutralBrush.Freeze();
@@ -28,7 +30,20 @@ namespace BlueDoc.UI.Common
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is DiagnosticStatus diagStatus)
+            if (value is DeviceOperationStatus opStatus)
+            {
+                switch (opStatus)
+                {
+                    case DeviceOperationStatus.Succeeded: return PassedBrush;
+                    case DeviceOperationStatus.Failed: return FailedBrush;
+                    case DeviceOperationStatus.InProgress: return InProgressBrush;
+                    case DeviceOperationStatus.RequiresUserInteraction: return WarningBrush;
+                    case DeviceOperationStatus.Unsupported: return NotSupportedBrush;
+                    case DeviceOperationStatus.Requested: return NeutralBrush;
+                    default: return NeutralBrush;
+                }
+            }
+            else if (value is DiagnosticStatus diagStatus)
             {
                 switch (diagStatus)
                 {
@@ -66,7 +81,19 @@ namespace BlueDoc.UI.Common
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is DiagnosticStatus status)
+            if (value is DeviceOperationStatus opStatus)
+            {
+                switch (opStatus)
+                {
+                    case DeviceOperationStatus.Succeeded: return "PASSED";
+                    case DeviceOperationStatus.Failed: return "FAILED";
+                    case DeviceOperationStatus.InProgress: return "IN PROGRESS";
+                    case DeviceOperationStatus.RequiresUserInteraction: return "ACTION REQUIRED";
+                    case DeviceOperationStatus.Unsupported: return "NOT SUPPORTED";
+                    case DeviceOperationStatus.Requested: return "PENDING";
+                }
+            }
+            else if (value is DiagnosticStatus status)
             {
                 switch (status)
                 {
@@ -123,6 +150,29 @@ namespace BlueDoc.UI.Common
         }
     }
 
+    public class CountToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            int count = 0;
+            if (value is int i) count = i;
+            else if (value is long l) count = (int)l;
+            else if (value != null && int.TryParse(value.ToString(), out int parsed)) count = parsed;
+
+            bool isZero = (count == 0);
+            if (parameter is string p && p.Equals("Inverse", StringComparison.OrdinalIgnoreCase))
+            {
+                return isZero ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return isZero ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class BoolToSuccessConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -137,6 +187,87 @@ namespace BlueDoc.UI.Common
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    public class NotificationTypeToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is NotificationType type)
+            {
+                var appResources = System.Windows.Application.Current?.Resources;
+                if (appResources != null)
+                {
+                    switch (type)
+                    {
+                        case NotificationType.Success:
+                            return appResources["SuccessBrush"] as Brush;
+                        case NotificationType.Warning:
+                            return appResources["WarningBrush"] as Brush;
+                        case NotificationType.Error:
+                            return appResources["DangerBrush"] as Brush;
+                        case NotificationType.Info:
+                            return appResources["InfoBrush"] as Brush;
+                        case NotificationType.Running:
+                            return appResources["AccentBrush"] as Brush;
+                    }
+                }
+            }
+            return Brushes.SlateGray;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class NotificationTypeToGeometryConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is NotificationType type)
+            {
+                var appResources = System.Windows.Application.Current?.Resources;
+                if (appResources != null)
+                {
+                    switch (type)
+                    {
+                        case NotificationType.Success:
+                            return appResources["IconCheckCirclePath"] as Geometry;
+                        case NotificationType.Warning:
+                            return appResources["IconAlertTrianglePath"] as Geometry;
+                        case NotificationType.Error:
+                            return appResources["IconXCirclePath"] as Geometry;
+                        case NotificationType.Info:
+                            return appResources["IconInfoCirclePath"] as Geometry;
+                        case NotificationType.Running:
+                            return appResources["IconRefreshPath"] as Geometry;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class EqualityToBooleanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value == null && parameter == null) return true;
+            if (value == null || parameter == null) return false;
+            return string.Equals(value.ToString(), parameter.ToString(), StringComparison.OrdinalIgnoreCase);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return Binding.DoNothing;
         }
     }
 }

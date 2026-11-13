@@ -1,0 +1,74 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- =========================================================================
+         BlueDoc Design System - Spacing & Dimension Scale
+         Base Grid: 4px Incremental Rhythm
+         Defines consistent margins, paddings, corner radii, and control heights
+         ========================================================================= -->
+
+    <!-- Base 4px Spacing Scale Values -->
+    <sys:Double x:Key="Spacing2">2.0</sys:Double>
+    <sys:Double x:Key="Spacing4">4.0</sys:Double>
+    <sys:Double x:Key="Spacing8">8.0</sys:Double>
+    <sys:Double x:Key="Spacing12">12.0</sys:Double>
+    <sys:Double x:Key="Spacing16">16.0</sys:Double>
+    <sys:Double x:Key="Spacing20">20.0</sys:Double>
+    <sys:Double x:Key="Spacing24">24.0</sys:Double>
+    <sys:Double x:Key="Spacing32">32.0</sys:Double>
+    <sys:Double x:Key="Spacing40">40.0</sys:Double>
+    <sys:Double x:Key="Spacing48">48.0</sys:Double>
+
+    <!-- Standard Margins (Thickness) -->
+    <Thickness x:Key="MarginNone">0,0,0,0</Thickness>
+    <Thickness x:Key="MarginSmall">4,4,4,4</Thickness>
+    <Thickness x:Key="MarginMedium">8,8,8,8</Thickness>
+    <Thickness x:Key="MarginLarge">16,16,16,16</Thickness>
+
+    <!-- Contextual Element Spacing -->
+    <Thickness x:Key="MarginCardBottom">0,0,0,16</Thickness>
+    <Thickness x:Key="MarginSectionBottom">0,0,0,20</Thickness>
+    <Thickness x:Key="MarginItemBottom">0,0,0,8</Thickness>
+    <Thickness x:Key="MarginItemRight">0,0,8,0</Thickness>
+    <Thickness x:Key="MarginItemLeft">8,0,0,0</Thickness>
+    <Thickness x:Key="MarginIconRight">0,0,8,0</Thickness>
+
+    <!-- Standard Paddings (Thickness) -->
+    <Thickness x:Key="PaddingNone">0,0,0,0</Thickness>
+    <Thickness x:Key="PaddingInput">10,6,10,6</Thickness>
+    <Thickness x:Key="PaddingButton">14,7,14,7</Thickness>
+    <Thickness x:Key="PaddingButtonSmall">10,4,10,4</Thickness>
+    <Thickness x:Key="PaddingButtonLarge">18,9,18,9</Thickness>
+    <Thickness x:Key="PaddingCard">16,16,16,16</Thickness>
+    <Thickness x:Key="PaddingCardDense">12,12,12,12</Thickness>
+    <Thickness x:Key="PaddingCardSpacious">20,20,20,20</Thickness>
+    <Thickness x:Key="PaddingBadge">8,3,8,3</Thickness>
+    <Thickness x:Key="PaddingDialog">24,24,24,24</Thickness>
+    <Thickness x:Key="PaddingTableRow">12,8,12,8</Thickness>
+
+    <!-- Standard Corner Radii -->
+    <CornerRadius x:Key="CornerRadiusNone">0</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusSmall">4</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusMedium">6</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusCard">8</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusLarge">12</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusPill">999</CornerRadius>
+
+    <!-- Standard Control Heights & Dimensions -->
+    <sys:Double x:Key="ControlHeightSmall">26.0</sys:Double>
+    <sys:Double x:Key="ControlHeightMedium">32.0</sys:Double>
+    <sys:Double x:Key="ControlHeightLarge">38.0</sys:Double>
+    <sys:Double x:Key="ControlHeightInput">34.0</sys:Double>
+
+    <!-- Standard Icon Sizes -->
+    <sys:Double x:Key="IconSizeSmall">12.0</sys:Double>
+    <sys:Double x:Key="IconSizeMedium">16.0</sys:Double>
+    <sys:Double x:Key="IconSizeLarge">20.0</sys:Double>
+
+    <!-- Sidebar Layout Dimensions -->
+    <sys:Double x:Key="SidebarWidth">280.0</sys:Double>
+    <sys:Double x:Key="HeaderHeight">60.0</sys:Double>
+
+</ResourceDictionary>
+

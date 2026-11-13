@@ -39,10 +39,16 @@
     <Compile Include="Enums\DiagnosticStatus.cs" />
     <Compile Include="Enums\AdapterStatus.cs" />
     <Compile Include="Enums\DeviceType.cs" />
+    <Compile Include="Enums\DiscoveryMode.cs" />
+    <Compile Include="Enums\BluetoothPairingStage.cs" />
+    <Compile Include="Enums\BluetoothConnectionStage.cs" />
     <Compile Include="Enums\BluetoothStackType.cs" />
     <Compile Include="Enums\WindowsPlatformType.cs" />
+    <Compile Include="Enums\DeviceOperationStatus.cs" />
+    <Compile Include="Enums\ConfidenceLevel.cs" />
     <Compile Include="Models\BluetoothAdapterInfo.cs" />
     <Compile Include="Models\BluetoothDeviceInfo.cs" />
+    <Compile Include="Models\DeviceOperationResult.cs" />
     <Compile Include="Models\DriverInfo.cs" />
     <Compile Include="Models\ServiceInfo.cs" />
     <Compile Include="Models\DiagnosticResult.cs" />
@@ -53,6 +59,8 @@
     <Compile Include="Models\RepairHistoryRecord.cs" />
     <Compile Include="Models\BluetoothEventRecord.cs" />
     <Compile Include="Models\DiagnosticReport.cs" />
+    <Compile Include="Models\ConnectionFailureDiagnosis.cs" />
+    <Compile Include="Models\StartupHealthAssessment.cs" />
     <Compile Include="Interfaces\IBluetoothProvider.cs" />
     <Compile Include="Interfaces\IHardwareInspector.cs" />
     <Compile Include="Interfaces\IServiceInspector.cs" />

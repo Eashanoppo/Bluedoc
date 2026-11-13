@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" 
-             d:DesignHeight="750" d:DesignWidth="950">
+             d:DesignHeight="950" d:DesignWidth="1050">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="28,24,28,32">
@@ -25,86 +25,89 @@
             </Grid>
 
             <!-- Overall Verdict Banner -->
-            <Border Background="#1C273C" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="18,14" Margin="0,0,0,20">
+            <Border Background="{DynamicResource AccentSubtleBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" CornerRadius="8" Padding="18,16" Margin="0,0,0,20">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <TextBlock Text="COMPATIBILITY EVALUATION VERDICT" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
-                        <TextBlock Text="{Binding OverallVerdict}" FontSize="16" FontWeight="Bold" Foreground="{Binding VerdictColor}" Margin="0,4,0,4" />
-                        <TextBlock Text="{Binding GuidanceNotes}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                    <Border Background="{DynamicResource AccentBrush}" Width="40" Height="40" CornerRadius="20" Margin="0,0,16,0" VerticalAlignment="Center">
+                        <TextBlock Text="🛡️" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="COMPATIBILITY EVALUATION VERDICT" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" />
+                        <TextBlock Text="{Binding OverallVerdict}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,4,0,4" />
+                        <TextBlock Text="{Binding GuidanceNotes}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- OS Info Card -->
-            <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+            <!-- OS Profile & Primary Hardware Card -->
+            <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,20">
                 <StackPanel>
-                    <TextBlock Text="OPERATING SYSTEM PROFILE" Style="{StaticResource CardHeaderTitle}" Margin="0,0,0,4" />
-                    <TextBlock Text="Actual runtime OS version retrieved via low-level kernel query (ntdll!RtlGetVersion)." Style="{StaticResource CardSubtitle}" Margin="0,0,0,16" />
+                    <TextBlock Text="OPERATING SYSTEM &amp; STACK PROFILE" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                    <TextBlock Text="Actual runtime OS version retrieved via low-level kernel query (ntdll!RtlGetVersion)." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,16" />
 
-                    <Grid Margin="0,0,0,10">
+                    <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="220" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="Operating System" Foreground="{StaticResource TextMutedBrush}" />
-                        <TextBlock Grid.Column="1" Text="{Binding OsVersion.OperatingSystemName}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Operating System" Foreground="{DynamicResource TextMutedBrush}" />
+                        <TextBlock Grid.Column="1" Text="{Binding OsVersion.OperatingSystemName}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
                     </Grid>
 
-                    <Grid Margin="0,0,0,10">
+                    <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="220" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="Build Number" Foreground="{StaticResource TextMutedBrush}" />
-                        <TextBlock Grid.Column="1" Text="{Binding OsVersion.BuildNumber}" FontFamily="Consolas, Courier New" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Kernel Build Number" Foreground="{DynamicResource TextMutedBrush}" />
+                        <TextBlock Grid.Column="1" Text="{Binding OsVersion.BuildNumber}" FontFamily="Consolas, Courier New" Foreground="{DynamicResource TextPrimaryBrush}" />
                     </Grid>
 
-                    <Grid Margin="0,0,0,10">
+                    <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="220" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="System Architecture" Foreground="{StaticResource TextMutedBrush}" />
-                        <TextBlock Grid.Column="1" Text="{Binding OsVersion.ArchitectureDisplay}" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="System Architecture" Foreground="{DynamicResource TextMutedBrush}" />
+                        <TextBlock Grid.Column="1" Text="{Binding OsVersion.ArchitectureDisplay}" Foreground="{DynamicResource TextPrimaryBrush}" />
                     </Grid>
 
-                    <Grid Margin="0,0,0,6">
+                    <Grid Margin="0,0,0,4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="220" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="Primary Adapter" Foreground="{StaticResource TextMutedBrush}" />
-                        <TextBlock Grid.Column="1" Text="{Binding PrimaryAdapter.FriendlyName, FallbackValue='Realtek Bluetooth Adapter'}" Foreground="{StaticResource AccentBrush}" FontWeight="SemiBold" />
+                        <TextBlock Text="Active Primary Adapter" Foreground="{DynamicResource TextMutedBrush}" />
+                        <TextBlock Grid.Column="1" Text="{Binding PrimaryAdapter.FriendlyName, FallbackValue='Generic / Detected Bluetooth Transceiver'}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" />
                     </Grid>
                 </StackPanel>
             </Border>
 
             <!-- API Support Checklist -->
-            <Border Style="{StaticResource CardPanel}">
+            <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,20">
                 <StackPanel>
-                    <TextBlock Text="SUBSYSTEM &amp; API READINESS MATRIX" Style="{StaticResource CardHeaderTitle}" Margin="0,0,0,4" />
-                    <TextBlock Text="Verification of supported low-level subsystems, driver stacks, and Windows APIs." Style="{StaticResource CardSubtitle}" Margin="0,0,0,16" />
+                    <TextBlock Text="SUBSYSTEM &amp; API READINESS MATRIX" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                    <TextBlock Text="Verification of supported low-level subsystems, driver stacks, and Windows APIs." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,16" />
 
                     <ItemsControl ItemsSource="{Binding Subsystems}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="#1C273C" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="14,12" Margin="0,0,0,10">
+                                <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Padding="14,12" Margin="0,0,0,10">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" FontSize="13" />
-                                            <TextBlock Text="{Binding Description}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,2" />
-                                            <TextBlock Text="{Binding Details}" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" />
+                                            <TextBlock Text="{Binding Description}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,2" />
+                                            <TextBlock Text="{Binding Details}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0" TextWrapping="Wrap" />
                                         </StackPanel>
-                                        <Border Grid.Column="1" Background="{Binding StatusColor}" CornerRadius="4" Padding="10,4" VerticalAlignment="Center" Margin="12,0,0,0">
-                                            <TextBlock Text="{Binding StatusDisplay}" FontSize="10" FontWeight="Bold" Foreground="White" />
+                                        <Border Grid.Column="1" Background="{DynamicResource AccentSubtleBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" CornerRadius="4" Padding="10,4" VerticalAlignment="Center" Margin="12,0,0,0">
+                                            <TextBlock Text="{Binding StatusDisplay}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
                                         </Border>
                                     </Grid>
                                 </Border>
@@ -113,6 +116,37 @@
                     </ItemsControl>
                 </StackPanel>
             </Border>
+
+            <!-- Unsupported Operations & Adapter Limitations Cards -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Platform Limitations Card -->
+                <Border Grid.Column="0" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="18">
+                    <StackPanel>
+                        <Border Background="{DynamicResource WarningSubtleBrush}" CornerRadius="4" Padding="8,4" HorizontalAlignment="Left" Margin="0,0,0,12">
+                            <TextBlock Text="PLATFORM OS BOUNDARIES" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" />
+                        </Border>
+                        <TextBlock Text="• Windows 7 SP1: Fully supports Classic Bluetooth 2.1/3.0 inquiry, RFCOMM sockets, and audio stream routing. Modern Windows.Devices.Bluetooth WinRT APIs are not present in the Windows 7 kernel." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,10" />
+                        <TextBlock Text="• Windows 10 (15063+) &amp; Windows 11: Delivers complete native support for BLE Advertisement Watcher, GATT Client, and automated Windows pairing wizards." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Hardware Architecture Limits Card -->
+                <Border Grid.Column="2" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="18">
+                    <StackPanel>
+                        <Border Background="{DynamicResource AccentSubtleBrush}" CornerRadius="4" Padding="8,4" HorizontalAlignment="Left" Margin="0,0,0,12">
+                            <TextBlock Text="CONTROLLER HARDWARE LIMITS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+                        </Border>
+                        <TextBlock Text="• Controller LMP version dictates maximum BLE packet length (Data Packet Length Extension, BT 4.2+) and Extended Advertising (BT 5.0+)." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,10" />
+                        <TextBlock Text="• Dual-mode concurrent A2DP audio streaming depends on host controller bandwidth and Bluetooth firmware capabilities." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
