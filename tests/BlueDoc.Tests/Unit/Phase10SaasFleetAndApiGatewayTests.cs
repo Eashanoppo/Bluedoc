@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using BlueDoc.Application.Cloud;
+using BlueDoc.Tests.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -145,7 +146,7 @@ namespace BlueDoc.Tests.Unit
 
             // Test filtering logic
             var vm = new BlueDoc.UI.ViewModels.SaasFleetDashboardViewModel();
-            vm.RefreshFleetData();
+            vm.LoadFleetMetrics(metrics);
 
             Assert(vm.Metrics != null, "Dashboard ViewModel loaded metrics");
             Assert(vm.FilteredMachines != null && vm.FilteredMachines.Count >= 5, "Dashboard loaded filtered machines list");

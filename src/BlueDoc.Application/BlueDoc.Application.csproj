@@ -88,7 +88,6 @@
     <Compile Include="Cloud\ISaasTelemetryService.cs" />
     <Compile Include="Cloud\SaasTelemetryService.cs" />
     <Compile Include="Cloud\FleetModels.cs" />
-    <Compile Include="Cloud\MockSaasCloudApiGateway.cs" />
     <Compile Include="Cloud\SaasTelemetryPollerService.cs" />
     <Compile Include="Cloud\ICloudFleetClient.cs" />
     <Compile Include="Cloud\CloudModels.cs" />

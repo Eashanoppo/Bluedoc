@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
@@ -7,6 +9,8 @@ using System.Threading.Tasks;
 using BlueDoc.Core.Enums;
 using BlueDoc.Core.Models;
 using BlueDoc.Infrastructure.Native;
+using BlueDoc.Infrastructure.Platform;
+using Windows.Devices.Radios;
 
 namespace BlueDoc.Infrastructure.Hardware
 {
@@ -23,6 +27,17 @@ namespace BlueDoc.Infrastructure.Hardware
         {
             try
             {
+                // 1. On Windows 10/11, check the modern Radio Manager first
+                if (OperatingSystemInspector.IsWindows10OrGreater())
+                {
+                    bool? winRtState = GetWinRtRadioStateInternal();
+                    if (winRtState.HasValue)
+                    {
+                        return winRtState.Value;
+                    }
+                }
+
+                // 2. Fallback / Windows 7 check: verify adapter DevNode
                 var primary = _inspector.GetPrimaryAdapter();
                 if (primary == null) return false;
 
@@ -40,7 +55,7 @@ namespace BlueDoc.Infrastructure.Hardware
                     }
                 }
 
-                // Check primary adapter problem code
+                // Check primary adapter problem code (e.g. Code 22 = disabled)
                 if (primary.ProblemCode == 22 || !primary.IsEnabled)
                 {
                     return false;
@@ -71,38 +86,88 @@ namespace BlueDoc.Infrastructure.Hardware
             }
         }
 
-        public Task<bool> SetRadioPowerStateAsync(bool enable, string deviceInstanceId = null)
+        public async Task<bool> SetRadioPowerStateAsync(bool enable, string deviceInstanceId = null)
         {
-            return Task.Run(() =>
+            try
             {
-                try
+                bool success = false;
+
+                // 1. On Windows 10/11: Use Windows.Devices.Radios.Radio (No UAC elevation required)
+                if (OperatingSystemInspector.IsWindows10OrGreater())
+                {
+                    success = await SetWinRtRadioStateInternalAsync(enable);
+                }
+
+                // 2. If turning ON, guarantee the Bluetooth Support Service is running
+                if (enable)
+                {
+                    EnsureBluetoothServiceStarted();
+                }
+
+                // 3. Fallback for Windows 7 or if WinRT radio control is not supported
+                if (!success)
                 {
                     var primary = _inspector.GetPrimaryAdapter();
                     var targetId = !string.IsNullOrEmpty(deviceInstanceId)
                         ? deviceInstanceId
                         : primary?.DeviceInstanceId;
 
-                    if (string.IsNullOrEmpty(targetId))
+                    if (!string.IsNullOrEmpty(targetId))
                     {
-                        return false;
+                        success = await Task.Run(() => SetPnpDeviceState(targetId, enable));
                     }
-
-                    bool pnpSuccess = SetPnpDeviceState(targetId, enable);
-
-                    // If turning ON and bthserv is stopped, ensure bthserv starts so Windows apps can communicate
-                    if (enable)
-                    {
-                        EnsureBluetoothServiceStarted();
-                    }
-
-                    return pnpSuccess;
                 }
-                catch (Exception ex)
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"HardwareRadioManager error: {ex.Message}");
+                return false;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static async Task<bool> SetWinRtRadioStateInternalAsync(bool enable)
+        {
+            try
+            {
+                var radios = await Radio.GetRadiosAsync();
+                var btRadio = radios.FirstOrDefault(r => r.Kind == RadioKind.Bluetooth);
+                if (btRadio != null)
                 {
-                    Debug.WriteLine($"HardwareRadioManager error: {ex.Message}");
-                    return false;
+                    var targetState = enable ? RadioState.On : RadioState.Off;
+                    var result = await btRadio.SetStateAsync(targetState);
+                    return result == RadioAccessStatus.Allowed;
                 }
-            });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[HardwareRadioManager] WinRT Radio set state error: {ex.Message}");
+            }
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool? GetWinRtRadioStateInternal()
+        {
+            try
+            {
+                var task = Task.Run(async () =>
+                {
+                    var radios = await Radio.GetRadiosAsync();
+                    return radios.FirstOrDefault(r => r.Kind == RadioKind.Bluetooth);
+                });
+
+                if (task.Wait(1500) && task.Result != null)
+                {
+                    return task.Result.State == RadioState.On;
+                }
+            }
+            catch
+            {
+            }
+            return null;
         }
 
         private bool SetPnpDeviceState(string instanceId, bool enable)

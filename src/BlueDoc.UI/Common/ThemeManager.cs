@@ -12,7 +12,7 @@ namespace BlueDoc.UI.Common
 
     public static class ThemeManager
     {
-        public static AppTheme CurrentTheme { get; private set; } = AppTheme.Dark;
+        public static AppTheme CurrentTheme { get; private set; } = AppTheme.Light;
 
         public static event Action<AppTheme> ThemeChanged;
 
@@ -24,146 +24,172 @@ namespace BlueDoc.UI.Common
 
             if (theme == AppTheme.Light)
             {
-                // Core Surfaces
-                SetBrush(resources, "BgDarkBrush", "#F6F8FA");
-                SetBrush(resources, "DarkBgBrush", "#F6F8FA");
-                SetBrush(resources, "SurfaceCanvasBrush", "#F6F8FA");
-                SetBrush(resources, "SidebarBgBrush", "#EEF1F4");
-                SetBrush(resources, "SurfaceSidebarBrush", "#EEF1F4");
+                // macOS Sonoma Sidebar Gradient (#F7D6C4 -> #E8D5F5 -> #D4C5F0)
+                SetLinearGradient(resources, "SidebarGradientBrush", 
+                    (Color)ColorConverter.ConvertFromString("#F7D6C4"),
+                    (Color)ColorConverter.ConvertFromString("#D4C5F0"),
+                    (Color)ColorConverter.ConvertFromString("#E8D5F5"));
+
+                // Core Canvas & Surfaces
+                SetBrush(resources, "MainBgBrush", "#FFFFFF");
                 SetBrush(resources, "CardBgBrush", "#FFFFFF");
+                SetBrush(resources, "CardBorderBrush", "#E5E5E7");
+                SetBrush(resources, "BorderBrush", "#E5E5E7");
+                SetBrush(resources, "BorderSubtleBrush", "#ECECEE");
+                SetBrush(resources, "BorderStrongBrush", "#D1D1D6");
+
+                SetBrush(resources, "BgDarkBrush", "#FFFFFF");
+                SetBrush(resources, "DarkBgBrush", "#FFFFFF");
+                SetBrush(resources, "SurfaceCanvasBrush", "#FFFFFF");
+                SetBrush(resources, "SidebarBgBrush", "#F5F2F9");
+                SetBrush(resources, "SurfaceSidebarBrush", "#F5F2F9");
                 SetBrush(resources, "SurfaceCardBrush", "#FFFFFF");
-                SetBrush(resources, "CardBgHoverBrush", "#F3F4F6");
-                SetBrush(resources, "SurfaceCardHoverBrush", "#F3F4F6");
-                SetBrush(resources, "CardBgPressedBrush", "#E5E7EB");
+                SetBrush(resources, "SurfaceCardHoverBrush", "#F9F9FB");
                 SetBrush(resources, "SurfaceElevatedBrush", "#FFFFFF");
-                SetBrush(resources, "SurfaceSunkenBrush", "#EAEEF2");
+                SetBrush(resources, "SurfaceSunkenBrush", "#F2F2F7");
+                SetBrush(resources, "HeaderBgBrush", "#FFFFFF");
 
-                // Borders
-                SetBrush(resources, "BorderBrush", "#D0D7DE");
-                SetBrush(resources, "BorderSubtleBrush", "#D0D7DE");
-                SetBrush(resources, "BorderStrongBrush", "#AFB8C1");
-                SetBrush(resources, "BorderFocusBrush", "#0969DA");
-                SetBrush(resources, "FocusRingBrush", "#0969DA");
-
-                // Typography / Text
-                SetBrush(resources, "TextPrimaryBrush", "#1F2328");
-                SetBrush(resources, "TextSecondaryBrush", "#57606A");
-                SetBrush(resources, "TextMutedBrush", "#656D76");
-                SetBrush(resources, "TextDisabledBrush", "#8C959F");
+                // Typography / Text (macOS Sonoma Light)
+                SetBrush(resources, "TextPrimaryBrush", "#1D1D1F");
+                SetBrush(resources, "TextSecondaryBrush", "#6E6E73");
+                SetBrush(resources, "TextMutedBrush", "#86868B");
+                SetBrush(resources, "TextDisabledBrush", "#C7C7CC");
                 SetBrush(resources, "TextOnAccentBrush", "#FFFFFF");
 
-                // Brand / Accent
-                SetBrush(resources, "AccentBrush", "#0969DA");
-                SetBrush(resources, "AccentHoverBrush", "#0854B2");
-                SetBrush(resources, "AccentPressedBrush", "#074592");
-                SetBrush(resources, "AccentSubtleBrush", "#DDF4FF");
+                // Brand / Accent (#007AFF) & Feedback
+                SetBrush(resources, "AccentBrush", "#007AFF");
+                SetBrush(resources, "AccentHoverBrush", "#0062CC");
+                SetBrush(resources, "AccentPressedBrush", "#004FB3");
+                SetBrush(resources, "AccentSubtleBrush", "#E5F1FF");
 
-                // Semantics
-                SetBrush(resources, "SuccessBrush", "#1A7F37");
-                SetBrush(resources, "SuccessSubtleBrush", "#DAFBE1");
-                SetBrush(resources, "WarningBrush", "#9A6700");
-                SetBrush(resources, "WarningSubtleBrush", "#FFF8C5");
-                SetBrush(resources, "DangerBrush", "#CF222E");
-                SetBrush(resources, "DangerSubtleBrush", "#FFEBE9");
-                SetBrush(resources, "InfoBrush", "#0969DA");
-                SetBrush(resources, "InfoSubtleBrush", "#DDF4FF");
+                SetBrush(resources, "SuccessBrush", "#34C759");
+                SetBrush(resources, "SuccessSubtleBrush", "#E8F8ED");
+                SetBrush(resources, "WarningBrush", "#FF9500");
+                SetBrush(resources, "WarningSubtleBrush", "#FFF4E5");
+                SetBrush(resources, "DangerBrush", "#FF3B30");
+                SetBrush(resources, "DangerSubtleBrush", "#FDECEC");
+                SetBrush(resources, "InfoBrush", "#007AFF");
+                SetBrush(resources, "InfoSubtleBrush", "#E5F1FF");
 
-                // Navigation
-                SetBrush(resources, "NavActiveBgBrush", "#E1E4E8");
-                SetBrush(resources, "NavActiveTextBrush", "#0969DA");
-                SetBrush(resources, "NavHoverBgBrush", "#EAEEF2");
-                SetBrush(resources, "HeaderBgBrush", "#F6F8FA");
-                SetBrush(resources, "NavGroupTextBrush", "#656D76");
-                SetBrush(resources, "NavGroupBgBrush", "#F6F8FA");
-                SetBrush(resources, "ArrowBrush", "#8C959F");
-                SetBrush(resources, "ArrowActiveBrush", "#0969DA");
-
-                // Segmented Switch
-                SetBrush(resources, "PillBgBrush", "#E1E4E8");
+                // Navigation & Pills
+                SetBrush(resources, "NavActiveBgBrush", "#007AFF");
+                SetBrush(resources, "NavActiveTextBrush", "#FFFFFF");
+                SetBrush(resources, "NavHoverBgBrush", "#E5E5EA");
+                SetBrush(resources, "NavGroupTextBrush", "#6E6E73");
+                SetBrush(resources, "NavGroupBgBrush", "#00000000");
+                SetBrush(resources, "PillBgBrush", "#E5E5EA");
                 SetBrush(resources, "PillActiveBgBrush", "#FFFFFF");
-                SetBrush(resources, "PillActiveTextBrush", "#1F2328");
-                SetBrush(resources, "PillInactiveTextBrush", "#57606A");
+                SetBrush(resources, "PillActiveTextBrush", "#1D1D1F");
+                SetBrush(resources, "PillInactiveTextBrush", "#6E6E73");
 
-                // Shimmer & Modals
-                SetBrush(resources, "SkeletonBaseBrush", "#E1E4E8");
-                SetBrush(resources, "SkeletonShimmerBrush", "#F6F8FA");
-                SetBrush(resources, "OverlayBrush", "#800F172A");
+                // macOS Specific
+                SetBrush(resources, "MacOSSearchBgBrush", "#FFFFFF", 0.45);
+                SetBrush(resources, "MacOSNavHoverBrush", "#FFFFFF", 0.15);
+                SetBrush(resources, "MacOSNavSelectedBrush", "#FFFFFF", 0.25);
+                SetBrush(resources, "FocusRingBrush", "#007AFF");
+                SetBrush(resources, "OverlayBrush", "#40000000");
+                SetBrush(resources, "SkeletonBaseBrush", "#E5E5EA");
+                SetBrush(resources, "SkeletonShimmerBrush", "#F2F2F7");
             }
             else // Dark
             {
-                // Core Surfaces (Deep Charcoal Identity)
-                SetBrush(resources, "BgDarkBrush", "#0E1116");
-                SetBrush(resources, "DarkBgBrush", "#0E1116");
-                SetBrush(resources, "SurfaceCanvasBrush", "#0E1116");
-                SetBrush(resources, "SidebarBgBrush", "#0A0D11");
-                SetBrush(resources, "SurfaceSidebarBrush", "#0A0D11");
-                SetBrush(resources, "CardBgBrush", "#161B22");
-                SetBrush(resources, "SurfaceCardBrush", "#161B22");
-                SetBrush(resources, "CardBgHoverBrush", "#1C2128");
-                SetBrush(resources, "SurfaceCardHoverBrush", "#1C2128");
-                SetBrush(resources, "CardBgPressedBrush", "#14181E");
-                SetBrush(resources, "SurfaceElevatedBrush", "#21262D");
-                SetBrush(resources, "SurfaceSunkenBrush", "#0A0C10");
+                // macOS Sonoma Sidebar Gradient (#2C2C2E -> #1C1C1E)
+                SetLinearGradient(resources, "SidebarGradientBrush", 
+                    (Color)ColorConverter.ConvertFromString("#2C2C2E"),
+                    (Color)ColorConverter.ConvertFromString("#1C1C1E"));
 
-                // Borders
-                SetBrush(resources, "BorderBrush", "#30363D");
-                SetBrush(resources, "BorderSubtleBrush", "#21262D");
-                SetBrush(resources, "BorderStrongBrush", "#3D444D");
-                SetBrush(resources, "BorderFocusBrush", "#388BFD");
-                SetBrush(resources, "FocusRingBrush", "#388BFD");
+                // Core Canvas & Surfaces
+                SetBrush(resources, "MainBgBrush", "#1E1E1E");
+                SetBrush(resources, "CardBgBrush", "#2C2C2E");
+                SetBrush(resources, "CardBorderBrush", "#3A3A3C");
+                SetBrush(resources, "BorderBrush", "#3A3A3C");
+                SetBrush(resources, "BorderSubtleBrush", "#323234");
+                SetBrush(resources, "BorderStrongBrush", "#48484A");
 
-                // Typography / Text
-                SetBrush(resources, "TextPrimaryBrush", "#F0F3F6");
-                SetBrush(resources, "TextSecondaryBrush", "#8B949E");
-                SetBrush(resources, "TextMutedBrush", "#6E7681");
-                SetBrush(resources, "TextDisabledBrush", "#484F58");
+                SetBrush(resources, "BgDarkBrush", "#1E1E1E");
+                SetBrush(resources, "DarkBgBrush", "#1E1E1E");
+                SetBrush(resources, "SurfaceCanvasBrush", "#1E1E1E");
+                SetBrush(resources, "SidebarBgBrush", "#2C2C2E");
+                SetBrush(resources, "SurfaceSidebarBrush", "#2C2C2E");
+                SetBrush(resources, "SurfaceCardBrush", "#2C2C2E");
+                SetBrush(resources, "SurfaceCardHoverBrush", "#353538");
+                SetBrush(resources, "SurfaceElevatedBrush", "#323235");
+                SetBrush(resources, "SurfaceSunkenBrush", "#161618");
+                SetBrush(resources, "HeaderBgBrush", "#1E1E1E");
+
+                // Typography / Text (macOS Sonoma Dark)
+                SetBrush(resources, "TextPrimaryBrush", "#F5F5F7");
+                SetBrush(resources, "TextSecondaryBrush", "#86868B");
+                SetBrush(resources, "TextMutedBrush", "#636366");
+                SetBrush(resources, "TextDisabledBrush", "#48484A");
                 SetBrush(resources, "TextOnAccentBrush", "#FFFFFF");
 
-                // Brand / Accent
-                SetBrush(resources, "AccentBrush", "#2F81F7");
-                SetBrush(resources, "AccentHoverBrush", "#58A6FF");
-                SetBrush(resources, "AccentPressedBrush", "#1F6FEB");
-                SetBrush(resources, "AccentSubtleBrush", "#162438");
+                // Brand / Accent (#0A84FF) & Feedback
+                SetBrush(resources, "AccentBrush", "#0A84FF");
+                SetBrush(resources, "AccentHoverBrush", "#409CFF");
+                SetBrush(resources, "AccentPressedBrush", "#0066D6");
+                SetBrush(resources, "AccentSubtleBrush", "#19324D");
 
-                // Semantics
-                SetBrush(resources, "SuccessBrush", "#2EA043");
-                SetBrush(resources, "SuccessSubtleBrush", "#0D2818");
-                SetBrush(resources, "WarningBrush", "#D29922");
-                SetBrush(resources, "WarningSubtleBrush", "#2E2005");
-                SetBrush(resources, "DangerBrush", "#F85149");
-                SetBrush(resources, "DangerSubtleBrush", "#341212");
-                SetBrush(resources, "InfoBrush", "#388BFD");
-                SetBrush(resources, "InfoSubtleBrush", "#0C2D6B");
+                SetBrush(resources, "SuccessBrush", "#34C759");
+                SetBrush(resources, "SuccessSubtleBrush", "#13331D");
+                SetBrush(resources, "WarningBrush", "#FF9F0A");
+                SetBrush(resources, "WarningSubtleBrush", "#332205");
+                SetBrush(resources, "DangerBrush", "#FF453A");
+                SetBrush(resources, "DangerSubtleBrush", "#361514");
+                SetBrush(resources, "InfoBrush", "#0A84FF");
+                SetBrush(resources, "InfoSubtleBrush", "#19324D");
 
-                // Navigation
-                SetBrush(resources, "NavActiveBgBrush", "#1F242C");
-                SetBrush(resources, "NavActiveTextBrush", "#58A6FF");
-                SetBrush(resources, "NavHoverBgBrush", "#161A20");
-                SetBrush(resources, "HeaderBgBrush", "#0E1116");
-                SetBrush(resources, "NavGroupTextBrush", "#6E7681");
-                SetBrush(resources, "NavGroupBgBrush", "#0E1116");
-                SetBrush(resources, "ArrowBrush", "#6E7681");
-                SetBrush(resources, "ArrowActiveBrush", "#58A6FF");
+                // Navigation & Pills
+                SetBrush(resources, "NavActiveBgBrush", "#0A84FF");
+                SetBrush(resources, "NavActiveTextBrush", "#FFFFFF");
+                SetBrush(resources, "NavHoverBgBrush", "#323236");
+                SetBrush(resources, "NavGroupTextBrush", "#86868B");
+                SetBrush(resources, "NavGroupBgBrush", "#00000000");
+                SetBrush(resources, "PillBgBrush", "#323236");
+                SetBrush(resources, "PillActiveBgBrush", "#48484A");
+                SetBrush(resources, "PillActiveTextBrush", "#F5F5F7");
+                SetBrush(resources, "PillInactiveTextBrush", "#86868B");
 
-                // Segmented Switch
-                SetBrush(resources, "PillBgBrush", "#161B22");
-                SetBrush(resources, "PillActiveBgBrush", "#2F81F7");
-                SetBrush(resources, "PillActiveTextBrush", "#FFFFFF");
-                SetBrush(resources, "PillInactiveTextBrush", "#8B949E");
-
-                // Shimmer & Modals
-                SetBrush(resources, "SkeletonBaseBrush", "#161B22");
-                SetBrush(resources, "SkeletonShimmerBrush", "#21262D");
-                SetBrush(resources, "OverlayBrush", "#CC080B0F");
+                // macOS Specific
+                SetBrush(resources, "MacOSSearchBgBrush", "#000000", 0.30);
+                SetBrush(resources, "MacOSNavHoverBrush", "#FFFFFF", 0.10);
+                SetBrush(resources, "MacOSNavSelectedBrush", "#FFFFFF", 0.20);
+                SetBrush(resources, "FocusRingBrush", "#0A84FF");
+                SetBrush(resources, "OverlayBrush", "#80000000");
+                SetBrush(resources, "SkeletonBaseBrush", "#2C2C2E");
+                SetBrush(resources, "SkeletonShimmerBrush", "#3A3A3C");
             }
 
             ThemeChanged?.Invoke(theme);
         }
 
-        private static void SetBrush(ResourceDictionary dict, string key, string hexColor)
+        private static void SetBrush(ResourceDictionary dict, string key, string hexColor, double opacity = 1.0)
         {
             var color = (Color)ColorConverter.ConvertFromString(hexColor);
-            dict[key] = new SolidColorBrush(color);
+            dict[key] = new SolidColorBrush(color) { Opacity = opacity };
+        }
+
+        private static void SetLinearGradient(ResourceDictionary dict, string key, Color c1, Color c2, Color? cMid = null)
+        {
+            var brush = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(0, 1)
+            };
+
+            if (cMid.HasValue)
+            {
+                brush.GradientStops.Add(new GradientStop(c1, 0.0));
+                brush.GradientStops.Add(new GradientStop(cMid.Value, 0.5));
+                brush.GradientStops.Add(new GradientStop(c2, 1.0));
+            }
+            else
+            {
+                brush.GradientStops.Add(new GradientStop(c1, 0.0));
+                brush.GradientStops.Add(new GradientStop(c2, 1.0));
+            }
+
+            dict[key] = brush;
         }
     }
 }

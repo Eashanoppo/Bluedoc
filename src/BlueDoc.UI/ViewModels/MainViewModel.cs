@@ -250,17 +250,20 @@ namespace BlueDoc.UI.ViewModels
 
             ToggleRadioPowerCommand = new RelayCommand(async () =>
             {
-                string target = !IsRadioOn ? "ON" : "OFF";
+                // In WPF, the TwoWay IsChecked binding has already updated IsRadioOn to the desired state.
+                bool targetState = IsRadioOn;
+                string target = targetState ? "ON" : "OFF";
                 var op = Notifications.ShowRunning("Bluetooth Radio", $"Switching radio power {target} via Hardware Bus...");
                 try
                 {
-                    await DashboardVM.ToggleRadioPowerAsync();
+                    await DashboardVM.SetRadioPowerAsync(targetState);
                     IsRadioOn = DashboardVM.IsRadioOn;
                     PrimaryAdapter = DashboardVM.PrimaryAdapter;
                     op.CompleteSuccess("Radio Power Updated", $"Bluetooth controller radio is now {RadioStateDisplay}.");
                 }
                 catch (Exception ex)
                 {
+                    IsRadioOn = DashboardVM.IsRadioOn;
                     op.CompleteError("Radio Power Error", ex.Message);
                 }
             });
@@ -326,6 +329,7 @@ namespace BlueDoc.UI.ViewModels
                 case "Compatibility":
                     ActiveGroup = "DEVICES & HARDWARE";
                     break;
+                case "Diagnostics":
                 case "Diagnostic Test Center":
                 case "Diagnostic Center":
                 case "Audio & Packet Diagnostics":
@@ -340,9 +344,11 @@ namespace BlueDoc.UI.ViewModels
                     break;
                 case "Fix My Bluetooth Connection":
                 case "Fix Connection Doctor":
+                case "Repair Center":
                 case "Safe Repair Center":
+                case "Reports":
                 case "Diagnostic Reports":
-                    ActiveGroup = "MAINTENANCE";
+                    ActiveGroup = "TOOLS";
                     break;
                 case "Bluetooth LE Explorer":
                 case "BLE Explorer":
@@ -387,6 +393,7 @@ namespace BlueDoc.UI.ViewModels
                     CurrentViewModel = HardwareInspectorVM;
                     _ = HardwareInspectorVM.LoadAdaptersAsync();
                     break;
+                case "Diagnostics":
                 case "Diagnostic Test Center":
                 case "Diagnostic Center":
                     CurrentViewModel = DiagnosticCenterVM;
@@ -404,10 +411,12 @@ namespace BlueDoc.UI.ViewModels
                 case "Compatibility":
                     CurrentViewModel = CompatibilityVM;
                     break;
+                case "Repair Center":
                 case "Safe Repair Center":
                     CurrentViewModel = SafeRepairCenterVM;
                     _ = SafeRepairCenterVM.LoadHistoryAsync();
                     break;
+                case "Reports":
                 case "Diagnostic Reports":
                     CurrentViewModel = DiagnosticReportVM;
                     _ = DiagnosticReportVM.GenerateReportAsync();

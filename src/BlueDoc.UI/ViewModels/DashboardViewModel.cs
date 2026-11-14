@@ -146,18 +146,22 @@ namespace BlueDoc.UI.ViewModels
 
         public async Task ToggleRadioPowerAsync()
         {
-            bool targetState = !IsRadioOn;
+            await SetRadioPowerAsync(!IsRadioOn);
+        }
+
+        public async Task SetRadioPowerAsync(bool targetState)
+        {
             StatusMessage = targetState 
-                ? "Powering on Bluetooth radio hardware via PnP controller..."
-                : "Powering down Bluetooth radio transceiver via PnP controller...";
+                ? "Powering on Bluetooth radio transceiver via Radio Subsystem..."
+                : "Powering down Bluetooth radio transceiver via Radio Subsystem...";
 
             bool success = await _radioManager.SetRadioPowerStateAsync(targetState, PrimaryAdapter?.DeviceInstanceId);
-            await Task.Delay(800); // allow bus settling
+            await Task.Delay(500);
 
             IsRadioOn = _radioManager.IsRadioPoweredOn(PrimaryAdapter?.DeviceInstanceId);
             StatusMessage = IsRadioOn
                 ? "Bluetooth radio transceiver active (RF Active, PnP Operational)."
-                : "Bluetooth radio transceiver powered off (RF Stopped, Controller Disabled).";
+                : "Bluetooth radio transceiver powered off (RF Stopped, Radio Disabled).";
 
             await LoadDataAsync();
         }

@@ -78,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="Helpers\MockSaasCloudApiGateway.cs" />
     <Compile Include="Unit\HardwareIdParserTests.cs" />
     <Compile Include="Unit\DiagnosticEngineTests.cs" />
     <Compile Include="Unit\DeviceClassDecoderTests.cs" />

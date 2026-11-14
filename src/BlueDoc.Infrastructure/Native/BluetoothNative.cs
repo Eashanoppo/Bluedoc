@@ -150,5 +150,54 @@ namespace BlueDoc.Infrastructure.Native
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool CloseHandle(IntPtr handle);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SOCKADDR_BTH
+        {
+            public ushort addressFamily; // 32 = AF_BTH
+            public ulong btAddr;
+            public Guid serviceClassId;
+            public uint port;
+        }
+
+        [DllImport("ws2_32.dll", SetLastError = true)]
+        public static extern IntPtr socket(int af, int type, int protocol);
+
+        [DllImport("ws2_32.dll", SetLastError = true)]
+        public static extern int connect(IntPtr s, ref SOCKADDR_BTH name, int namelen);
+
+        [DllImport("ws2_32.dll", SetLastError = true)]
+        public static extern int closesocket(IntPtr s);
+
+        public static bool TryBasebandAclPing(ulong address)
+        {
+            if (address == 0) return false;
+            try
+            {
+                IntPtr s = socket(32, 1, 3); // AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM
+                if (s == IntPtr.Zero || s == (IntPtr)(-1)) return false;
+
+                try
+                {
+                    var sa = new SOCKADDR_BTH
+                    {
+                        addressFamily = 32,
+                        btAddr = address,
+                        serviceClassId = Guid.Empty,
+                        port = 0
+                    };
+                    connect(s, ref sa, Marshal.SizeOf(typeof(SOCKADDR_BTH)));
+                    return true;
+                }
+                finally
+                {
+                    closesocket(s);
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

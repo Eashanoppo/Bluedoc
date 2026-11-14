@@ -7,10 +7,15 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using BlueDoc.Application.Cloud;
 using Newtonsoft.Json;
 
-namespace BlueDoc.Application.Cloud
+namespace BlueDoc.Tests.Helpers
 {
+    /// <summary>
+    /// Test helper for validating loopback HTTP telemetry ingestion and API gateway responses during automated test execution.
+    /// Strictly isolated to the test suite harness.
+    /// </summary>
     public class MockSaasCloudApiGateway : IDisposable
     {
         private HttpListener _listener;
@@ -135,7 +140,6 @@ namespace BlueDoc.Application.Cloud
             var req = context.Request;
             var res = context.Response;
 
-            // CORS headers for modern web interoperability
             res.Headers.Add("Access-Control-Allow-Origin", "*");
             res.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Tenant-Id");
             res.Headers.Add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -151,7 +155,6 @@ namespace BlueDoc.Application.Cloud
 
             try
             {
-                // Health Check
                 if (req.HttpMethod == "GET" && path == "/v1/health")
                 {
                     await WriteJsonResponseAsync(res, 200, new
@@ -164,7 +167,6 @@ namespace BlueDoc.Application.Cloud
                     return;
                 }
 
-                // Authentication Check
                 var authHeader = req.Headers["Authorization"] ?? string.Empty;
                 var hasValidBearer = string.IsNullOrEmpty(_expectedApiKey) ||
                                      authHeader.Equals($"Bearer {_expectedApiKey}", StringComparison.OrdinalIgnoreCase) ||
@@ -180,7 +182,6 @@ namespace BlueDoc.Application.Cloud
                     return;
                 }
 
-                // Route: GET /v1/fleet/metrics
                 if (req.HttpMethod == "GET" && path == "/v1/fleet/metrics")
                 {
                     var metrics = GetFleetMetrics();
@@ -188,7 +189,6 @@ namespace BlueDoc.Application.Cloud
                     return;
                 }
 
-                // Route: GET /v1/fleet/machines
                 if (req.HttpMethod == "GET" && path == "/v1/fleet/machines")
                 {
                     var list = GetAllMachines();
@@ -196,7 +196,6 @@ namespace BlueDoc.Application.Cloud
                     return;
                 }
 
-                // Route: POST /v1/telemetry
                 if (req.HttpMethod == "POST" && path == "/v1/telemetry")
                 {
                     string body;
@@ -246,7 +245,6 @@ namespace BlueDoc.Application.Cloud
                     return;
                 }
 
-                // Not Found
                 await WriteJsonResponseAsync(res, 404, new { error = "Endpoint route not found." });
             }
             catch (Exception ex)

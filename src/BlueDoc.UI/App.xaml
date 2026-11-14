@@ -7,6 +7,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles/Colors.xaml" />
                 <ResourceDictionary Source="Styles/Styles.xaml" />
+                <ResourceDictionary Source="Themes/MacOSTheme.Light.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <common:StatusToBrushConverter x:Key="StatusToBrushConverter" />
@@ -25,4 +26,3 @@
         </ResourceDictionary>
     </Application.Resources>
 </Application>
-

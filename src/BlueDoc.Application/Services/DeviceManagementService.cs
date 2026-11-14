@@ -37,72 +37,16 @@ namespace BlueDoc.Application.Services
             return _bluetoothManager.DiscoverDevicesAsync(timeoutSeconds, progress, cancellationToken);
         }
 
-        public Task<DeviceOperationResult> ConnectDeviceAsync(BluetoothDeviceInfo device)
+        public async Task<DeviceOperationResult> ConnectDeviceAsync(BluetoothDeviceInfo device)
         {
-            return Task.Run(() =>
+            if (device == null || string.IsNullOrWhiteSpace(device.BluetoothAddress))
             {
-                if (device == null || string.IsNullOrWhiteSpace(device.BluetoothAddress))
-                {
-                    return DeviceOperationResult.Fail("No valid device address specified.");
-                }
+                return DeviceOperationResult.Fail("No valid device address specified.");
+            }
 
-                IntPtr hRadio = GetPrimaryRadioHandle();
-                if (hRadio == IntPtr.Zero)
-                {
-                    return DeviceOperationResult.Fail("No active operational Bluetooth radio controller found in Windows.");
-                }
-
-                try
-                {
-                    var devInfo = CreateDeviceInfoFromAddress(device.RawAddress, device.DeviceName);
-                    uint getInfoRes = BluetoothNative.BluetoothGetDeviceInfo(hRadio, ref devInfo);
-
-                    var guidsToEnable = GetTargetGuidsForDevice(device);
-                    bool anySuccess = false;
-                    uint lastError = 0;
-
-                    foreach (var guid in guidsToEnable)
-                    {
-                        var targetGuid = guid;
-                        uint res = BluetoothNative.BluetoothSetServiceState(
-                            hRadio,
-                            ref devInfo,
-                            ref targetGuid,
-                            BluetoothNative.BLUETOOTH_SERVICE_ENABLE);
-
-                        if (res == 0)
-                        {
-                            anySuccess = true;
-                        }
-                        else
-                        {
-                            lastError = res;
-                        }
-                    }
-
-                    if (anySuccess)
-                    {
-                        device.IsConnected = true;
-                        return DeviceOperationResult.Ok($"Successfully established connection to '{device.DisplayName}'.");
-                    }
-                    else
-                    {
-                        string errorDesc = DecodeWin32Error(lastError);
-                        return DeviceOperationResult.Fail(
-                            $"Windows could not connect to '{device.DisplayName}'. ({errorDesc})",
-                            $"Win32 Error: 0x{lastError:X8}. Device may be powered off, out of range, or requires pairing re-initialization.",
-                            lastError);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    return DeviceOperationResult.Fail($"Exception during connection: {ex.Message}");
-                }
-                finally
-                {
-                    BluetoothNative.CloseHandle(hRadio);
-                }
-            });
+            var orchestrator = new BluetoothConnectionOrchestrator();
+            var details = await orchestrator.ConnectPeripheralAsync(device);
+            return details.Result;
         }
 
         public Task<DeviceOperationResult> DisconnectDeviceAsync(BluetoothDeviceInfo device)

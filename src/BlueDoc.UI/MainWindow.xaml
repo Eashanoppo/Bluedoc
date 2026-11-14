@@ -11,7 +11,9 @@
         Height="820" Width="1366"
         MinHeight="680" MinWidth="1024"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource SurfaceCanvasBrush}"
+        WindowStyle="SingleBorderWindow"
+        Background="{DynamicResource MainBgBrush}"
+        FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI, sans-serif"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
         UseLayoutRounding="True">
@@ -21,13 +23,11 @@
     </Window.DataContext>
 
     <Window.InputBindings>
-        <!-- Keyboard Navigation Shortcuts -->
-        <KeyBinding Key="OemOpenBrackets" Modifiers="Control" Command="{Binding ToggleSidebarCommand}" />
         <KeyBinding Key="D" Modifiers="Control" Command="{Binding QuickDiagnosisCommand}" />
     </Window.InputBindings>
 
     <Window.Resources>
-        <!-- Navigation View DataTemplates (All 17 Subsystems Cached in MainViewModel) -->
+        <!-- Functional Subsystem DataTemplates (All 19 Modules) -->
         <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
             <views:DashboardView />
         </DataTemplate>
@@ -87,48 +87,46 @@
         </DataTemplate>
     </Window.Resources>
 
+    <!-- macOS Sonoma 2-Column System Settings Layout -->
     <Grid>
         <Grid.ColumnDefinitions>
-            <!-- Column 0: Collapsible Sidebar (Width bound to ViewModel) -->
-            <ColumnDefinition Width="Auto" />
-            <!-- Column 1: Main Application Canvas -->
+            <!-- Column 0: macOS Sonoma Sidebar (Fixed Width 260px) -->
+            <ColumnDefinition Width="260" />
+            <!-- Column 1: Main Content Area -->
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <!-- =========================================================================
-             1. COLLAPSIBLE SIDEBAR NAVIGATION COLUMN
+             1. MAC OS SONOMA SIDEBAR (Width="260", Pastel/Graphite Gradient, 11px Headers)
              ========================================================================= -->
-        <Border Grid.Column="0" 
-                Width="{Binding SidebarWidth}"
-                Background="{DynamicResource SurfaceSidebarBrush}" 
-                BorderBrush="{DynamicResource BorderBrush}" 
+        <Border Grid.Column="0"
+                Background="{DynamicResource SidebarGradientBrush}"
+                BorderBrush="{DynamicResource CardBorderBrush}"
                 BorderThickness="0,0,1,0"
                 SnapsToDevicePixels="True">
             <Grid>
                 <Grid.RowDefinitions>
+                    <!-- Row 0: Search & Brand Header -->
                     <RowDefinition Height="Auto" />
+                    <!-- Row 1: Grouped Sidebar Navigation List -->
                     <RowDefinition Height="*" />
+                    <!-- Row 2: Sidebar Footer -->
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!-- Brand Header & Collapse Toggle Button -->
-                <Border Grid.Row="0" 
-                        Padding="14,14,14,12" 
-                        BorderBrush="{DynamicResource BorderBrush}" 
-                        BorderThickness="0,0,0,1">
-                    <Grid>
-                        <!-- EXPANDED BRAND VIEW -->
-                        <Grid Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <!-- Search Box & Brand Header -->
+                <Border Grid.Row="0" Margin="14,14,14,8">
+                    <StackPanel>
+                        <!-- Brand Header -->
+                        <Grid Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-
-                            <!-- BlueDoc Brand Icon Badge -->
+                            
                             <Border Grid.Column="0" 
                                     Width="36" Height="36" 
-                                    CornerRadius="9" 
+                                    CornerRadius="10" 
                                     Background="{DynamicResource AccentBrush}" 
                                     Margin="0,0,10,0">
                                 <Path Data="{StaticResource IconBlePath}" 
@@ -139,12 +137,12 @@
                                       VerticalAlignment="Center" />
                             </Border>
 
-                            <!-- Brand Identity Text -->
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="BlueDoc" 
-                                               FontSize="17" 
-                                               FontWeight="Bold" 
+                                               FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI, sans-serif"
+                                               FontSize="16.5" 
+                                               FontWeight="SemiBold" 
                                                Foreground="{DynamicResource TextPrimaryBrush}" />
                                     <Border Background="{DynamicResource AccentSubtleBrush}" 
                                             CornerRadius="4" 
@@ -157,261 +155,200 @@
                                                    Foreground="{DynamicResource AccentBrush}" />
                                     </Border>
                                 </StackPanel>
-                                <TextBlock Text="by UNLEFT LLC" 
+                                <TextBlock Text="System Settings" 
+                                           FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI, sans-serif"
                                            FontSize="11" 
-                                           Foreground="{DynamicResource TextMutedBrush}" />
-                            </StackPanel>
-
-                            <!-- Collapse Button (Chevron Left) -->
-                            <Button Grid.Column="2" 
-                                    Command="{Binding ToggleSidebarCommand}"
-                                    ToolTip="{Binding SidebarToggleTooltip}"
-                                    Style="{StaticResource IconButton}"
-                                    Width="28" Height="28">
-                                <Path Data="{StaticResource IconChevronLeftPath}" 
-                                      Width="10" Height="10" 
-                                      Fill="{DynamicResource TextSecondaryBrush}" 
-                                      Stretch="Uniform" />
-                            </Button>
-                        </Grid>
-
-                        <!-- COLLAPSED BRAND VIEW -->
-                        <Grid Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <StackPanel HorizontalAlignment="Center">
-                                <Button Command="{Binding ToggleSidebarCommand}"
-                                        ToolTip="Expand sidebar (Ctrl+[)"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Cursor="Hand">
-                                    <Border Width="36" Height="36" 
-                                            CornerRadius="9" 
-                                            Background="{DynamicResource AccentBrush}">
-                                        <Path Data="{StaticResource IconBlePath}" 
-                                              Width="18" Height="18" 
-                                              Fill="White" 
-                                              Stretch="Uniform" 
-                                              HorizontalAlignment="Center" 
-                                              VerticalAlignment="Center" />
-                                    </Border>
-                                </Button>
+                                           Foreground="{DynamicResource TextSecondaryBrush}" />
                             </StackPanel>
                         </Grid>
-                    </Grid>
+
+                        <!-- macOS Search Box (CornerRadius=8, 40% Background Opacity) -->
+                        <TextBox Style="{StaticResource MacOsSearchTextBox}" />
+                    </StackPanel>
                 </Border>
 
-                <!-- Navigation Groups List (Scrollable, Supports Both Modes) -->
-                <ScrollViewer Grid.Row="1" 
-                              VerticalScrollBarVisibility="Auto" 
-                              HorizontalScrollBarVisibility="Disabled" 
-                              Padding="10,10,10,10">
-                    <StackPanel>
+                <!-- PRD Section 9 Exact Navigation ListBox -->
+                <ListBox x:Name="SidebarNavList"
+                         Grid.Row="1"
+                         Style="{StaticResource MacOsSidebarListBoxStyle}"
+                         SelectionChanged="SidebarNavList_SelectionChanged"
+                         SelectionMode="Single"
+                         Padding="6,4">
 
-                        <!-- GROUP 1: GENERAL -->
-                        <Border Style="{StaticResource NavGroupContainer}">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" 
-                                            Margin="6,2,0,6"
-                                            Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <Path Data="{StaticResource IconDevicesPath}" Width="11" Height="11" Fill="{DynamicResource NavGroupTextBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0" />
-                                    <TextBlock Text="GENERAL" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource NavGroupTextBrush}" VerticalAlignment="Center" />
-                                </StackPanel>
+                    <!-- ==========================================
+                         OVERVIEW (PRD Section 9)
+                         ========================================== -->
+                    <ListBoxItem IsEnabled="False" Focusable="False" Cursor="Arrow" Padding="12,10,12,2" Margin="0">
+                        <TextBlock Text="OVERVIEW" Style="{StaticResource MacOsGroupHeaderStyle}" Margin="0" />
+                    </ListBoxItem>
 
-                                <RadioButton Tag="{StaticResource IconDashboardPath}" 
-                                             Content="Overview" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Dashboard', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Dashboard" />
-                                <RadioButton Tag="{StaticResource IconBlePath}" 
-                                             Content="Bluetooth" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Bluetooth', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Bluetooth" />
-                                <RadioButton Tag="{StaticResource IconDevicesPath}" 
-                                             Content="Bluetooth Devices" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Bluetooth Devices', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Bluetooth Devices" />
-                                <RadioButton Tag="{StaticResource IconScannerPath}" 
-                                             Content="Device Scanner" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Device Scanner', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Device Scanner" />
-                            </StackPanel>
-                        </Border>
+                    <ListBoxItem Tag="Dashboard"
+                                 IsSelected="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Dashboard'}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Path Grid.Column="0" Data="{StaticResource IconDashboardPath}" Width="14" Height="14" Fill="{DynamicResource TextSecondaryBrush}" Stretch="Uniform" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Dashboard" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </Grid>
+                    </ListBoxItem>
 
-                        <!-- GROUP 2: DEVICES & HARDWARE -->
-                        <Border Style="{StaticResource NavGroupContainer}">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" 
-                                            Margin="6,2,0,6"
-                                            Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <Path Data="{StaticResource IconHardwarePath}" Width="11" Height="11" Fill="{DynamicResource NavGroupTextBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0" />
-                                    <TextBlock Text="DEVICES &amp; HARDWARE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource NavGroupTextBrush}" VerticalAlignment="Center" />
-                                </StackPanel>
+                    <ListBoxItem Tag="Bluetooth Devices"
+                                 IsSelected="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Bluetooth Devices'}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Path Grid.Column="0" Data="{StaticResource IconDevicesPath}" Width="14" Height="14" Fill="{DynamicResource TextSecondaryBrush}" Stretch="Uniform" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Bluetooth Devices" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </Grid>
+                    </ListBoxItem>
 
-                                <RadioButton Tag="{StaticResource IconHardwarePath}" 
-                                             Content="Hardware Inspector" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Advanced Hardware Inspector', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Advanced Hardware Inspector" />
-                                <RadioButton Tag="{StaticResource IconDriverPath}" 
-                                             Content="Driver Assistant" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Driver Assistant', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Driver Assistant" />
-                                <RadioButton Tag="{StaticResource IconCompatibilityPath}" 
-                                             Content="Compatibility" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Compatibility Checker', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Compatibility Checker" />
-                            </StackPanel>
-                        </Border>
+                    <ListBoxItem Tag="Device Scanner"
+                                 IsSelected="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Device Scanner'}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Path Grid.Column="0" Data="{StaticResource IconScannerPath}" Width="14" Height="14" Fill="{DynamicResource TextSecondaryBrush}" Stretch="Uniform" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Device Scanner" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </Grid>
+                    </ListBoxItem>
 
-                        <!-- GROUP 3: DIAGNOSTICS -->
-                        <Border Style="{StaticResource NavGroupContainer}">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" 
-                                            Margin="6,2,0,6"
-                                            Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <Path Data="{StaticResource IconDiagnosticPath}" Width="11" Height="11" Fill="{DynamicResource NavGroupTextBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0" />
-                                    <TextBlock Text="DIAGNOSTICS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource NavGroupTextBrush}" VerticalAlignment="Center" />
-                                </StackPanel>
+                    <!-- ==========================================
+                         DIAGNOSTICS (PRD Section 9)
+                         ========================================== -->
+                    <ListBoxItem IsEnabled="False" Focusable="False" Cursor="Arrow" Padding="12,14,12,2" Margin="0">
+                        <TextBlock Text="DIAGNOSTICS" Style="{StaticResource MacOsGroupHeaderStyle}" Margin="0" />
+                    </ListBoxItem>
 
-                                <RadioButton Tag="{StaticResource IconDiagnosticPath}" 
-                                             Content="Diagnostic Center" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Diagnostic Test Center', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Diagnostic Test Center" />
-                                <RadioButton Tag="{StaticResource IconAudioPath}" 
-                                             Content="Audio Diagnostics" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Audio &amp; Packet Diagnostics', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Audio &amp; Packet Diagnostics" />
-                                <RadioButton Tag="{StaticResource IconEventsPath}" 
-                                             Content="Event Analyzer" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Bluetooth Event Analyzer', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Bluetooth Event Analyzer" />
-                                <RadioButton Tag="{StaticResource IconSignalPath}" 
-                                             Content="Signal Monitor" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Signal &amp; Discovery Monitor', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Signal &amp; Discovery Monitor" />
-                                <RadioButton Tag="{StaticResource IconHistoryPath}" 
-                                             Content="Connection History" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Device Connection History', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Device Connection History" />
-                            </StackPanel>
-                        </Border>
+                    <ListBoxItem Tag="Diagnostics"
+                                 IsSelected="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Diagnostics'}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Path Grid.Column="0" Data="{StaticResource IconDiagnosticsPath}" Width="14" Height="14" Fill="{DynamicResource TextSecondaryBrush}" Stretch="Uniform" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Diagnostics" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </Grid>
+                    </ListBoxItem>
 
-                        <!-- GROUP 4: MAINTENANCE -->
-                        <Border Style="{StaticResource NavGroupContainer}">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" 
-                                            Margin="6,2,0,6"
-                                            Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <Path Data="{StaticResource IconRepairPath}" Width="11" Height="11" Fill="{DynamicResource NavGroupTextBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0" />
-                                    <TextBlock Text="MAINTENANCE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource NavGroupTextBrush}" VerticalAlignment="Center" />
-                                </StackPanel>
+                    <ListBoxItem Tag="Driver Assistant"
+                                 IsSelected="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Driver Assistant'}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Path Grid.Column="0" Data="{StaticResource IconDriverPath}" Width="14" Height="14" Fill="{DynamicResource TextSecondaryBrush}" Stretch="Uniform" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Driver Assistant" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </Grid>
+                    </ListBoxItem>
 
-                                <RadioButton Tag="{StaticResource IconRepairPath}" 
-                                             Content="Fix Connection Doctor" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Fix My Bluetooth Connection', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Fix My Bluetooth Connection" />
-                                <RadioButton Tag="{StaticResource IconRepairPath}" 
-                                             Content="Safe Repair Center" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Safe Repair Center', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Safe Repair Center" />
-                                <RadioButton Tag="{StaticResource IconReportPath}" 
-                                             Content="Diagnostic Reports" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Diagnostic Reports', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Diagnostic Reports" />
-                            </StackPanel>
-                        </Border>
+                    <ListBoxItem Tag="Event Analyzer"
+                                 IsSelected="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Event Analyzer'}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Path Grid.Column="0" Data="{StaticResource IconEventsPath}" Width="14" Height="14" Fill="{DynamicResource TextSecondaryBrush}" Stretch="Uniform" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Event Analyzer" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </Grid>
+                    </ListBoxItem>
 
-                        <!-- GROUP 5: ADVANCED TOOLS -->
-                        <Border Style="{StaticResource NavGroupContainer}">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" 
-                                            Margin="6,2,0,6"
-                                            Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <Path Data="{StaticResource IconToolkitPath}" Width="11" Height="11" Fill="{DynamicResource NavGroupTextBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0" />
-                                    <TextBlock Text="ADVANCED TOOLS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource NavGroupTextBrush}" VerticalAlignment="Center" />
-                                </StackPanel>
+                    <!-- ==========================================
+                         TOOLS (PRD Section 9)
+                         ========================================== -->
+                    <ListBoxItem IsEnabled="False" Focusable="False" Cursor="Arrow" Padding="12,14,12,2" Margin="0">
+                        <TextBlock Text="TOOLS" Style="{StaticResource MacOsGroupHeaderStyle}" Margin="0" />
+                    </ListBoxItem>
 
-                                <RadioButton Tag="{StaticResource IconBlePath}" 
-                                             Content="BLE Explorer" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Bluetooth LE Explorer', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Bluetooth LE Explorer" />
-                                <RadioButton Tag="{StaticResource IconToolkitPath}" 
-                                             Content="Technician Toolkit" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Technician Toolkit', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Technician Toolkit" />
-                                <RadioButton Tag="{StaticResource IconCloudPath}" 
-                                             Content="SaaS Fleet Dashboard" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='SaaS Fleet Portal', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="SaaS Fleet Portal" />
-                            </StackPanel>
-                        </Border>
+                    <ListBoxItem Tag="Repair Center"
+                                 IsSelected="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Repair Center'}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Path Grid.Column="0" Data="{StaticResource IconRepairPath}" Width="14" Height="14" Fill="{DynamicResource TextSecondaryBrush}" Stretch="Uniform" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Repair Center" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </Grid>
+                    </ListBoxItem>
 
-                        <!-- GROUP 6: PREFERENCES -->
-                        <Border Style="{StaticResource NavGroupContainer}">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" 
-                                            Margin="6,2,0,6"
-                                            Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <Path Data="{StaticResource IconSettingsPath}" Width="11" Height="11" Fill="{DynamicResource NavGroupTextBrush}" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0" />
-                                    <TextBlock Text="PREFERENCES" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource NavGroupTextBrush}" VerticalAlignment="Center" />
-                                </StackPanel>
+                    <ListBoxItem Tag="Connection History"
+                                 IsSelected="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Connection History'}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Path Grid.Column="0" Data="{StaticResource IconHistoryPath}" Width="14" Height="14" Fill="{DynamicResource TextSecondaryBrush}" Stretch="Uniform" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Connection History" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </Grid>
+                    </ListBoxItem>
 
-                                <RadioButton Tag="{StaticResource IconSettingsPath}" 
-                                             Content="Settings" 
-                                             Style="{StaticResource NavItemStyle}" 
-                                             IsChecked="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Settings', Mode=OneWay}" 
-                                             Command="{Binding NavigateCommand}" 
-                                             CommandParameter="Settings" />
-                            </StackPanel>
-                        </Border>
+                    <ListBoxItem Tag="Reports"
+                                 IsSelected="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Reports'}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Path Grid.Column="0" Data="{StaticResource IconReportPath}" Width="14" Height="14" Fill="{DynamicResource TextSecondaryBrush}" Stretch="Uniform" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Reports" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </Grid>
+                    </ListBoxItem>
 
-                    </StackPanel>
-                </ScrollViewer>
+                    <ListBoxItem Tag="SaaS Fleet Portal"
+                                 IsSelected="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='SaaS Fleet Portal'}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Path Grid.Column="0" Data="{StaticResource IconCloudPath}" Width="14" Height="14" Fill="{DynamicResource TextSecondaryBrush}" Stretch="Uniform" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="SaaS Fleet Portal" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </Grid>
+                    </ListBoxItem>
+
+                    <!-- ==========================================
+                         SYSTEM (PRD Section 9)
+                         ========================================== -->
+                    <ListBoxItem IsEnabled="False" Focusable="False" Cursor="Arrow" Padding="12,14,12,2" Margin="0">
+                        <TextBlock Text="SYSTEM" Style="{StaticResource MacOsGroupHeaderStyle}" Margin="0" />
+                    </ListBoxItem>
+
+                    <ListBoxItem Tag="Settings"
+                                 IsSelected="{Binding ActiveSection, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Settings'}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Path Grid.Column="0" Data="{StaticResource IconSettingsPath}" Width="14" Height="14" Fill="{DynamicResource TextSecondaryBrush}" Stretch="Uniform" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Settings" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </Grid>
+                    </ListBoxItem>
+
+                </ListBox>
 
                 <!-- Sidebar Footer -->
                 <Border Grid.Row="2" 
                         Padding="14,10" 
-                        BorderBrush="{DynamicResource BorderBrush}" 
-                        BorderThickness="0,1,0,0" 
-                        Background="{DynamicResource SurfaceSidebarBrush}">
-                    <StackPanel Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <TextBlock Text="Developer: Golam Morshed Eashan" 
+                        BorderBrush="{DynamicResource CardBorderBrush}" 
+                        BorderThickness="0,1,0,0">
+                    <StackPanel>
+                        <TextBlock Text="BlueDoc • macOS Sonoma Style" 
+                                   FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI, sans-serif"
                                    FontSize="11" 
                                    Foreground="{DynamicResource TextSecondaryBrush}" />
-                        <TextBlock Text="BlueDoc v1.0 • .NET 4.8 / Win32" 
+                        <TextBlock Text="Universal Hardware Diagnostics" 
+                                   FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI, sans-serif"
                                    FontSize="10" 
                                    Foreground="{DynamicResource TextMutedBrush}" 
                                    Margin="0,2,0,0" />
@@ -421,426 +358,101 @@
         </Border>
 
         <!-- =========================================================================
-             2. TOP HEADER & MAIN APPLICATION CONTENT CANVAS
+             2. MAIN CONTENT AREA (Column 1)
              ========================================================================= -->
-        <Grid Grid.Column="1">
+        <Grid Grid.Column="1" Background="{DynamicResource MainBgBrush}">
             <Grid.RowDefinitions>
-                <!-- Row 0: Top Header Navigation Bar (56px) -->
+                <!-- Row 0: macOS Top Bar Area (Height="56") -->
                 <RowDefinition Height="56" />
-                <!-- Row 1: Active Page Container -->
+                <!-- Row 1: Main View Canvas (Padding="32") -->
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- Top Header Navigation Bar -->
+            <!-- Top Bar Navigation & Controls -->
             <Border Grid.Row="0" 
                     Background="{DynamicResource HeaderBgBrush}" 
-                    BorderBrush="{DynamicResource BorderBrush}" 
+                    BorderBrush="{DynamicResource CardBorderBrush}" 
                     BorderThickness="0,0,0,1" 
-                    Padding="16,0"
+                    Padding="24,0"
                     SnapsToDevicePixels="True">
                 <Grid VerticalAlignment="Center">
                     <Grid.ColumnDefinitions>
-                        <!-- Left: Breadcrumbs -->
+                        <!-- Left: Breadcrumb / Page Title -->
                         <ColumnDefinition Width="*" />
-                        <!-- Right: Telemetry Indicators, Theme, Quick Diagnosis, Notifications -->
+                        <!-- Right: macOS Toggle Switches & Actions -->
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- Left: Sidebar Toggle Button + Breadcrumbs -->
+                    <!-- Breadcrumbs -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <!-- Sidebar Toggle Quick Button -->
-                        <Button Command="{Binding ToggleSidebarCommand}"
-                                ToolTip="{Binding SidebarToggleTooltip}"
-                                Style="{StaticResource GhostButton}"
-                                Padding="6,4"
-                                Margin="0,0,10,0">
-                            <Path Data="{StaticResource IconPanelTogglePath}" 
-                                  Width="14" Height="14" 
-                                  Fill="{DynamicResource TextSecondaryBrush}" 
-                                  Stretch="Uniform" />
-                        </Button>
-
-                        <!-- Breadcrumb Path -->
-                        <TextBlock Text="BlueDoc" 
-                                   FontSize="12" 
-                                   Foreground="{DynamicResource TextMutedBrush}" 
-                                   VerticalAlignment="Center" />
-                        <Path Style="{StaticResource BreadcrumbSeparator}" />
                         <TextBlock Text="{Binding ActiveGroup}" 
+                                   FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI, sans-serif"
+                                   FontSize="12" 
+                                   FontWeight="SemiBold" 
+                                   Foreground="{DynamicResource TextSecondaryBrush}" 
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text=" / " 
                                    FontSize="12" 
                                    Foreground="{DynamicResource TextMutedBrush}" 
-                                   VerticalAlignment="Center" />
-                        <Path Style="{StaticResource BreadcrumbSeparator}" />
+                                   VerticalAlignment="Center" 
+                                   Margin="6,0" />
                         <TextBlock Text="{Binding ActiveSection}" 
-                                   FontSize="13.5" 
+                                   FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI, sans-serif"
+                                   FontSize="18" 
                                    FontWeight="SemiBold" 
                                    Foreground="{DynamicResource TextPrimaryBrush}" 
                                    VerticalAlignment="Center" />
                     </StackPanel>
 
-                    <!-- Right: Context Controls & Telemetry -->
+                    <!-- Right Action Controls -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        
+                        <!-- macOS Bluetooth Radio Toggle Switch -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
+                            <TextBlock Text="{Binding RadioStateDisplay}" 
+                                       FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI, sans-serif"
+                                       FontSize="12" 
+                                       FontWeight="Medium" 
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,10,0" />
+                            <ToggleButton Style="{StaticResource MacOSToggleSwitch}"
+                                          IsChecked="{Binding IsRadioOn, Mode=TwoWay}"
+                                          Command="{Binding ToggleRadioPowerCommand}"
+                                          ToolTip="Toggle Bluetooth Radio Power" />
+                        </StackPanel>
 
-                        <!-- C. Primary Bluetooth Adapter Status Pill -->
-                        <Border Background="{DynamicResource SurfaceElevatedBrush}" 
-                                BorderBrush="{DynamicResource BorderBrush}" 
-                                BorderThickness="1" 
-                                CornerRadius="12" 
-                                Padding="10,4" 
-                                Margin="0,0,12,0" 
-                                VerticalAlignment="Center" 
-                                ToolTip="{Binding PrimaryAdapter.FriendlyName}">
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding PrimaryAdapter.FriendlyName, FallbackValue='Bluetooth Controller'}" 
-                                           FontSize="12" 
-                                           FontWeight="Medium" 
-                                           Foreground="{DynamicResource TextSecondaryBrush}" 
-                                           MaxWidth="180" 
-                                           TextTrimming="CharacterEllipsis" 
-                                           Margin="0,0,7,0" />
-                                <Ellipse Width="7" Height="7" 
-                                         Fill="#2EA043" 
-                                         VerticalAlignment="Center">
-                                    <Ellipse.Style>
-                                        <Style TargetType="Ellipse">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsRadioOn}" Value="False">
-                                                    <Setter Property="Fill" Value="#F85149" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Ellipse.Style>
-                                </Ellipse>
-                            </StackPanel>
-                        </Border>
+                        <!-- macOS Light / Dark Theme Switch -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
+                            <TextBlock Text="Dark Mode" 
+                                       FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI, sans-serif"
+                                       FontSize="12" 
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0" />
+                            <ToggleButton Style="{StaticResource MacOSToggleSwitch}"
+                                          IsChecked="{Binding IsDarkTheme, Mode=TwoWay}"
+                                          ToolTip="Switch between Light and Dark mode" />
+                        </StackPanel>
 
-                        <!-- B. Persistent Appearance Theme Segmented Switcher [ ☀ Light | ☾ Dark ] -->
-                        <Border Background="{DynamicResource PillBgBrush}" 
-                                BorderBrush="{DynamicResource BorderBrush}" 
-                                BorderThickness="1" 
-                                CornerRadius="12" 
-                                Padding="2" 
-                                Margin="0,0,12,0" 
-                                VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal">
-                                <RadioButton Content="☀ Light" 
-                                             GroupName="ThemeSwitch"
-                                             IsChecked="{Binding IsLightTheme, Mode=TwoWay}"
-                                             Command="{Binding SetThemeCommand}"
-                                             CommandParameter="Light"
-                                             Style="{StaticResource ThemeSegmentButton}" />
-                                <RadioButton Content="🌙 Dark" 
-                                             GroupName="ThemeSwitch"
-                                             IsChecked="{Binding IsDarkTheme, Mode=TwoWay}"
-                                             Command="{Binding SetThemeCommand}"
-                                             CommandParameter="Dark"
-                                             Style="{StaticResource ThemeSegmentButton}" />
-                            </StackPanel>
-                        </Border>
-
-                        <!-- A. Native-Style Hardware Bluetooth Radio Power Switch -->
-                        <Button Command="{Binding ToggleRadioPowerCommand}"
-                                Cursor="Hand"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Padding="0"
-                                Margin="0,0,10,0"
-                                ToolTip="Toggle Hardware Bluetooth Radio Power (ON/OFF)">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{DynamicResource SurfaceElevatedBrush}"
-                                            BorderBrush="{DynamicResource BorderBrush}"
-                                            BorderThickness="1"
-                                            CornerRadius="14"
-                                            Padding="10,4">
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <!-- Bluetooth Icon -->
-                                            <Path Data="{StaticResource IconBlePath}" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,6,0">
-                                                <Path.Style>
-                                                    <Style TargetType="Path">
-                                                        <Setter Property="Fill" Value="{DynamicResource TextMutedBrush}" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsRadioOn}" Value="True">
-                                                                <Setter Property="Fill" Value="{DynamicResource AccentBrush}" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Path.Style>
-                                            </Path>
-
-                                            <!-- State Text -->
-                                            <TextBlock FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Text" Value="Bluetooth: OFF" />
-                                                        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsRadioOn}" Value="True">
-                                                                <Setter Property="Text" Value="Bluetooth: ON" />
-                                                                <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-
-                                            <!-- Native Track and Sliding Thumb -->
-                                            <Border Width="34" Height="18" CornerRadius="9" SnapsToDevicePixels="True" VerticalAlignment="Center">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="Background" Value="{DynamicResource BorderStrongBrush}" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsRadioOn}" Value="True">
-                                                                <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
-                                                <Ellipse Width="12" Height="12" Fill="White" VerticalAlignment="Center">
-                                                    <Ellipse.Style>
-                                                        <Style TargetType="Ellipse">
-                                                            <Setter Property="HorizontalAlignment" Value="Left" />
-                                                            <Setter Property="Margin" Value="3,0,0,0" />
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding IsRadioOn}" Value="True">
-                                                                    <Setter Property="HorizontalAlignment" Value="Right" />
-                                                                    <Setter Property="Margin" Value="0,0,3,0" />
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Ellipse.Style>
-                                                </Ellipse>
-                                            </Border>
-                                        </StackPanel>
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-
-                        <!-- Notification Center Bell Toggle Button -->
-                        <Grid>
-                            <Button Command="{Binding Notifications.ToggleNotificationCenterCommand}"
-                                    Style="{StaticResource IconButton}"
-                                    Width="30" Height="30"
-                                    ToolTip="Notification Center">
-                                <Path Data="{StaticResource IconBellPath}" 
-                                      Width="13" Height="13" 
-                                      Fill="{DynamicResource TextSecondaryBrush}" 
-                                      Stretch="Uniform" />
-                            </Button>
-
-                            <!-- Unread Notification Badge Dot -->
-                            <Border Width="8" Height="8" 
-                                    CornerRadius="4" 
-                                    Background="{DynamicResource DangerBrush}" 
-                                    HorizontalAlignment="Right" 
-                                    VerticalAlignment="Top" 
-                                    Margin="0,2,2,0"
-                                    IsHitTestVisible="False"
-                                    Visibility="{Binding Notifications.HasUnread, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                        </Grid>
-
+                        <!-- Quick Diagnosis Primary Button -->
+                        <Button Content="Quick Diagnosis"
+                                Command="{Binding QuickDiagnosisCommand}"
+                                Style="{StaticResource MacOsPrimaryButton}"
+                                Height="30"
+                                Padding="14,6" />
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- =========================================================================
-                 3. PAGE CONTAINER (With Lightweight Fade Transition)
-                 ========================================================================= -->
-            <Border Grid.Row="1" Background="{DynamicResource SurfaceCanvasBrush}">
-                <ContentControl Content="{Binding CurrentViewModel}">
-                    <ContentControl.Style>
-                        <Style TargetType="ContentControl">
-                            <Style.Triggers>
-                                <EventTrigger RoutedEvent="Loaded">
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                                             From="0.3" To="1.0"
-                                                             Duration="0:0:0.16" />
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </EventTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ContentControl.Style>
-                </ContentControl>
-            </Border>
-
-            <!-- =========================================================================
-                 4. NOTIFICATION CENTER POPUP / DRAWER
-                 ========================================================================= -->
+            <!-- Main Content Canvas (Padding="32", ContentControl Page Navigation) -->
             <Border Grid.Row="1" 
-                    Width="380" 
-                    HorizontalAlignment="Right" 
-                    VerticalAlignment="Top" 
-                    Margin="0,8,16,0"
-                    Background="{DynamicResource SurfaceElevatedBrush}"
-                    BorderBrush="{DynamicResource BorderStrongBrush}"
-                    BorderThickness="1"
-                    CornerRadius="10"
-                    Padding="16"
-                    Panel.ZIndex="1200"
-                    Visibility="{Binding Notifications.IsNotificationCenterOpen, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Padding="{StaticResource MacOsMainPadding}"
+                    Background="{DynamicResource MainBgBrush}"
                     SnapsToDevicePixels="True">
-                <Grid MaxHeight="450">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <!-- Header -->
-                    <Grid Grid.Row="0" Margin="0,0,0,12">
-                        <TextBlock Text="Notification Center" 
-                                   FontSize="14" 
-                                   FontWeight="SemiBold" 
-                                   Foreground="{DynamicResource TextPrimaryBrush}" 
-                                   VerticalAlignment="Center" />
-                        <Button Content="Clear All" 
-                                Command="{Binding Notifications.ClearHistoryCommand}"
-                                Style="{StaticResource GhostButton}"
-                                HorizontalAlignment="Right"
-                                Padding="6,2"
-                                FontSize="11" />
-                    </Grid>
-
-                    <!-- Notifications List -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                        <StackPanel>
-                            <!-- Empty State if no history -->
-                            <TextBlock Text="No notifications yet." 
-                                       FontSize="12" 
-                                       Foreground="{DynamicResource TextMutedBrush}" 
-                                       HorizontalAlignment="Center" 
-                                       Margin="0,24"
-                                       Visibility="{Binding Notifications.History.Count, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverse'}" />
-
-                            <!-- List of Notifications -->
-                            <ItemsControl ItemsSource="{Binding Notifications.History}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Background="{DynamicResource CardBgBrush}" 
-                                                BorderBrush="{DynamicResource BorderBrush}" 
-                                                BorderThickness="1" 
-                                                CornerRadius="6" 
-                                                Padding="10,8" 
-                                                Margin="0,0,0,6">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="22" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-
-                                                <!-- Status Icon -->
-                                                <Path Grid.Column="0" 
-                                                      Data="{Binding Type, Converter={StaticResource NotificationTypeToGeometryConverter}}"
-                                                      Fill="{Binding Type, Converter={StaticResource NotificationTypeToBrushConverter}}"
-                                                      Width="14" Height="14" 
-                                                      Stretch="Uniform" 
-                                                      VerticalAlignment="Top" 
-                                                      Margin="0,2,0,0" />
-
-                                                <!-- Content -->
-                                                <StackPanel Grid.Column="1" Margin="6,0,0,0">
-                                                    <Grid>
-                                                        <TextBlock Text="{Binding Title}" 
-                                                                   FontSize="12" 
-                                                                   FontWeight="SemiBold" 
-                                                                   Foreground="{DynamicResource TextPrimaryBrush}" />
-                                                        <TextBlock Text="{Binding TimeDisplay}" 
-                                                                   FontSize="10" 
-                                                                   Foreground="{DynamicResource TextMutedBrush}" 
-                                                                   HorizontalAlignment="Right" />
-                                                    </Grid>
-                                                    <TextBlock Text="{Binding Message}" 
-                                                               FontSize="11.5" 
-                                                               Foreground="{DynamicResource TextSecondaryBrush}" 
-                                                               TextWrapping="Wrap" 
-                                                               Margin="0,2,0,0" />
-                                                </StackPanel>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
+                <ContentControl Content="{Binding CurrentViewModel}" 
+                                Focusable="False" />
             </Border>
-
-            <!-- =========================================================================
-                 5. REUSABLE FLOATING TOAST NOTIFICATIONS (Bottom-Right Overlay)
-                 ========================================================================= -->
-            <ItemsControl Grid.Row="1" 
-                          ItemsSource="{Binding Notifications.ActiveToasts}" 
-                          HorizontalAlignment="Right" 
-                          VerticalAlignment="Bottom" 
-                          Margin="0,0,20,20" 
-                          Panel.ZIndex="1100"
-                          Width="360"
-                          IsHitTestVisible="True">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Background="{DynamicResource SurfaceElevatedBrush}" 
-                                BorderBrush="{DynamicResource BorderStrongBrush}" 
-                                BorderThickness="1" 
-                                CornerRadius="8" 
-                                Padding="12,10" 
-                                Margin="0,6,0,0"
-                                SnapsToDevicePixels="True">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="24" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Status / Type Icon -->
-                                <Path Grid.Column="0" 
-                                      Data="{Binding Type, Converter={StaticResource NotificationTypeToGeometryConverter}}"
-                                      Fill="{Binding Type, Converter={StaticResource NotificationTypeToBrushConverter}}"
-                                      Width="16" Height="16" 
-                                      Stretch="Uniform" 
-                                      VerticalAlignment="Top" 
-                                      Margin="0,2,0,0" />
-
-                                <!-- Title, Message & Progress -->
-                                <StackPanel Grid.Column="1" Margin="8,0,8,0">
-                                    <TextBlock Text="{Binding Title}" 
-                                               FontSize="12.5" 
-                                               FontWeight="SemiBold" 
-                                               Foreground="{DynamicResource TextPrimaryBrush}" />
-                                    <TextBlock Text="{Binding Message}" 
-                                               FontSize="11.5" 
-                                               Foreground="{DynamicResource TextSecondaryBrush}" 
-                                               TextWrapping="Wrap" 
-                                               Margin="0,2,0,4" />
-                                    <!-- Long-running Indeterminate Progress Bar -->
-                                    <ProgressBar Height="4" 
-                                                 IsIndeterminate="True" 
-                                                 Margin="0,4,0,0"
-                                                 Visibility="{Binding IsIndeterminate, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                </StackPanel>
-
-                                <!-- Dismiss Button -->
-                                <Button Grid.Column="2" 
-                                        Command="{Binding DismissCommand}"
-                                        Style="{StaticResource GhostButton}"
-                                        Padding="4"
-                                        Width="20" Height="20"
-                                        VerticalAlignment="Top"
-                                        Cursor="Hand">
-                                    <Path Data="{StaticResource IconClosePath}" 
-                                          Width="9" Height="9" 
-                                          Fill="{DynamicResource TextMutedBrush}" 
-                                          Stretch="Uniform" />
-                                </Button>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-
         </Grid>
     </Grid>
 </Window>

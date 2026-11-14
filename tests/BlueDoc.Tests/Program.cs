@@ -36,10 +36,6 @@ namespace BlueDoc.Tests
                 AccessibilityVerificationTests.RunAllTests();
                 Performance.PerformanceBenchmarkHarness.RunAllBenchmarksAsync().GetAwaiter().GetResult();
                 BluetoothFunctionalMatrixTests.RunAllScenariosAsync().GetAwaiter().GetResult();
-                FixConnectionDoctorAndPairingTests.RunAllTests();
-                AccessibilityVerificationTests.RunAllTests();
-                Performance.PerformanceBenchmarkHarness.RunAllBenchmarksAsync().GetAwaiter().GetResult();
-                BluetoothFunctionalMatrixTests.RunAllScenariosAsync().GetAwaiter().GetResult();
 
                 // Run Live Integration Tests
                 RealHardwareInspectionTests.Run();
