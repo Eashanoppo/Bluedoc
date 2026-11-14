@@ -16,9 +16,9 @@ namespace BlueDoc.Application.Cloud
         private System.Threading.Timer _timer;
         private bool _isAutoSyncEnabled;
         private int _intervalMinutes = 30;
-        private string _endpointUrl = "http://localhost:48821/v1/telemetry";
-        private string _tenantId = "UNLEFT-CORP";
-        private string _apiKey = "unleft_live_token_2026";
+        private string _endpointUrl = string.Empty;
+        private string _tenantId = string.Empty;
+        private string _apiKey = string.Empty;
 
         public bool IsAutoSyncEnabled => _isAutoSyncEnabled;
         public int IntervalMinutes

@@ -6,6 +6,7 @@ using System.ServiceProcess;
 using System.Threading.Tasks;
 using BlueDoc.Core.Interfaces;
 using BlueDoc.Core.Models;
+using BlueDoc.Infrastructure.Hardware;
 using BlueDoc.Infrastructure.Native;
 
 namespace BlueDoc.Infrastructure.Repairs
@@ -344,8 +345,39 @@ namespace BlueDoc.Infrastructure.Repairs
         {
             return Task.Run(async () =>
             {
-                // Restarting bthserv gracefully triggers radio power cycle at the HCI layer
-                await RestartWindowsServiceAsync("bthserv");
+                try
+                {
+                    // 1. Physical PnP DevNode radio power cycle via CfgMgr32 / SetupAPI
+                    var radioManager = new HardwareRadioManager();
+                    await radioManager.SetRadioPowerStateAsync(false);
+                    await Task.Delay(800);
+                    await radioManager.SetRadioPowerStateAsync(true);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Hardware radio cycle notice: {ex.Message}");
+                }
+
+                // 2. Restart Windows Bluetooth Support Service (bthserv)
+                try
+                {
+                    await RestartWindowsServiceAsync("bthserv");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"bthserv restart notice: {ex.Message}");
+                }
+
+                // 3. Restart Audio Gateway services to restore A2DP / Hands-Free routing
+                try
+                {
+                    await RestartAudioServicesAsync();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Audio services restart notice: {ex.Message}");
+                }
+
                 await Task.Delay(1000);
             });
         }

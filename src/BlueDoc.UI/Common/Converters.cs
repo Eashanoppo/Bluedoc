@@ -270,5 +270,95 @@ namespace BlueDoc.UI.Common
             return Binding.DoNothing;
         }
     }
+
+    public class NonZeroToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            int count = 0;
+            if (value is int i) count = i;
+            else if (value is long l) count = (int)l;
+            else if (value != null && int.TryParse(value.ToString(), out int parsed)) count = parsed;
+
+            bool isNonZero = count > 0;
+            if (parameter is string p && p.Equals("Inverse", StringComparison.OrdinalIgnoreCase))
+            {
+                isNonZero = !isNonZero;
+            }
+            return isNonZero ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class InverseBooleanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool b)
+            {
+                return !b;
+            }
+            return false;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool b)
+            {
+                return !b;
+            }
+            return false;
+        }
+    }
+
+    public class BoolToStringConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool val = value is bool b && b;
+            if (parameter is string p)
+            {
+                var parts = p.Split('|');
+                if (parts.Length >= 2)
+                {
+                    return val ? parts[0] : parts[1];
+                }
+                return val ? parts[0] : string.Empty;
+            }
+            return val ? "True" : "False";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class NonZeroToBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            int count = 0;
+            if (value is int i) count = i;
+            else if (value is long l) count = (int)l;
+            else if (value != null && int.TryParse(value.ToString(), out int parsed)) count = parsed;
+
+            bool isNonZero = count > 0;
+            if (parameter is string p && p.Equals("Inverse", StringComparison.OrdinalIgnoreCase))
+            {
+                isNonZero = !isNonZero;
+            }
+            return isNonZero;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
 

@@ -18,6 +18,10 @@
             <common:NotificationTypeToBrushConverter x:Key="NotificationTypeToBrushConverter" />
             <common:NotificationTypeToGeometryConverter x:Key="NotificationTypeToGeometryConverter" />
             <common:EqualityToBooleanConverter x:Key="EqualityToBooleanConverter" />
+            <common:NonZeroToVisibilityConverter x:Key="NonZeroToVisibilityConverter" />
+            <common:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+            <common:BoolToStringConverter x:Key="BoolToStringConverter" />
+            <common:NonZeroToBoolConverter x:Key="NonZeroToBoolConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

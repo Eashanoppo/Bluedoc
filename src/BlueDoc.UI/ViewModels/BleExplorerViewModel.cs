@@ -20,6 +20,7 @@ namespace BlueDoc.UI.ViewModels
     {
         private readonly DeviceManagementService _deviceService;
         private readonly DeviceDiscoveryService _discoveryService;
+        private readonly BleGattClientProvider _gattClient;
 
         private BluetoothDeviceInfo _selectedBleDevice;
         private GattServiceItem _selectedService;
@@ -84,6 +85,7 @@ namespace BlueDoc.UI.ViewModels
         {
             _deviceService = deviceService ?? new DeviceManagementService();
             _discoveryService = discoveryService ?? new DeviceDiscoveryService();
+            _gattClient = new BleGattClientProvider();
 
             var os = OperatingSystemInspector.GetOperatingSystemInfo();
             IsGattSupported = os.SupportsBleModernApis;
@@ -156,11 +158,39 @@ namespace BlueDoc.UI.ViewModels
             }
         }
 
-        private void LoadGattProfileForSelectedDevice()
+        private async void LoadGattProfileForSelectedDevice()
         {
             GattServices.Clear();
             if (SelectedBleDevice == null) return;
 
+            // 1. Attempt live WinRT GATT discovery if running on Windows 10/11 with valid address
+            if (IsGattSupported && SelectedBleDevice.RawAddress != 0)
+            {
+                StatusMessage = $"Connecting to '{SelectedBleDevice.DisplayName}' and querying live GATT services...";
+                try
+                {
+                    var liveServices = await _gattClient.DiscoverLiveGattProfileAsync(SelectedBleDevice.RawAddress);
+                    if (liveServices != null && liveServices.Count > 0)
+                    {
+                        foreach (var svc in liveServices)
+                        {
+                            GattServices.Add(svc);
+                        }
+                        if (GattServices.Count > 0)
+                        {
+                            SelectedService = GattServices[0];
+                        }
+                        StatusMessage = $"Discovered {GattServices.Count} live GATT services from '{SelectedBleDevice.DisplayName}'.";
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    StatusMessage = $"Live GATT notice: {ex.Message}";
+                }
+            }
+
+            // 2. Fallback to standard profile catalog template
             var profile = GattProfileCatalog.GetStandardPeripheralProfile(SelectedBleDevice.DisplayName, SelectedBleDevice.CategoryName);
             foreach (var svc in profile)
             {
@@ -171,6 +201,7 @@ namespace BlueDoc.UI.ViewModels
             {
                 SelectedService = GattServices[0];
             }
+            StatusMessage = $"Loaded GATT profile template for '{SelectedBleDevice.DisplayName}'.";
         }
 
         private async Task ScanBleAsync()
@@ -196,7 +227,7 @@ namespace BlueDoc.UI.ViewModels
             }
         }
 
-        private void ReadCharacteristic(GattCharacteristicItem characteristic)
+        private async void ReadCharacteristic(GattCharacteristicItem characteristic)
         {
             if (characteristic == null) return;
 
@@ -207,31 +238,43 @@ namespace BlueDoc.UI.ViewModels
                 return;
             }
 
-            if (SelectedBleDevice == null || !SelectedBleDevice.IsConnected)
+            if (SelectedBleDevice == null)
             {
-                characteristic.ValueDisplay = "Offline / Disconnected (Requires active GATT connection)";
-                StatusMessage = $"Cannot read '{characteristic.Name}': Device '{SelectedBleDevice?.DisplayName ?? "Peripheral"}' is not connected.";
                 return;
             }
 
-            string timestamp = DateTime.Now.ToString("HH:mm:ss");
-            if (characteristic.Uuid.IndexOf("2A00", StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                characteristic.ValueDisplay = SelectedBleDevice.DisplayName;
-            }
-            else if (characteristic.Uuid.IndexOf("2A01", StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                characteristic.ValueDisplay = SelectedBleDevice.CategoryName;
-            }
-            else
-            {
-                characteristic.ValueDisplay = $"Verified GATT Read at {timestamp}: [GattCommunicationStatus.Success]";
-            }
+            StatusMessage = $"Reading characteristic '{characteristic.Name}' ({characteristic.Uuid})...";
 
-            StatusMessage = $"Characteristic '{characteristic.Name}' read successfully at {timestamp}.";
+            try
+            {
+                // Attempt real live read from connected peripheral
+                string liveVal = await _gattClient.ReadCharacteristicValueAsync(SelectedService?.Uuid, characteristic.Uuid);
+                if (!string.IsNullOrEmpty(liveVal) && !liveVal.Contains("failed") && !liveVal.Contains("not found") && !liveVal.Contains("Error"))
+                {
+                    characteristic.ValueDisplay = liveVal;
+                    StatusMessage = $"Live read succeeded: '{characteristic.Name}' = {liveVal}";
+                    return;
+                }
+
+                if (!SelectedBleDevice.IsConnected)
+                {
+                    characteristic.ValueDisplay = "Offline / Disconnected (Requires active GATT connection)";
+                    StatusMessage = $"Cannot read '{characteristic.Name}': Device '{SelectedBleDevice.DisplayName}' is not connected.";
+                }
+                else
+                {
+                    characteristic.ValueDisplay = liveVal;
+                    StatusMessage = $"Read result: {liveVal}";
+                }
+            }
+            catch (Exception ex)
+            {
+                characteristic.ValueDisplay = $"Read Error: {ex.Message}";
+                StatusMessage = $"Read failed: {ex.Message}";
+            }
         }
 
-        private void ToggleNotification(GattCharacteristicItem characteristic)
+        private async void ToggleNotification(GattCharacteristicItem characteristic)
         {
             if (characteristic == null) return;
 
@@ -249,22 +292,40 @@ namespace BlueDoc.UI.ViewModels
                 return;
             }
 
-            characteristic.IsSubscribed = !characteristic.IsSubscribed;
-            string timestamp = DateTime.Now.ToString("HH:mm:ss");
-
-            if (characteristic.IsSubscribed)
+            if (!characteristic.IsSubscribed)
             {
-                characteristic.ValueDisplay = $"[Subscribed at {timestamp}] Listening for CCCD indications...";
-                StatusMessage = $"Subscribed to GATT notifications for '{characteristic.Name}'.";
+                StatusMessage = $"Configuring CCCD notification descriptor for '{characteristic.Name}'...";
+                bool ok = await _gattClient.ToggleNotificationAsync(SelectedService?.Uuid, characteristic.Uuid, displayValue =>
+                {
+                    System.Windows.Application.Current?.Dispatcher?.Invoke(() =>
+                    {
+                        characteristic.ValueDisplay = displayValue;
+                        StatusMessage = $"Notification update received for '{characteristic.Name}': {displayValue}";
+                    });
+                });
+
+                if (ok)
+                {
+                    characteristic.IsSubscribed = true;
+                    string timestamp = DateTime.Now.ToString("HH:mm:ss");
+                    characteristic.ValueDisplay = $"[Subscribed at {timestamp}] Receiving live indications...";
+                    StatusMessage = $"Subscribed to GATT notifications for '{characteristic.Name}'.";
+                }
+                else
+                {
+                    StatusMessage = $"Failed to subscribe to CCCD notifications for '{characteristic.Name}'.";
+                }
             }
             else
             {
+                characteristic.IsSubscribed = false;
+                string timestamp = DateTime.Now.ToString("HH:mm:ss");
                 characteristic.ValueDisplay = $"[Unsubscribed at {timestamp}] Notification stream halted.";
                 StatusMessage = $"Unsubscribed from '{characteristic.Name}'.";
             }
         }
 
-        private void PerformSafeWrite(GattCharacteristicItem characteristic)
+        private async void PerformSafeWrite(GattCharacteristicItem characteristic)
         {
             if (characteristic == null) return;
 
@@ -290,9 +351,21 @@ namespace BlueDoc.UI.ViewModels
 
             if (result == MessageBoxResult.Yes)
             {
+                StatusMessage = $"Writing payload to '{characteristic.Name}'...";
+                byte[] pingPayload = Encoding.UTF8.GetBytes("BlueDoc_Probe");
+                bool ok = await _gattClient.WriteCharacteristicValueAsync(SelectedService?.Uuid, characteristic.Uuid, pingPayload);
+
                 string timestamp = DateTime.Now.ToString("HH:mm:ss");
-                characteristic.ValueDisplay = $"Write Dispatched at {timestamp} [Status: GattCommunicationStatus.Success]";
-                StatusMessage = $"Write command acknowledged by {characteristic.Name} at {timestamp}.";
+                if (ok)
+                {
+                    characteristic.ValueDisplay = $"Write Dispatched & Acknowledged at {timestamp} [Status: Success]";
+                    StatusMessage = $"Write command acknowledged by {characteristic.Name} at {timestamp}.";
+                }
+                else
+                {
+                    characteristic.ValueDisplay = $"Write Failed / Rejected at {timestamp}";
+                    StatusMessage = $"Write command rejected by {characteristic.Name} at {timestamp}.";
+                }
             }
         }
 
