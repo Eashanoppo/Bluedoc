@@ -59,6 +59,14 @@
 
             <!-- Top Right Quick Actions -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                <!-- View Switcher (List vs Radar) -->
+                <Border Background="{DynamicResource CardBgHoverBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="3" Margin="0,0,12,0" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Content="📋 List" IsChecked="{Binding IsListView, Mode=TwoWay}" Style="{StaticResource ThemeSegmentButton}" ToolTip="Standard detailed table &amp; card view" />
+                        <RadioButton Content="🧭 Radar Map" IsChecked="{Binding IsRadarView, Mode=TwoWay}" Style="{StaticResource ThemeSegmentButton}" ToolTip="Live Bluetooth RF proximity radar sweep" />
+                    </StackPanel>
+                </Border>
+
                 <!-- Clear Catalog Button -->
                 <Button Content="Clear Results" 
                         Command="{Binding ClearCommand}" 
@@ -322,6 +330,9 @@
                         <Style TargetType="ListBox">
                             <Setter Property="Visibility" Value="Visible" />
                             <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsRadarView}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
                                 <DataTrigger Binding="{Binding ShowScanSkeleton}" Value="True">
                                     <Setter Property="Visibility" Value="Collapsed" />
                                 </DataTrigger>
@@ -464,6 +475,193 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
+
+                <!-- =====================================================================
+                     LIVE BLUETOOTH RF PROXIMITY RADAR SWEEP VIEW
+                     ===================================================================== -->
+                <Border Grid.Row="1"
+                        Background="{DynamicResource CardBgBrush}"
+                        BorderBrush="{DynamicResource CardBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="16,12"
+                        Visibility="{Binding IsRadarView, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <!-- Radar Header & Legend -->
+                            <RowDefinition Height="Auto" />
+                            <!-- Centered Radar Canvas Display -->
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Radar Legend & Title -->
+                        <Grid Grid.Row="0" Margin="0,0,0,10">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="BLUETOOTH RF PROXIMITY RADAR" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <Border Width="6" Height="6" CornerRadius="3" Background="{DynamicResource SuccessBrush}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <!-- Connected Legend -->
+                                <Border Width="8" Height="8" CornerRadius="4" Background="{DynamicResource SuccessBrush}" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Active Link" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,12,0" VerticalAlignment="Center" />
+
+                                <!-- Paired Legend -->
+                                <Border Width="8" Height="8" CornerRadius="4" Background="{DynamicResource AccentBrush}" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Paired" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,12,0" VerticalAlignment="Center" />
+
+                                <!-- Discovered Legend -->
+                                <Border Width="8" Height="8" CornerRadius="4" Background="#AF52DE" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Discovered" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Centered Radar Canvas in Viewbox -->
+                        <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Grid Width="440" Height="440">
+                                <Grid.Triggers>
+                                    <EventTrigger RoutedEvent="Grid.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard RepeatBehavior="Forever">
+                                                <DoubleAnimation Storyboard.TargetName="RadarSweepTransform"
+                                                                 Storyboard.TargetProperty="Angle"
+                                                                 From="0" To="360"
+                                                                 Duration="0:0:3.5" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Grid.Triggers>
+
+                                <!-- Base Circular Radar Background -->
+                                <Ellipse Width="390" Height="390" 
+                                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                                         Fill="{DynamicResource CardBgHoverBrush}" 
+                                         Stroke="{DynamicResource CardBorderBrush}" 
+                                         StrokeThickness="1.5" />
+
+                                <!-- Range Ring 3: Far (> 5m / < -78 dBm) -->
+                                <Ellipse Width="350" Height="350" 
+                                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                                         Stroke="{DynamicResource CardBorderBrush}" 
+                                         StrokeDashArray="4,4" 
+                                         StrokeThickness="1.2" />
+
+                                <!-- Range Ring 2: Near (1m - 5m / -60 to -78 dBm) -->
+                                <Ellipse Width="230" Height="230" 
+                                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                                         Stroke="{DynamicResource CardBorderBrush}" 
+                                         StrokeDashArray="3,3" 
+                                         StrokeThickness="1.2" />
+
+                                <!-- Range Ring 1: Immediate (< 1m / > -60 dBm) -->
+                                <Ellipse Width="110" Height="110" 
+                                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                                         Stroke="{DynamicResource AccentSubtleBrush}" 
+                                         StrokeThickness="1.5" />
+
+                                <!-- Crosshair Horizontal -->
+                                <Line X1="45" Y1="220" X2="395" Y2="220" Stroke="{DynamicResource CardBorderBrush}" StrokeThickness="1" StrokeDashArray="2,4" />
+                                <!-- Crosshair Vertical -->
+                                <Line X1="220" Y1="45" X2="220" Y2="395" Stroke="{DynamicResource CardBorderBrush}" StrokeThickness="1" StrokeDashArray="2,4" />
+
+                                <!-- Range Ring Labels -->
+                                <TextBlock Text="Immediate (&lt; 1m)" FontSize="9" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" Margin="0,170,0,0" VerticalAlignment="Top" />
+                                <TextBlock Text="Near (1m - 5m)" FontSize="9" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" Margin="0,110,0,0" VerticalAlignment="Top" />
+                                <TextBlock Text="Far (&gt; 5m)" FontSize="9" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" Margin="0,50,0,0" VerticalAlignment="Top" />
+
+                                <!-- Rotating Radar Sweep Beam Line -->
+                                <Line X1="220" Y1="220" X2="220" Y2="25" Stroke="{DynamicResource AccentBrush}" StrokeThickness="2" Opacity="0.85">
+                                    <Line.RenderTransform>
+                                        <RotateTransform x:Name="RadarSweepTransform" CenterX="220" CenterY="220" Angle="0" />
+                                    </Line.RenderTransform>
+                                </Line>
+
+                                <!-- Center Host Controller Hub -->
+                                <Border Width="34" Height="34" CornerRadius="17" 
+                                        Background="{DynamicResource AccentBrush}" 
+                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        ToolTip="Host Bluetooth Controller Adapter">
+                                    <Path Data="M 12 2 L 12 22 L 18 16 L 8 8 L 18 8 L 12 2 Z"
+                                          Width="13" Height="13" Fill="White" Stretch="Uniform" 
+                                          HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+
+                                <!-- Real Devices Blips Plotted on Radar -->
+                                <ItemsControl ItemsSource="{Binding RadarBlips}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <Canvas Width="440" Height="440" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemContainerStyle>
+                                        <Style TargetType="ContentPresenter">
+                                            <Setter Property="Canvas.Left" Value="{Binding X}" />
+                                            <Setter Property="Canvas.Top" Value="{Binding Y}" />
+                                        </Style>
+                                    </ItemsControl.ItemContainerStyle>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Command="{Binding DataContext.SelectRadarBlipCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Cursor="Hand"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Padding="0">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <StackPanel HorizontalAlignment="Center" Width="80">
+                                                            <!-- Circular Blip Dot with Icon -->
+                                                            <Border Width="36" Height="36" CornerRadius="18" HorizontalAlignment="Center">
+                                                                <Border.Style>
+                                                                    <Style TargetType="Border">
+                                                                        <Setter Property="Background" Value="#AF52DE" />
+                                                                        <Setter Property="BorderBrush" Value="White" />
+                                                                        <Setter Property="BorderThickness" Value="1.5" />
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding IsPaired}" Value="True">
+                                                                                <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                                                <Setter Property="Background" Value="{DynamicResource SuccessBrush}" />
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Border.Style>
+                                                                <TextBlock Text="{Binding CategoryIcon}" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            </Border>
+
+                                                            <!-- Device Label Pill -->
+                                                            <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="4,1" Margin="0,2,0,0" HorizontalAlignment="Center">
+                                                                <TextBlock Text="{Binding DisplayName}" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="72" HorizontalAlignment="Center" />
+                                                            </Border>
+                                                        </StackPanel>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                                <Button.ToolTip>
+                                                    <ToolTip Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1">
+                                                        <StackPanel Margin="4">
+                                                            <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                                            <TextBlock Text="{Binding BluetoothAddress}" FontSize="11" FontFamily="SF Pro Text, Consolas, Segoe UI" Foreground="{DynamicResource AccentBrush}" Margin="0,2,0,2" />
+                                                            <TextBlock Text="{Binding SignalDisplay, StringFormat='Signal: {0}'}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                                            <TextBlock Text="{Binding DistanceMeters, StringFormat='Estimated Range: ~{0:F1} m'}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                                        </StackPanel>
+                                                    </ToolTip>
+                                                </Button.ToolTip>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!-- Empty Radar Notice (When 0 devices) -->
+                                <Border Visibility="{Binding RadarBlips.Count, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter=0}"
+                                        HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,45"
+                                        Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="14,6">
+                                    <TextBlock Text="Radar Active • Click 'Start Scan' to ping nearby peripherals" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                </Border>
+                            </Grid>
+                        </Viewbox>
+                    </Grid>
+                </Border>
             </Grid>
 
             <!-- =====================================================================

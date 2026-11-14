@@ -728,7 +728,10 @@ namespace BlueDoc.Application.Services
                 };
             }
 
-            return await _repairEngine.ExecuteRepairAsync(repairKey);
+            return await _repairEngine.ExecuteRepairAsync(
+                repairKey, 
+                CurrentTargetDevice?.BluetoothAddress, 
+                CurrentTargetDevice?.DisplayName);
         }
 
         private void SetStepActive(ConnectionWizardStep step)

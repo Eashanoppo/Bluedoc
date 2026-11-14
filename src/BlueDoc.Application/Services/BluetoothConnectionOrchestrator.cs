@@ -175,6 +175,9 @@ namespace BlueDoc.Application.Services
                     {
                         device.IsConnected = true;
 
+                        // Automatically activate and route Windows default audio playback to this peripheral
+                        var routing = await WindowsAudioEndpointRouter.RouteDefaultAudioToDeviceAsync(device.DisplayName);
+
                         var matchingEndpoint = audioAnalysis.Endpoints.FirstOrDefault(e =>
                             e.Name.IndexOf(device.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0 ||
                             device.DisplayName.IndexOf(e.Name, StringComparison.OrdinalIgnoreCase) >= 0);
@@ -182,14 +185,14 @@ namespace BlueDoc.Application.Services
                         if (matchingEndpoint != null && matchingEndpoint.IsConnected)
                         {
                             details.IsAudioEndpointReady = true;
-                            details.AudioGuidance = "Windows Audio Endpoint is operational. Audio stream is routed to your peripheral.";
-                            details.Result = DeviceOperationResult.Ok($"Audio connection established with '{device.DisplayName}'. Active Profiles: {string.Join(", ", details.ActiveProfiles)}.");
+                            details.AudioGuidance = routing.Message;
+                            details.Result = DeviceOperationResult.Ok($"Audio connection established with '{device.DisplayName}'. Active Profiles: {string.Join(", ", details.ActiveProfiles)}. Default audio stream routed.");
                         }
                         else
                         {
                             details.IsAudioEndpointReady = true;
-                            details.AudioGuidance = "Bluetooth baseband link established. Audio device ready for playback.";
-                            details.Result = DeviceOperationResult.Ok($"Audio link connected to '{device.DisplayName}'.");
+                            details.AudioGuidance = routing.Message;
+                            details.Result = DeviceOperationResult.Ok($"Audio link connected to '{device.DisplayName}'. Serving sound and microphone streams.");
                         }
                     }
                     else

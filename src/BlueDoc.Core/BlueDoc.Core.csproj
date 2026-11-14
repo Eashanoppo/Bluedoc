@@ -61,6 +61,8 @@
     <Compile Include="Models\DiagnosticReport.cs" />
     <Compile Include="Models\ConnectionFailureDiagnosis.cs" />
     <Compile Include="Models\StartupHealthAssessment.cs" />
+    <Compile Include="Models\LaptopSystemInfo.cs" />
+    <Compile Include="Models\BluetoothDriverPackageInfo.cs" />
     <Compile Include="Interfaces\IBluetoothProvider.cs" />
     <Compile Include="Interfaces\IHardwareInspector.cs" />
     <Compile Include="Interfaces\IServiceInspector.cs" />

@@ -16,6 +16,30 @@ using BlueDoc.UI.Common;
 
 namespace BlueDoc.UI.ViewModels
 {
+    public class RadarBlipItem : ViewModelBase
+    {
+        public BluetoothDeviceInfo Device { get; }
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double DistanceMeters { get; set; }
+        public double AngleDegrees { get; set; }
+        public string DisplayName => Device?.DisplayName ?? "Device";
+        public string CategoryIcon => Device?.CategoryIcon ?? "📶";
+        public string SignalDisplay => Device?.SignalStrengthDisplay ?? "Signal not exposed";
+        public bool IsConnected => Device?.IsConnected ?? false;
+        public bool IsPaired => Device?.IsPaired ?? false;
+        public string BluetoothAddress => Device?.BluetoothAddress ?? string.Empty;
+
+        public RadarBlipItem(BluetoothDeviceInfo device, double x, double y, double distance, double angle)
+        {
+            Device = device;
+            X = x;
+            Y = y;
+            DistanceMeters = distance;
+            AngleDegrees = angle;
+        }
+    }
+
     public class DeviceScannerViewModel : ViewModelBase
     {
         private readonly DeviceDiscoveryService _discoveryService;
@@ -51,7 +75,28 @@ namespace BlueDoc.UI.ViewModels
         public ObservableCollection<BluetoothDeviceInfo> DiscoveredDevices { get; } = new ObservableCollection<BluetoothDeviceInfo>();
         public ObservableCollection<BluetoothAdapterInfo> AvailableAdapters { get; } = new ObservableCollection<BluetoothAdapterInfo>();
         public ObservableCollection<string> SelectedDeviceServices { get; } = new ObservableCollection<string>();
+        public ObservableCollection<RadarBlipItem> RadarBlips { get; } = new ObservableCollection<RadarBlipItem>();
         public ICollectionView FilteredDevices { get; }
+
+        private bool _isRadarView;
+        public bool IsRadarView
+        {
+            get => _isRadarView;
+            set
+            {
+                if (SetProperty(ref _isRadarView, value))
+                {
+                    OnPropertyChanged(nameof(IsListView));
+                    if (value) UpdateRadarBlips();
+                }
+            }
+        }
+
+        public bool IsListView
+        {
+            get => !_isRadarView;
+            set => IsRadarView = !value;
+        }
 
         public List<int> AvailableDurations { get; } = new List<int> { 10, 20, 30, 60 };
 
@@ -372,6 +417,9 @@ namespace BlueDoc.UI.ViewModels
         public ICommand ToggleScanCommand { get; }
         public ICommand ClearCommand { get; }
         public ICommand SetFilterCommand { get; }
+        public ICommand SwitchToListViewCommand { get; }
+        public ICommand SwitchToRadarViewCommand { get; }
+        public ICommand SelectRadarBlipCommand { get; }
         public ICommand TogglePinInputCommand { get; }
         public ICommand PairSelectedDeviceCommand { get; }
         public ICommand ConfirmNumericComparisonCommand { get; }
@@ -449,6 +497,20 @@ namespace BlueDoc.UI.ViewModels
             TogglePinInputCommand = new RelayCommand(() =>
             {
                 ShowPinInput = !ShowPinInput;
+            });
+
+            SwitchToListViewCommand = new RelayCommand(() => IsRadarView = false);
+            SwitchToRadarViewCommand = new RelayCommand(() => IsRadarView = true);
+            SelectRadarBlipCommand = new RelayCommand(param =>
+            {
+                if (param is RadarBlipItem blip && blip.Device != null)
+                {
+                    SelectedDevice = blip.Device;
+                }
+                else if (param is BluetoothDeviceInfo dev)
+                {
+                    SelectedDevice = dev;
+                }
             });
 
             PairSelectedDeviceCommand = new RelayCommand(async () =>
@@ -793,6 +855,80 @@ namespace BlueDoc.UI.ViewModels
             OnPropertyChanged(nameof(PeripheralsCount));
             OnPropertyChanged(nameof(ShowScanSkeleton));
             OnPropertyChanged(nameof(ShowEmptyState));
+            UpdateRadarBlips();
+        }
+
+        public void UpdateRadarBlips()
+        {
+            RunOnUI(() =>
+            {
+                RadarBlips.Clear();
+                var devices = FilteredDevices?.OfType<BluetoothDeviceInfo>().ToList() ?? new List<BluetoothDeviceInfo>();
+                if (devices.Count == 0) return;
+
+                double cx = 220;
+                double cy = 220;
+                double maxR = 175;
+
+                for (int i = 0; i < devices.Count; i++)
+                {
+                    var dev = devices[i];
+                    double normRadius;
+                    double approxMeters;
+
+                    if (dev.Rssi.HasValue)
+                    {
+                        int rssi = dev.Rssi.Value;
+                        if (rssi >= -52)
+                        {
+                            normRadius = 0.25;
+                            approxMeters = 0.8;
+                        }
+                        else if (rssi >= -68)
+                        {
+                            normRadius = 0.48;
+                            approxMeters = 2.5;
+                        }
+                        else if (rssi >= -82)
+                        {
+                            normRadius = 0.72;
+                            approxMeters = 6.0;
+                        }
+                        else
+                        {
+                            normRadius = 0.90;
+                            approxMeters = 12.0;
+                        }
+                    }
+                    else
+                    {
+                        if (dev.IsConnected)
+                        {
+                            normRadius = 0.28;
+                            approxMeters = 1.0;
+                        }
+                        else if (dev.IsPaired)
+                        {
+                            normRadius = 0.55;
+                            approxMeters = 4.0;
+                        }
+                        else
+                        {
+                            normRadius = 0.82;
+                            approxMeters = 8.5;
+                        }
+                    }
+
+                    double angleDeg = (i * (360.0 / Math.Max(1, devices.Count))) + 28.0;
+                    double rad = angleDeg * Math.PI / 180.0;
+                    double r = normRadius * maxR;
+
+                    double x = cx + r * Math.Cos(rad) - 22;
+                    double y = cy + r * Math.Sin(rad) - 22;
+
+                    RadarBlips.Add(new RadarBlipItem(dev, x, y, approxMeters, angleDeg));
+                }
+            });
         }
 
         private bool FilterDevicePredicate(object obj)

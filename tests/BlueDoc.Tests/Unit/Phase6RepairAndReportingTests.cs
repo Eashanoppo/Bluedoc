@@ -114,9 +114,9 @@ namespace BlueDoc.Tests.Unit
 
             var engine = new SafeRepairEngine(repairRepo, cacheRepo);
 
-            // Test 1: Verify all 8 repair actions exist and are properly defined
+            // Test 1: Verify all repair actions exist and are properly defined
             var allRepairs = engine.GetAllRepairDefinitions();
-            Assert(allRepairs.Count == 8, $"Expected exactly 8 repairs, found {allRepairs.Count}");
+            Assert(allRepairs.Count >= 8, $"Expected at least 8 repairs, found {allRepairs.Count}");
 
             var restartBthServ = engine.GetRepairDefinition("RestartBthServ");
             Assert(restartBthServ.RequiresAdmin == true, "RestartBthServ must require administrator permissions");

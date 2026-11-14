@@ -77,6 +77,9 @@
     <Compile Include="Drivers\DriverComparisonModels.cs" />
     <Compile Include="Drivers\DriverComparisonService.cs" />
     <Compile Include="Diagnostics\HciTraceAssistant.cs" />
+    <Compile Include="System\SystemHardwareModelInspector.cs" />
+    <Compile Include="Drivers\BluetoothDriverCatalogService.cs" />
+    <Compile Include="Audio\WindowsAudioEndpointRouter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
