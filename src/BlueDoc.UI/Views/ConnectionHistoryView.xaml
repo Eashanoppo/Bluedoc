@@ -25,6 +25,62 @@
                 </StackPanel>
             </Grid>
 
+            <!-- LIFETIME REGISTERED & PAIRED PERIPHERALS SECTION -->
+            <Border Visibility="{Binding HasLifetimePairedDevices, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Background="{DynamicResource SurfaceCardBrush}" 
+                    BorderBrush="{DynamicResource BorderBrush}" 
+                    BorderThickness="1" 
+                    CornerRadius="10" 
+                    Padding="16" 
+                    Margin="0,0,0,20">
+                <StackPanel>
+                    <Grid Margin="0,0,0,12">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="LIFETIME PAIRED &amp; REGISTERED PERIPHERALS" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" />
+                            <Border Background="{DynamicResource AccentSubtleBrush}" CornerRadius="10" Padding="8,2" Margin="8,0,0,0">
+                                <TextBlock Text="{Binding LifetimePairedCount, StringFormat='{}{0} Registered in Windows'}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+
+                    <ItemsControl ItemsSource="{Binding LifetimePairedDevices}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="36" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <Border Grid.Column="0" Width="30" Height="30" CornerRadius="6" Background="{DynamicResource SurfaceSunkenBrush}" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding CategoryIcon}" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0">
+                                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                            <TextBlock Text="{Binding BluetoothAddress, StringFormat='Address: {0}'}" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                        </StackPanel>
+
+                                        <Border Grid.Column="2" Background="{DynamicResource SurfaceSunkenBrush}" CornerRadius="6" Padding="8,4" VerticalAlignment="Center" Margin="0,0,12,0">
+                                            <TextBlock Text="{Binding CategoryName}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                        </Border>
+
+                                        <Button Grid.Column="3" Content="Unpair" 
+                                                Command="{Binding DataContext.UnpairDeviceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource MacOsDangerButton}" 
+                                                Padding="10,4" Height="26" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
             <!-- Search and Filter Bar -->
             <Border Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,12" Margin="0,0,0,20">
                 <Grid>

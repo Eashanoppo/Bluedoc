@@ -104,8 +104,9 @@ namespace BlueDoc.Application.Services
                 IntPtr hRadio = GetPrimaryRadioHandle();
                 if (hRadio == IntPtr.Zero)
                 {
-                    details.Result = DeviceOperationResult.Fail("Bluetooth radio controller is disabled or not present.");
-                    return details;
+                    // Fallback: Ensure bluetooth service is active
+                    new BlueDoc.Infrastructure.Hardware.HardwareRadioManager().EnsureBluetoothServiceStarted();
+                    hRadio = GetPrimaryRadioHandle();
                 }
 
                 try
@@ -210,7 +211,10 @@ namespace BlueDoc.Application.Services
                 }
                 finally
                 {
-                    BluetoothNative.CloseHandle(hRadio);
+                    if (hRadio != IntPtr.Zero)
+                    {
+                        BluetoothNative.CloseHandle(hRadio);
+                    }
                 }
 
                 return details;
@@ -226,8 +230,9 @@ namespace BlueDoc.Application.Services
                 IntPtr hRadio = GetPrimaryRadioHandle();
                 if (hRadio == IntPtr.Zero)
                 {
-                    details.Result = DeviceOperationResult.Fail("Bluetooth radio controller is disabled or not present.");
-                    return details;
+                    // Fallback: Ensure bluetooth service is active
+                    new BlueDoc.Infrastructure.Hardware.HardwareRadioManager().EnsureBluetoothServiceStarted();
+                    hRadio = GetPrimaryRadioHandle();
                 }
 
                 try
@@ -262,7 +267,10 @@ namespace BlueDoc.Application.Services
                 }
                 finally
                 {
-                    BluetoothNative.CloseHandle(hRadio);
+                    if (hRadio != IntPtr.Zero)
+                    {
+                        BluetoothNative.CloseHandle(hRadio);
+                    }
                 }
 
                 return details;
@@ -380,7 +388,10 @@ namespace BlueDoc.Application.Services
                 }
                 finally
                 {
-                    BluetoothNative.CloseHandle(hRadio);
+                    if (hRadio != IntPtr.Zero)
+                    {
+                        BluetoothNative.CloseHandle(hRadio);
+                    }
                 }
 
                 return details;

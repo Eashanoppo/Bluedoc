@@ -28,7 +28,7 @@ namespace BlueDoc.UI.ViewModels
         private BluetoothPairingStage _pairingStage = BluetoothPairingStage.Idle;
         private string _statusMessage = "Ready";
         private string _searchText = string.Empty;
-        private string _selectedFilter = "All";
+        private string _selectedFilter = "Available";
 
         // In-App Native Pairing Workflow State
         private bool _isPairingModalOpen;
@@ -200,6 +200,7 @@ namespace BlueDoc.UI.ViewModels
         }
 
         public int TotalRegisteredCount => PairedDevices.Count;
+        public int AvailableCount => PairedDevices.Count(d => d.IsConnected || d.IsAvailable);
         public int ConnectedCount => PairedDevices.Count(d => d.IsConnected);
         public int DisconnectedCount => PairedDevices.Count(d => !d.IsConnected);
 
@@ -444,25 +445,28 @@ namespace BlueDoc.UI.ViewModels
                     }
 
                     OnPropertyChanged(nameof(TotalRegisteredCount));
+                    OnPropertyChanged(nameof(AvailableCount));
                     OnPropertyChanged(nameof(ConnectedCount));
                     OnPropertyChanged(nameof(DisconnectedCount));
+                    FilteredDevices.Refresh();
 
-                    if (PairedDevices.Count > 0)
+                    var availableList = FilteredDevices.OfType<BluetoothDeviceInfo>().ToList();
+                    if (availableList.Count > 0)
                     {
-                        if (SelectedDevice == null || !PairedDevices.Any(d => d.BluetoothAddress == SelectedDevice.BluetoothAddress))
+                        if (SelectedDevice == null || !availableList.Any(d => d.BluetoothAddress == SelectedDevice.BluetoothAddress))
                         {
-                            SelectedDevice = PairedDevices[0];
+                            SelectedDevice = availableList[0];
                         }
                         else
                         {
-                            SelectedDevice = PairedDevices.FirstOrDefault(d => d.BluetoothAddress == SelectedDevice.BluetoothAddress);
+                            SelectedDevice = availableList.FirstOrDefault(d => d.BluetoothAddress == SelectedDevice.BluetoothAddress);
                         }
-                        StatusMessage = $"Found {PairedDevices.Count} registered Bluetooth peripheral(s). {ConnectedCount} connected, {DisconnectedCount} disconnected.";
+                        StatusMessage = $"Found {availableList.Count} available Bluetooth peripheral(s). {ConnectedCount} connected.";
                     }
                     else
                     {
                         SelectedDevice = null;
-                        StatusMessage = "No paired Bluetooth devices currently registered in Windows.";
+                        StatusMessage = "No Bluetooth devices currently available in range. Turn on your peripheral to connect.";
                     }
                 });
             }
@@ -530,6 +534,8 @@ namespace BlueDoc.UI.ViewModels
             // Category / State filter
             switch (SelectedFilter)
             {
+                case "Available":
+                    return device.IsConnected || device.IsAvailable;
                 case "Connected":
                     return device.IsConnected;
                 case "Disconnected":
@@ -548,6 +554,7 @@ namespace BlueDoc.UI.ViewModels
                     return device.DeviceType == DeviceType.LowEnergy;
                 case "Classic":
                     return device.DeviceType == DeviceType.Classic;
+                case "All":
                 default:
                     return true;
             }

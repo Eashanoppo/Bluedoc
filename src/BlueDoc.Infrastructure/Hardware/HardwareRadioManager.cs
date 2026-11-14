@@ -257,7 +257,7 @@ namespace BlueDoc.Infrastructure.Hardware
             }
         }
 
-        private void EnsureBluetoothServiceStarted()
+        public void EnsureBluetoothServiceStarted()
         {
             try
             {

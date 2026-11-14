@@ -109,20 +109,42 @@ namespace BlueDoc.Infrastructure.Hardware
             string id = adapter.DeviceInstanceId ?? "";
             string desc = adapter.DeviceDescription ?? "";
             string name = adapter.FriendlyName ?? "";
+            string hwId = adapter.HardwareId ?? "";
 
             // Discard peripheral endpoint enumerator child nodes (e.g. BTHENUM audio endpoints, BTHLE GATT devices)
             if (id.StartsWith("BTHENUM\\", StringComparison.OrdinalIgnoreCase) ||
-                id.StartsWith("BTHLE\\", StringComparison.OrdinalIgnoreCase))
+                id.StartsWith("BTHLE\\", StringComparison.OrdinalIgnoreCase) ||
+                hwId.StartsWith("BTHENUM\\", StringComparison.OrdinalIgnoreCase) ||
+                hwId.StartsWith("BTHLE\\", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
-            // Must match physical Bluetooth controller hardware bus patterns
+            // Discard virtual software protocol nodes and Microsoft enumerators (RFCOMM, BTHBRB, BTHLE enumerators)
+            if (id.StartsWith("BTH\\MS_RFCOMM", StringComparison.OrdinalIgnoreCase) ||
+                id.StartsWith("BTH\\MS_BTHBRB", StringComparison.OrdinalIgnoreCase) ||
+                id.StartsWith("BTH\\MS_BTHLE", StringComparison.OrdinalIgnoreCase) ||
+                hwId.StartsWith("BTH\\MS_RFCOMM", StringComparison.OrdinalIgnoreCase) ||
+                hwId.StartsWith("BTH\\MS_BTHBRB", StringComparison.OrdinalIgnoreCase) ||
+                hwId.StartsWith("BTH\\MS_BTHLE", StringComparison.OrdinalIgnoreCase) ||
+                name.IndexOf("RFCOMM", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                name.IndexOf("Enumerator", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                desc.IndexOf("RFCOMM", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                desc.IndexOf("Enumerator", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return false;
+            }
+
+            // Must match physical Bluetooth controller hardware bus patterns (USB, PCI, or physical radio adapter)
             return id.StartsWith("USB\\", StringComparison.OrdinalIgnoreCase) ||
                    id.StartsWith("PCI\\", StringComparison.OrdinalIgnoreCase) ||
-                   id.StartsWith("BTH\\", StringComparison.OrdinalIgnoreCase) ||
+                   hwId.StartsWith("USB\\", StringComparison.OrdinalIgnoreCase) ||
+                   hwId.StartsWith("PCI\\", StringComparison.OrdinalIgnoreCase) ||
                    desc.IndexOf("Bluetooth Adapter", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                   name.IndexOf("Bluetooth Adapter", StringComparison.OrdinalIgnoreCase) >= 0;
+                   desc.IndexOf("Wireless Bluetooth", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   name.IndexOf("Bluetooth Adapter", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   name.IndexOf("Wireless Bluetooth", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   name.IndexOf("Bluetooth Controller", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         public BluetoothAdapterInfo GetPrimaryAdapter()

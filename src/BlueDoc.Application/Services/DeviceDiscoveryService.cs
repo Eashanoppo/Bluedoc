@@ -81,21 +81,6 @@ namespace BlueDoc.Application.Services
                 _discoveredMaster.Clear();
             }
 
-            // Immediately load already paired/remembered peripherals into master catalog so user sees existing context
-            try
-            {
-                var paired = await _bluetoothManager.GetPairedDevicesAsync(_scanCts.Token);
-                foreach (var p in paired)
-                {
-                    lock (_lock)
-                    {
-                        _discoveredMaster[p.BluetoothAddress] = p;
-                    }
-                    DeviceDiscovered?.Invoke(this, p);
-                }
-            }
-            catch { }
-
             var tasks = new List<Task>();
 
             // 1. Classic Bluetooth Inquiry Branch

@@ -242,36 +242,41 @@ namespace BlueDoc.Bluetooth.Legacy
             IProgress<BluetoothDeviceInfo> progress = null, 
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.Run<IReadOnlyList<BluetoothDeviceInfo>>(async () =>
+            return Task.Run<IReadOnlyList<BluetoothDeviceInfo>>(() =>
             {
                 var discovered = new Dictionary<string, BluetoothDeviceInfo>(StringComparer.OrdinalIgnoreCase);
-
-                // Phase A: Immediately populate existing paired / remembered devices
-                var paired = await GetPairedDevicesAsync(cancellationToken);
-                foreach (var p in paired)
-                {
-                    discovered[p.BluetoothAddress] = p;
-                    progress?.Report(p);
-                }
 
                 if (cancellationToken.IsCancellationRequested)
                 {
                     return discovered.Values.ToList();
                 }
 
-                // Phase B: Issue an active radio inquiry for nearby discoverable devices
+                // Query physical radio handle
+                IntPtr hRadio = IntPtr.Zero;
+                IntPtr hFindRadio = IntPtr.Zero;
+                try
+                {
+                    var pRadioParams = new BluetoothNative.BLUETOOTH_FIND_RADIO_PARAMS
+                    {
+                        dwSize = (uint)Marshal.SizeOf(typeof(BluetoothNative.BLUETOOTH_FIND_RADIO_PARAMS))
+                    };
+                    hFindRadio = BluetoothNative.BluetoothFindFirstRadio(ref pRadioParams, out hRadio);
+                }
+                catch { }
+
+                // Active radio inquiry: ONLY return devices that physically respond to RF inquiry or are actively connected
                 try
                 {
                     var searchParams = new BLUETOOTH_DEVICE_SEARCH_PARAMS
                     {
                         dwSize = (uint)Marshal.SizeOf(typeof(BLUETOOTH_DEVICE_SEARCH_PARAMS)),
-                        fReturnAuthenticated = true,
-                        fReturnRemembered = true,
-                        fReturnUnknown = true,
-                        fReturnConnected = true,
-                        fIssueInquiry = true,
-                        cTimeoutMultiplier = (byte)Math.Min(Math.Max(1, timeoutSeconds / 1.28), 10), // multiplier in 1.28-sec blocks
-                        hRadio = IntPtr.Zero
+                        fReturnAuthenticated = false, // Do NOT return offline authenticated devices
+                        fReturnRemembered = false,    // Do NOT return offline cached devices
+                        fReturnUnknown = true,       // Return newly broadcasting devices discovered in the air
+                        fReturnConnected = true,     // Return actively connected devices
+                        fIssueInquiry = true,        // Send physical 1.28s RF inquiry packets
+                        cTimeoutMultiplier = (byte)Math.Min(Math.Max(2, timeoutSeconds / 1.28), 10),
+                        hRadio = hRadio
                     };
 
                     var devInfo = new BLUETOOTH_DEVICE_INFO
@@ -293,9 +298,15 @@ namespace BlueDoc.Bluetooth.Legacy
 
                                 DeviceClassDecoder.Decode(devInfo.ulClassofDevice, out var category, out var major, out var icon);
 
+                                bool isConn = devInfo.fConnected;
+                                if (OperatingSystemInspector.IsWindows10OrGreater() && devInfo.Address != 0)
+                                {
+                                    isConn = PnpBluetoothDeviceInspector.CheckDeviceConnectedWinRt(devInfo.Address, false);
+                                }
+
                                 if (discovered.TryGetValue(formattedAddress, out var existing))
                                 {
-                                    existing.IsConnected = devInfo.fConnected;
+                                    existing.IsConnected = isConn;
                                     existing.IsPaired = existing.IsPaired || devInfo.fAuthenticated;
                                     existing.IsRemembered = existing.IsRemembered || devInfo.fRemembered;
                                     if (!string.IsNullOrWhiteSpace(devInfo.szName)) existing.DeviceName = devInfo.szName;
@@ -313,12 +324,13 @@ namespace BlueDoc.Bluetooth.Legacy
                                 {
                                     var device = new BluetoothDeviceInfo
                                     {
-                                        DeviceName = devInfo.szName,
+                                        DeviceName = !string.IsNullOrWhiteSpace(devInfo.szName) ? devInfo.szName : "Bluetooth Device",
                                         BluetoothAddress = formattedAddress,
                                         RawAddress = devInfo.Address,
-                                        IsConnected = devInfo.fConnected,
+                                        IsConnected = isConn,
                                         IsPaired = devInfo.fAuthenticated,
                                         IsRemembered = devInfo.fRemembered,
+                                        IsAvailable = true,
                                         DeviceType = DeviceType.Classic,
                                         DeviceClass = devInfo.ulClassofDevice,
                                         CategoryName = category,
@@ -341,6 +353,17 @@ namespace BlueDoc.Bluetooth.Legacy
                     }
                 }
                 catch { }
+                finally
+                {
+                    if (hRadio != IntPtr.Zero)
+                    {
+                        BluetoothNative.CloseHandle(hRadio);
+                    }
+                    if (hFindRadio != IntPtr.Zero && hFindRadio != (IntPtr)(-1))
+                    {
+                        BluetoothNative.BluetoothFindRadioClose(hFindRadio);
+                    }
+                }
 
                 return discovered.Values.ToList();
             }, cancellationToken);

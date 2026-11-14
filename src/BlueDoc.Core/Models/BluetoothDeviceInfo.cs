@@ -25,6 +25,7 @@ namespace BlueDoc.Core.Models
         private string _discoverySource = "Inquiry";
         private string _advertisedServices = string.Empty;
         private int? _batteryLevel;
+        private bool _isAvailable;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -127,6 +128,19 @@ namespace BlueDoc.Core.Models
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(StatusDisplay));
                     OnPropertyChanged(nameof(StatusColor));
+                }
+            }
+        }
+
+        public bool IsAvailable
+        {
+            get => _isAvailable || _isConnected;
+            set
+            {
+                if (_isAvailable != value)
+                {
+                    _isAvailable = value;
+                    OnPropertyChanged();
                 }
             }
         }

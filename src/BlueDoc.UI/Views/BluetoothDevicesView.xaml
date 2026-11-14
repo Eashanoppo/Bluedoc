@@ -131,13 +131,14 @@
 
                     <!-- Segmented Filter Pills -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <RadioButton Content="All" 
+                        <RadioButton Content="Available" 
                                      GroupName="DeviceFilter" 
-                                     IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='All', Mode=OneWay}" 
+                                     IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Available', Mode=OneWay}" 
                                      Command="{Binding SetFilterCommand}" 
-                                     CommandParameter="All" 
+                                     CommandParameter="Available" 
                                      Style="{StaticResource ThemeSegmentButton}" 
-                                     Margin="0,0,4,0" />
+                                     Margin="0,0,4,0" 
+                                     ToolTip="Show only peripherals currently connected or broadcasting nearby" />
                         <RadioButton Content="Connected" 
                                      GroupName="DeviceFilter" 
                                      IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Connected', Mode=OneWay}" 
@@ -145,13 +146,14 @@
                                      CommandParameter="Connected" 
                                      Style="{StaticResource ThemeSegmentButton}" 
                                      Margin="0,0,4,0" />
-                        <RadioButton Content="Disconnected" 
+                        <RadioButton Content="All Registered" 
                                      GroupName="DeviceFilter" 
-                                     IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Disconnected', Mode=OneWay}" 
+                                     IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='All', Mode=OneWay}" 
                                      Command="{Binding SetFilterCommand}" 
-                                     CommandParameter="Disconnected" 
+                                     CommandParameter="All" 
                                      Style="{StaticResource ThemeSegmentButton}" 
-                                     Margin="0,0,4,0" />
+                                     Margin="0,0,4,0" 
+                                     ToolTip="Show all historical registered peripherals" />
                         <RadioButton Content="Audio" 
                                      GroupName="DeviceFilter" 
                                      IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Audio', Mode=OneWay}" 
@@ -166,19 +168,6 @@
                                      CommandParameter="Peripherals" 
                                      Style="{StaticResource ThemeSegmentButton}" 
                                      Margin="0,0,4,0" />
-                        <RadioButton Content="BLE" 
-                                     GroupName="DeviceFilter" 
-                                     IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='BLE', Mode=OneWay}" 
-                                     Command="{Binding SetFilterCommand}" 
-                                     CommandParameter="BLE" 
-                                     Style="{StaticResource ThemeSegmentButton}" 
-                                     Margin="0,0,4,0" />
-                        <RadioButton Content="Classic" 
-                                     GroupName="DeviceFilter" 
-                                     IsChecked="{Binding SelectedFilter, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter='Classic', Mode=OneWay}" 
-                                     Command="{Binding SetFilterCommand}" 
-                                     CommandParameter="Classic" 
-                                     Style="{StaticResource ThemeSegmentButton}" />
                     </StackPanel>
 
                     <!-- Real-Time Connection Counters -->
@@ -244,9 +233,12 @@
                             <Border Width="48" Height="48" CornerRadius="12" Background="{DynamicResource AccentSubtleBrush}" HorizontalAlignment="Center">
                                 <Path Data="{StaticResource IconDevicesPath}" Width="22" Height="22" Fill="{DynamicResource AccentBrush}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="No Matching Bluetooth Peripherals" Style="{StaticResource EmptyStateTitle}" />
-                            <TextBlock Text="No paired devices match your current search or filter criteria. Click Pair New Device to discover nearby hardware." Style="{StaticResource EmptyStateDescription}" />
-                            <Button Content="+ Pair New Device" Command="{Binding OpenPairingModalCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Center" />
+                            <TextBlock Text="No Available Peripherals in Range" Style="{StaticResource EmptyStateTitle}" />
+                            <TextBlock Text="No paired devices are currently broadcasting or connected. Turn on your peripheral, or view historical records below." Style="{StaticResource EmptyStateDescription}" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                                <Button Content="Show All Lifetime Paired" Command="{Binding SetFilterCommand}" CommandParameter="All" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" />
+                                <Button Content="View Connection History →" Command="{Binding ViewHistoryCommand}" Style="{StaticResource GhostButton}" />
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 

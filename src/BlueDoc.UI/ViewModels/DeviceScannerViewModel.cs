@@ -571,7 +571,10 @@ namespace BlueDoc.UI.ViewModels
                     {
                         AvailableAdapters.Add(a);
                     }
-                    SelectedAdapter = AvailableAdapters.FirstOrDefault(a => a.Status == AdapterStatus.Operational) ?? AvailableAdapters.FirstOrDefault();
+                    SelectedAdapter = AvailableAdapters.FirstOrDefault(a => a.Status == AdapterStatus.Operational && (a.HardwareDetails.BusType == "USB" || a.HardwareDetails.BusType == "PCI") && a.HardwareDetails.IsValid)
+                                   ?? AvailableAdapters.FirstOrDefault(a => a.Status == AdapterStatus.Operational && a.HardwareDetails.IsValid)
+                                   ?? AvailableAdapters.FirstOrDefault(a => a.Status == AdapterStatus.Operational) 
+                                   ?? AvailableAdapters.FirstOrDefault();
                 });
             }
             catch { }

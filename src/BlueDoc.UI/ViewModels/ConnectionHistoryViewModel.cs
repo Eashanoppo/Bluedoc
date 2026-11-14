@@ -25,6 +25,10 @@ namespace BlueDoc.UI.ViewModels
         private int _totalEvents;
 
         public ObservableCollection<ConnectionHistoryRecord> HistoryRecords { get; } = new ObservableCollection<ConnectionHistoryRecord>();
+        public ObservableCollection<BluetoothDeviceInfo> LifetimePairedDevices { get; } = new ObservableCollection<BluetoothDeviceInfo>();
+
+        public int LifetimePairedCount => LifetimePairedDevices.Count;
+        public bool HasLifetimePairedDevices => LifetimePairedDevices.Count > 0;
 
         public ConnectionHistoryRecord SelectedRecord
         {
@@ -72,6 +76,7 @@ namespace BlueDoc.UI.ViewModels
         public ICommand ClearHistoryCommand { get; }
         public ICommand ExportCsvCommand { get; }
         public ICommand SetFilterCommand { get; }
+        public ICommand UnpairDeviceCommand { get; }
 
         public ConnectionHistoryViewModel(HistoryService historyService = null)
         {
@@ -93,6 +98,30 @@ namespace BlueDoc.UI.ViewModels
                 }
             });
 
+            UnpairDeviceCommand = new RelayCommand(async param =>
+            {
+                if (param is BluetoothDeviceInfo dev)
+                {
+                    var confirm = MessageBox.Show(
+                        $"Remove and unpair '{dev.DisplayName}' ({dev.BluetoothAddress}) from Windows?",
+                        "Unpair Bluetooth Peripheral",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (confirm == MessageBoxResult.Yes)
+                    {
+                        var mgmt = new BlueDoc.Application.Services.DeviceManagementService();
+                        bool ok = await mgmt.UnpairDeviceAsync(dev.BluetoothAddress);
+                        if (ok)
+                        {
+                            LifetimePairedDevices.Remove(dev);
+                            OnPropertyChanged(nameof(LifetimePairedCount));
+                            OnPropertyChanged(nameof(HasLifetimePairedDevices));
+                        }
+                    }
+                }
+            });
+
             ExportCsvCommand = new RelayCommand(ExportCsv, () => HistoryRecords.Count > 0);
             SetFilterCommand = new RelayCommand(filter => SelectedFilter = filter?.ToString() ?? "All");
         }
@@ -102,7 +131,22 @@ namespace BlueDoc.UI.ViewModels
             IsLoading = true;
             try
             {
-                _rawRecords = await _historyService.GetHistoryAsync(250, null);
+                var pairedTask = Task.Run(() => BlueDoc.Infrastructure.Hardware.PnpBluetoothDeviceInspector.EnumeratePairedDevices());
+                var historyTask = _historyService.GetHistoryAsync(250, null);
+
+                await Task.WhenAll(pairedTask, historyTask);
+
+                var lifetimeList = await pairedTask;
+                _rawRecords = await historyTask;
+
+                LifetimePairedDevices.Clear();
+                foreach (var d in lifetimeList)
+                {
+                    LifetimePairedDevices.Add(d);
+                }
+                OnPropertyChanged(nameof(LifetimePairedCount));
+                OnPropertyChanged(nameof(HasLifetimePairedDevices));
+
                 TotalEvents = _rawRecords.Count;
                 ApplyFilters();
             }
