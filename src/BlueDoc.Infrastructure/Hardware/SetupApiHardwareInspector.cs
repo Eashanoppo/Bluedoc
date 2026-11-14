@@ -49,29 +49,31 @@ namespace BlueDoc.Infrastructure.Hardware
         private List<BluetoothAdapterInfo> EnumerateViaSetupApi()
         {
             var result = new List<BluetoothAdapterInfo>();
-            var classGuid = SetupApiNative.GUID_DEVCLASS_BLUETOOTH;
+            var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            // Enumerate all devices belonging to the Bluetooth setup class
-            // Flags = 0 returns all devices in this class (both present and non-present)
+            // 1. Enumerate standard Bluetooth class (both non-present and present)
+            var classGuid = SetupApiNative.GUID_DEVCLASS_BLUETOOTH;
+            EnumerateClass(ref classGuid, 0, result, seenIds);
+            EnumerateClass(ref classGuid, SetupApiNative.DIGCF_PRESENT, result, seenIds);
+
+            // 2. Also scan ALLCLASSES for unconfigured, missing-driver (Code 28/43), or generic USB Class E0 devices
+            var emptyGuid = Guid.Empty;
+            EnumerateClass(ref emptyGuid, SetupApiNative.DIGCF_ALLCLASSES | SetupApiNative.DIGCF_PRESENT, result, seenIds);
+
+            return result;
+        }
+
+        private void EnumerateClass(ref Guid classGuid, int flags, List<BluetoothAdapterInfo> result, HashSet<string> seenIds)
+        {
             IntPtr devInfo = SetupApiNative.SetupDiGetClassDevs(
                 ref classGuid,
                 null,
                 IntPtr.Zero,
-                0);
+                flags);
 
             if (devInfo == (IntPtr)(-1) || devInfo == IntPtr.Zero)
             {
-                // Try with DIGCF_PRESENT
-                devInfo = SetupApiNative.SetupDiGetClassDevs(
-                    ref classGuid,
-                    null,
-                    IntPtr.Zero,
-                    SetupApiNative.DIGCF_PRESENT);
-            }
-
-            if (devInfo == (IntPtr)(-1) || devInfo == IntPtr.Zero)
-            {
-                return result;
+                return;
             }
 
             try
@@ -85,9 +87,13 @@ namespace BlueDoc.Infrastructure.Hardware
                     memberIndex++;
 
                     var adapter = ProcessDeviceInfo(devInfo, ref devInfoData);
-                    if (adapter != null && IsBluetoothAdapterOrDevice(adapter))
+                    if (adapter != null && !string.IsNullOrEmpty(adapter.DeviceInstanceId))
                     {
-                        result.Add(adapter);
+                        if (!seenIds.Contains(adapter.DeviceInstanceId) && IsBluetoothAdapterOrDevice(adapter))
+                        {
+                            seenIds.Add(adapter.DeviceInstanceId);
+                            result.Add(adapter);
+                        }
                     }
                 }
             }
@@ -95,8 +101,6 @@ namespace BlueDoc.Infrastructure.Hardware
             {
                 SetupApiNative.SetupDiDestroyDeviceInfoList(devInfo);
             }
-
-            return result;
         }
 
         private bool IsBluetoothAdapterOrDevice(BluetoothAdapterInfo adapter)
@@ -110,6 +114,7 @@ namespace BlueDoc.Infrastructure.Hardware
             string desc = adapter.DeviceDescription ?? "";
             string name = adapter.FriendlyName ?? "";
             string hwId = adapter.HardwareId ?? "";
+            string vid = adapter.HardwareDetails?.VendorId ?? "";
 
             // Discard peripheral endpoint enumerator child nodes (e.g. BTHENUM audio endpoints, BTHLE GATT devices)
             if (id.StartsWith("BTHENUM\\", StringComparison.OrdinalIgnoreCase) ||
@@ -135,16 +140,48 @@ namespace BlueDoc.Infrastructure.Hardware
                 return false;
             }
 
+            // Check known Bluetooth vendor IDs (Atheros, Broadcom, Intel, Realtek, Foxconn Sony, Lite-On, CSR, MediaTek, Alps, Asus, AzureWave)
+            bool isKnownBtVendor = IsKnownBluetoothVendor(vid);
+
+            // Check USB Class E0 (Wireless Controller / Bluetooth)
+            bool isUsbClassE0 = hwId.IndexOf("Class_E0", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                id.IndexOf("Class_E0", StringComparison.OrdinalIgnoreCase) >= 0;
+
             // Must match physical Bluetooth controller hardware bus patterns (USB, PCI, or physical radio adapter)
-            return id.StartsWith("USB\\", StringComparison.OrdinalIgnoreCase) ||
-                   id.StartsWith("PCI\\", StringComparison.OrdinalIgnoreCase) ||
-                   hwId.StartsWith("USB\\", StringComparison.OrdinalIgnoreCase) ||
-                   hwId.StartsWith("PCI\\", StringComparison.OrdinalIgnoreCase) ||
-                   desc.IndexOf("Bluetooth Adapter", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                   desc.IndexOf("Wireless Bluetooth", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                   name.IndexOf("Bluetooth Adapter", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                   name.IndexOf("Wireless Bluetooth", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                   name.IndexOf("Bluetooth Controller", StringComparison.OrdinalIgnoreCase) >= 0;
+            bool isPhysicalBus = id.StartsWith("USB\\", StringComparison.OrdinalIgnoreCase) ||
+                                id.StartsWith("PCI\\", StringComparison.OrdinalIgnoreCase) ||
+                                hwId.StartsWith("USB\\", StringComparison.OrdinalIgnoreCase) ||
+                                hwId.StartsWith("PCI\\", StringComparison.OrdinalIgnoreCase);
+
+            bool hasBtKeyword = desc.IndexOf("Bluetooth", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                name.IndexOf("Bluetooth", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                desc.IndexOf("Wireless Bluetooth", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                name.IndexOf("Wireless Bluetooth", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                desc.IndexOf("AR301", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                name.IndexOf("AR301", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                desc.IndexOf("BCM207", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                name.IndexOf("BCM207", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            return (isPhysicalBus && (hasBtKeyword || isKnownBtVendor || isUsbClassE0)) ||
+                   hasBtKeyword;
+        }
+
+        private static bool IsKnownBluetoothVendor(string vid)
+        {
+            if (string.IsNullOrWhiteSpace(vid)) return false;
+            vid = vid.Trim().ToUpperInvariant();
+            return vid == "0BDA" || // Realtek
+                   vid == "8087" || // Intel
+                   vid == "0A5C" || // Broadcom
+                   vid == "0CF3" || // Qualcomm Atheros
+                   vid == "17CB" || // Qualcomm
+                   vid == "0489" || // Foxconn (Sony VAIO / HP OEM for Atheros/Broadcom)
+                   vid == "04CA" || // Lite-On (OEM for Atheros/Broadcom)
+                   vid == "13D3" || // AzureWave
+                   vid == "044E" || // Alps Electric
+                   vid == "0B05" || // ASUS
+                   vid == "0A12" || // Cambridge Silicon Radio (CSR)
+                   vid == "0E8D";   // MediaTek
         }
 
         public BluetoothAdapterInfo GetPrimaryAdapter()
@@ -240,6 +277,18 @@ namespace BlueDoc.Infrastructure.Hardware
                         adapter.Status = AdapterStatus.DeviceError;
                         adapter.IsEnabled = true;
                         adapter.ProblemDescription = "This device cannot start (Code 10). Firmware or driver initialization failed.";
+                    }
+                    else if (problemCode == CfgMgr32Native.CM_PROB_FAILED_INSTALL)
+                    {
+                        adapter.Status = AdapterStatus.DriverMissing;
+                        adapter.IsEnabled = false;
+                        adapter.ProblemDescription = "The drivers for this device are not installed (Code 28). Missing vendor firmware package.";
+                    }
+                    else if (problemCode == CfgMgr32Native.CM_PROB_FAILED_POST_START)
+                    {
+                        adapter.Status = AdapterStatus.DeviceError;
+                        adapter.IsEnabled = true;
+                        adapter.ProblemDescription = "Windows stopped this device because it reported problems (Code 43). Missing vendor firmware RAM patch.";
                     }
                     else
                     {

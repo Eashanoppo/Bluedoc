@@ -261,7 +261,7 @@ namespace BlueDoc.UI.ViewModels
             StatusMessage = "Launching Windows driver installer with administrative elevation...";
             try
             {
-                bool success = await _driverService.InstallDriverPackageAsync(DownloadedFilePath);
+                bool success = await _driverService.InstallDriverPackageAsync(DownloadedFilePath, Adapter?.HardwareId);
                 if (success)
                 {
                     StatusMessage = "Driver installation process launched. Windows is refreshing the hardware stack.";

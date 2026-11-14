@@ -32,6 +32,7 @@ namespace BlueDoc.Bluetooth.BLE
             }
         }
 
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         private void InitializeWatcher()
         {
             try

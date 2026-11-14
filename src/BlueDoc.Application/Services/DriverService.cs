@@ -39,9 +39,9 @@ namespace BlueDoc.Application.Services
             return _catalogService.DownloadDriverPackageAsync(package, progress, ct);
         }
 
-        public Task<bool> InstallDriverPackageAsync(string packagePath)
+        public Task<bool> InstallDriverPackageAsync(string packagePath, string hardwareId = null)
         {
-            return _catalogService.InstallDriverPackageAsync(packagePath);
+            return _catalogService.InstallDriverPackageAsync(packagePath, hardwareId);
         }
 
         public Task<string> BackupCurrentDriverAsync(string destinationFolder = null)

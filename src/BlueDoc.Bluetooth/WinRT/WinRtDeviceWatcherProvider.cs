@@ -38,6 +38,7 @@ namespace BlueDoc.Bluetooth.WinRT
             }
         }
 
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         private void InitializeWatcher()
         {
             try
@@ -225,9 +226,7 @@ namespace BlueDoc.Bluetooth.WinRT
             {
                 if (update == null || string.IsNullOrWhiteSpace(update.Id)) return;
 
-                var match = Regex.Match(update.Id, @"([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})");
-                string address = match.Success ? match.Value.ToUpperInvariant().Replace('-', ':') : null;
-
+                string address = ExtractAddressFromId(update.Id);
                 if (string.IsNullOrWhiteSpace(address)) return;
 
                 lock (_lock)
@@ -275,21 +274,27 @@ namespace BlueDoc.Bluetooth.WinRT
                 }
             }
 
-            // 2. Try ID string: e.g., "Bluetooth#Bluetooth00:1a:7d:da:71:11-41:42:29:86:6b:a5"
-            if (!string.IsNullOrWhiteSpace(devInfo.Id))
-            {
-                var match = Regex.Match(devInfo.Id, @"([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})");
-                if (match.Success)
-                {
-                    return match.Value.ToUpperInvariant().Replace('-', ':');
-                }
+            // 2. Try ID string: format is "Bluetooth#Bluetooth<AdapterMAC>-<RemoteDeviceMAC>"
+            return ExtractAddressFromId(devInfo.Id);
+        }
 
-                var hexMatch = Regex.Match(devInfo.Id, @"([0-9A-Fa-f]{12})");
-                if (hexMatch.Success)
-                {
-                    string clean = hexMatch.Value.ToUpperInvariant();
-                    return string.Join(":", Enumerable.Range(0, 6).Select(i => clean.Substring(i * 2, 2)));
-                }
+        private static string ExtractAddressFromId(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return null;
+
+            // In WinRT, devInfo.Id has the format: Bluetooth#Bluetooth<LocalAdapterMAC>-<RemotePeripheralMAC>
+            // We MUST select the LAST MAC match so we get the remote peripheral's MAC rather than the host adapter's MAC
+            var matches = Regex.Matches(id, @"([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})");
+            if (matches.Count > 0)
+            {
+                return matches[matches.Count - 1].Value.ToUpperInvariant().Replace('-', ':');
+            }
+
+            var hexMatches = Regex.Matches(id, @"([0-9A-Fa-f]{12})");
+            if (hexMatches.Count > 0)
+            {
+                string clean = hexMatches[hexMatches.Count - 1].Value.ToUpperInvariant();
+                return string.Join(":", Enumerable.Range(0, 6).Select(i => clean.Substring(i * 2, 2)));
             }
 
             return null;

@@ -79,6 +79,7 @@
     <Compile Include="Diagnostics\HciTraceAssistant.cs" />
     <Compile Include="System\SystemHardwareModelInspector.cs" />
     <Compile Include="Drivers\BluetoothDriverCatalogService.cs" />
+    <Compile Include="Drivers\WinUsbFirmwarePatcher.cs" />
     <Compile Include="Audio\WindowsAudioEndpointRouter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

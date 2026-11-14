@@ -44,6 +44,31 @@ namespace BlueDoc.Diagnostics.Rules
                 return Task.FromResult(result);
             }
 
+            // Check for Generic Microsoft fallback driver on RAM-patch silicon
+            string provider = driver.DriverProvider ?? string.Empty;
+            string inf = driver.InfPath ?? string.Empty;
+            string vid = adapter.HardwareDetails?.VendorId?.ToUpperInvariant() ?? string.Empty;
+            bool isGenericProvider = provider.IndexOf("Microsoft", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                     inf.IndexOf("bth.inf", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                     (driver.DriverDateString != null && driver.DriverDateString.IndexOf("2006", StringComparison.OrdinalIgnoreCase) >= 0);
+
+            // Chips requiring RAM patch: Qualcomm Atheros (0CF3, 17CB), Foxconn Sony VAIO (0489), Lite-On (04CA), Broadcom (0A5C), Realtek (0BDA), Intel (8087)
+            bool isRamPatchSilicon = vid == "0CF3" || vid == "17CB" || vid == "0489" || vid == "04CA" || 
+                                     vid == "0A5C" || vid == "0BDA" || vid == "8087" ||
+                                     adapter.FriendlyName.IndexOf("Generic Bluetooth", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            if (isGenericProvider && isRamPatchSilicon)
+            {
+                result.Status = DiagnosticStatus.Failed;
+                result.Summary = "Missing Vendor Firmware Patch: Generic Microsoft Driver (06-21-2006) Bound to Uninitialized Silicon";
+                result.TechnicalDetails = $"Hardware VID={vid}, PID={adapter.HardwareDetails?.ProductId} is bound to generic inbox driver '{inf}' without required vendor RAM-patch firmware (.dfu/.hcd). The 2.4 GHz physical radio transmitter is dormant.";
+                result.Evidence = $"Adapter: '{adapter.FriendlyName}', Provider: '{provider}', Version: '{driver.DriverVersion}', Date: '{driver.DriverDateString}', HardwareId: '{adapter.HardwareId}'";
+                result.PossibleCause = "The Bluetooth silicon requires vendor RAM-patch firmware loaded at boot over USB. Because Microsoft's generic fallback driver lacks this patch, Windows reports Code 0 but the physical radio cannot transmit or discover peripherals.";
+                result.RecommendedAction = "Use BlueDoc Driver Assistant to automatically provision and install the certified vendor driver and firmware patch package.";
+                result.RequiresAdmin = true;
+                return Task.FromResult(result);
+            }
+
             // Check if driver is valid
             result.Status = DiagnosticStatus.Passed;
             result.Summary = $"Driver is installed: {driver.DriverProvider} (v{driver.DriverVersion})";

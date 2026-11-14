@@ -15,8 +15,8 @@ namespace BlueDoc.Application.Services
     public class DeviceDiscoveryService : IDisposable
     {
         private readonly BluetoothManager _bluetoothManager;
-        private readonly BleAdvertisementWatcherProvider _bleWatcher;
-        private readonly WinRtDeviceWatcherProvider _classicWatcher;
+        private BleAdvertisementWatcherProvider _bleWatcher;
+        private WinRtDeviceWatcherProvider _classicWatcher;
         private readonly Dictionary<string, BluetoothDeviceInfo> _discoveredMaster = new Dictionary<string, BluetoothDeviceInfo>(StringComparer.OrdinalIgnoreCase);
         private readonly object _lock = new object();
 
@@ -41,27 +41,41 @@ namespace BlueDoc.Application.Services
             {
                 try
                 {
-                    _classicWatcher = new WinRtDeviceWatcherProvider();
-                    _classicWatcher.DeviceDiscovered += (s, dev) => MergeClassicDevice(dev);
-                    _classicWatcher.DeviceUpdated += (s, dev) => MergeClassicDevice(dev);
-                    _classicWatcher.ScanStatusChanged += (s, msg) => StatusChanged?.Invoke(this, msg);
+                    InitializeWinRtWatchers();
                 }
                 catch
                 {
                     _classicWatcher = null;
-                }
-
-                try
-                {
-                    _bleWatcher = new BleAdvertisementWatcherProvider();
-                    _bleWatcher.DeviceDiscovered += OnBleDeviceDiscovered;
-                    _bleWatcher.DeviceUpdated += OnBleDeviceUpdated;
-                    _bleWatcher.ScanStatusChanged += (s, msg) => StatusChanged?.Invoke(this, msg);
-                }
-                catch
-                {
                     _bleWatcher = null;
                 }
+            }
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private void InitializeWinRtWatchers()
+        {
+            try
+            {
+                _classicWatcher = new WinRtDeviceWatcherProvider();
+                _classicWatcher.DeviceDiscovered += (s, dev) => MergeClassicDevice(dev);
+                _classicWatcher.DeviceUpdated += (s, dev) => MergeClassicDevice(dev);
+                _classicWatcher.ScanStatusChanged += (s, msg) => StatusChanged?.Invoke(this, msg);
+            }
+            catch
+            {
+                _classicWatcher = null;
+            }
+
+            try
+            {
+                _bleWatcher = new BleAdvertisementWatcherProvider();
+                _bleWatcher.DeviceDiscovered += OnBleDeviceDiscovered;
+                _bleWatcher.DeviceUpdated += OnBleDeviceUpdated;
+                _bleWatcher.ScanStatusChanged += (s, msg) => StatusChanged?.Invoke(this, msg);
+            }
+            catch
+            {
+                _bleWatcher = null;
             }
         }
 
