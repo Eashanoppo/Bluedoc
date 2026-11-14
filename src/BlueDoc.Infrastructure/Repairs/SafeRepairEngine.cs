@@ -233,6 +233,19 @@ namespace BlueDoc.Infrastructure.Repairs
                         VerificationProcedure = "Queries SQLite device repository to verify unbonded cached records count is zero."
                     };
 
+                case "ProvisionSiliconFirmware":
+                    return new RepairActionDefinition
+                    {
+                        Key = "ProvisionSiliconFirmware",
+                        Title = "Provision Bluetooth Silicon Firmware & Filter Driver",
+                        Description = "Uploads certified RAM-patch firmware (.dfu/.hex) and installs the WHQL filter driver for uninitialized Qualcomm Atheros or Broadcom chipsets running generic Microsoft drivers.",
+                        Consequences = "Windows Plug and Play registers the vendor driver and powers on the dormant 2.4 GHz RF radio transceiver.",
+                        RequiresAdmin = true,
+                        TargetComponent = "Radio Hardware Silicon & Firmware",
+                        IssueDescription = "The Bluetooth controller is running in cold-boot standby mode with unprovisioned firmware under generic Microsoft driver 10.0.19041.5848. The radio transmitter cannot broadcast or receive.",
+                        VerificationProcedure = "Installs bundled WHQL filter driver and forces PnP device binding via newdev.dll."
+                    };
+
                 default:
                     return new RepairActionDefinition
                     {
@@ -385,6 +398,18 @@ namespace BlueDoc.Infrastructure.Repairs
                         {
                             record.Status = "Success";
                             record.VerificationResult = "Audio endpoint routing triggered.";
+                        }
+                        break;
+
+                    case "ProvisionSiliconFirmware":
+                        var inspector = new BlueDoc.Infrastructure.Hardware.SetupApiHardwareInspector();
+                        var primaryAdapter = inspector.GetPrimaryAdapter();
+                        var patchResult = await BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.ProvisionAndPatchSiliconAsync(primaryAdapter);
+                        record.Status = patchResult.Success ? "Success" : "Failed";
+                        record.VerificationResult = patchResult.Message;
+                        if (!patchResult.Success)
+                        {
+                            record.ErrorMessage = patchResult.Message;
                         }
                         break;
 

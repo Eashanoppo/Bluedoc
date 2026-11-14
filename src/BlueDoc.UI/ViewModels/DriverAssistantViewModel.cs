@@ -29,6 +29,7 @@ namespace BlueDoc.UI.ViewModels
         private string _rollbackGuide = string.Empty;
         private string _reinstallGuide = string.Empty;
         private string _supportUrl = string.Empty;
+        private string _installStatusDetail = "Ready for driver deployment.";
         private bool _isLoading;
 
         private CancellationTokenSource _downloadCts;
@@ -66,19 +67,58 @@ namespace BlueDoc.UI.ViewModels
         public DownloadProgressReport DownloadReport
         {
             get => _downloadReport;
-            set => SetProperty(ref _downloadReport, value);
+            set
+            {
+                if (SetProperty(ref _downloadReport, value))
+                {
+                    OnPropertyChanged(nameof(DownloadButtonText));
+                }
+            }
         }
 
         public bool IsDownloading
         {
             get => _isDownloading;
-            set => SetProperty(ref _isDownloading, value);
+            set
+            {
+                if (SetProperty(ref _isDownloading, value))
+                {
+                    OnPropertyChanged(nameof(DownloadButtonText));
+                    OnPropertyChanged(nameof(IsOperationInProgress));
+                    System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+                }
+            }
         }
 
         public bool IsInstalling
         {
             get => _isInstalling;
-            set => SetProperty(ref _isInstalling, value);
+            set
+            {
+                if (SetProperty(ref _isInstalling, value))
+                {
+                    OnPropertyChanged(nameof(CanInstallPackage));
+                    OnPropertyChanged(nameof(InstallButtonText));
+                    OnPropertyChanged(nameof(IsOperationInProgress));
+                    System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+                }
+            }
+        }
+
+        public bool IsOperationInProgress => IsDownloading || IsInstalling || IsLoading;
+
+        public string DownloadButtonText => IsDownloading 
+            ? $"Downloading ({DownloadReport?.Percentage ?? 0}%)..." 
+            : "Download Driver Package";
+
+        public string InstallButtonText => IsInstalling 
+            ? "Installing Driver Package (PnPUtil)..." 
+            : "Install Driver Package";
+
+        public string InstallStatusDetail
+        {
+            get => _installStatusDetail;
+            set => SetProperty(ref _installStatusDetail, value);
         }
 
         public string DownloadedFilePath
@@ -238,11 +278,13 @@ namespace BlueDoc.UI.ViewModels
             IsDownloading = true;
             _downloadCts = new CancellationTokenSource();
             DownloadReport = new DownloadProgressReport { StatusMessage = "Initiating download from verified catalog..." };
+            NotificationService.Instance.ShowInfo("Download Started", $"Downloading {DriverPackage.PackageName} from Microsoft Update Catalog...");
 
             var progress = new Progress<DownloadProgressReport>(report =>
             {
                 DownloadReport = report;
-                StatusMessage = report.StatusMessage;
+                StatusMessage = $"Downloading {DriverPackage.PackageName}: {report.Percentage}% ({report.SpeedKbs:F1} KB/s)...";
+                OnPropertyChanged(nameof(DownloadButtonText));
             });
 
             try
@@ -284,24 +326,30 @@ namespace BlueDoc.UI.ViewModels
             }
 
             IsInstalling = true;
-            StatusMessage = "Launching Windows driver installer with administrative elevation...";
+            InstallStatusDetail = "Windows Plug and Play installer is registering the WHQL driver package into the Driver Store. If Windows prompts for Administrator approval (UAC), please click 'Yes' to proceed.";
+            StatusMessage = "Installing driver package into Windows Driver Store...";
+            NotificationService.Instance.ShowInfo("Installation in Progress", "Installing driver package into Windows Driver Store. Please approve any Administrator (UAC) prompt.");
             try
             {
+                InstallStatusDetail = "Invoking PnPUtil to register INF and stage hardware firmware...";
                 bool success = await _driverService.InstallDriverPackageAsync(DownloadedFilePath, Adapter?.HardwareId);
                 if (success)
                 {
+                    InstallStatusDetail = "Driver successfully installed. Windows is refreshing the Bluetooth radio stack...";
                     StatusMessage = "Driver installation process launched. Windows is refreshing the hardware stack.";
-                    NotificationService.Instance.ShowSuccess("Installation Started", "Windows is updating the Bluetooth driver.");
+                    NotificationService.Instance.ShowSuccess("Installation Completed", "Windows Bluetooth driver has been successfully installed.");
                     await Task.Delay(2000);
                     await LoadDriverInfoAsync();
                 }
                 else
                 {
+                    InstallStatusDetail = "Driver installation returned. Verifying adapter status in Device Manager...";
                     StatusMessage = "Installation completed or requires manual setup confirmation.";
                 }
             }
             catch (Exception ex)
             {
+                InstallStatusDetail = $"Installation error: {ex.Message}";
                 StatusMessage = $"Installation exception: {ex.Message}";
                 NotificationService.Instance.ShowError("Installation Error", ex.Message);
             }

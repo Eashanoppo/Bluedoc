@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BlueDoc.Core.Enums;
 using BlueDoc.Core.Models;
 using BlueDoc.Infrastructure.Audio;
+using BlueDoc.Infrastructure.Drivers;
 using BlueDoc.Infrastructure.Platform;
 using BlueDoc.Infrastructure.Services;
 
@@ -88,6 +89,28 @@ namespace BlueDoc.Application.Services
                     Evidence = $"Adapter '{adapter.FriendlyName}' is operational with no PnP problem codes.",
                     Confidence = ConfidenceLevel.High
                 });
+            }
+
+            // 1b. Check if Bluetooth Silicon is Unprovisioned / Unpatched (Cold-Boot Standby)
+            if (WinUsbFirmwarePatcher.IsSiliconUnpatched(adapter))
+            {
+                diagnosis.IsAdapterIssue = true;
+                checks.Add(new ConnectionDiagnosticCheckItem
+                {
+                    Name = "Radio Firmware & Silicon Provisioning",
+                    Status = DiagnosticStatus.Failed,
+                    Evidence = $"Adapter '{adapter.FriendlyName}' (VID_{adapter.HardwareDetails?.VendorId}&PID_{adapter.HardwareDetails?.ProductId}) is running in unprovisioned cold-boot ROM mode under generic Microsoft driver. The 2.4 GHz RF radio transmitter is dormant.",
+                    Confidence = ConfidenceLevel.High
+                });
+
+                diagnosis.PrimaryRootCause = "Unprovisioned Radio Firmware (Cold-Boot Standby)";
+                diagnosis.DetailedEvidence = "The internal Bluetooth chipset (Qualcomm Atheros AR3012 / Broadcom) requires volatile RAM firmware (.dfu/.hex) to be uploaded over USB at boot. Microsoft generic driver lacks this firmware, leaving the RF radio transmitter asleep. Bundled WHQL driver and firmware are ready to install.";
+                diagnosis.Confidence = ConfidenceLevel.High;
+                diagnosis.SuggestedRepairKey = "ProvisionSiliconFirmware";
+                diagnosis.SuggestedRepairTitle = "Provision Firmware & Install Bundled Driver";
+                diagnosis.SuggestedRepairExplanation = "Installs the bundled certified WHQL driver package and loads the missing radio firmware patches (.dfu) so the radio transmitter powers on.";
+                diagnosis.CheckItems = checks;
+                return diagnosis;
             }
 
             // 2. Is Radio Available?
