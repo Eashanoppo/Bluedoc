@@ -78,23 +78,39 @@ namespace BlueDoc.Infrastructure.Hardware
 
                     // Determine real physical connection state (not just whether the PnP driver is loaded)
                     bool isConnected = false;
+                    int? batteryLevel = null;
                     if (rawAddress != 0)
                     {
                         if (busKind == "BTHENUM")
                         {
-                            var bthInfo = new BluetoothNative.BLUETOOTH_DEVICE_INFO
+                            if (OperatingSystemInspector.IsWindows10OrGreater())
                             {
-                                dwSize = (uint)Marshal.SizeOf(typeof(BluetoothNative.BLUETOOTH_DEVICE_INFO)),
-                                Address = rawAddress
-                            };
-                            if (BluetoothNative.BluetoothGetDeviceInfo(IntPtr.Zero, ref bthInfo) == 0)
+                                isConnected = CheckClassicDeviceConnectedWinRt(rawAddress);
+                                if (isConnected)
+                                {
+                                    batteryLevel = QueryDeviceBatteryLevelWinRt(rawAddress, false);
+                                }
+                            }
+                            else
                             {
-                                isConnected = bthInfo.fConnected;
+                                var bthInfo = new BluetoothNative.BLUETOOTH_DEVICE_INFO
+                                {
+                                    dwSize = (uint)Marshal.SizeOf(typeof(BluetoothNative.BLUETOOTH_DEVICE_INFO)),
+                                    Address = rawAddress
+                                };
+                                if (BluetoothNative.BluetoothGetDeviceInfo(IntPtr.Zero, ref bthInfo) == 0)
+                                {
+                                    isConnected = bthInfo.fConnected;
+                                }
                             }
                         }
                         else if (busKind == "BTHLE" && OperatingSystemInspector.IsWindows10OrGreater())
                         {
                             isConnected = CheckBleDeviceConnectedWinRt(rawAddress);
+                            if (isConnected)
+                            {
+                                batteryLevel = QueryDeviceBatteryLevelWinRt(rawAddress, true);
+                            }
                         }
                     }
 
@@ -107,6 +123,7 @@ namespace BlueDoc.Infrastructure.Hardware
                         IsPaired = true,
                         IsRemembered = true,
                         IsConnected = isConnected,
+                        BatteryLevel = batteryLevel,
                         DeviceType = busKind == "BTHLE" ? DeviceType.LowEnergy : DeviceType.Classic
                     };
 
@@ -153,6 +170,12 @@ namespace BlueDoc.Infrastructure.Hardware
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
+        public static bool CheckDeviceConnectedWinRt(ulong rawAddress, bool isBle)
+        {
+            return isBle ? CheckBleDeviceConnectedWinRt(rawAddress) : CheckClassicDeviceConnectedWinRt(rawAddress);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private static bool CheckBleDeviceConnectedWinRt(ulong rawAddress)
         {
             try
@@ -169,6 +192,72 @@ namespace BlueDoc.Infrastructure.Hardware
             }
             catch { }
             return false;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool CheckClassicDeviceConnectedWinRt(ulong rawAddress)
+        {
+            try
+            {
+                var task = Task.Run(async () =>
+                {
+                    var classicDev = await Windows.Devices.Bluetooth.BluetoothDevice.FromBluetoothAddressAsync(rawAddress);
+                    return classicDev != null && classicDev.ConnectionStatus == Windows.Devices.Bluetooth.BluetoothConnectionStatus.Connected;
+                });
+                if (task.Wait(300))
+                {
+                    return task.Result;
+                }
+            }
+            catch { }
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static int? QueryDeviceBatteryLevelWinRt(ulong rawAddress, bool isBle)
+        {
+            try
+            {
+                var task = Task.Run(async () =>
+                {
+                    string deviceId = null;
+                    if (isBle)
+                    {
+                        var ble = await Windows.Devices.Bluetooth.BluetoothLEDevice.FromBluetoothAddressAsync(rawAddress);
+                        if (ble != null && ble.ConnectionStatus == Windows.Devices.Bluetooth.BluetoothConnectionStatus.Connected)
+                        {
+                            deviceId = ble.DeviceId;
+                        }
+                    }
+                    else
+                    {
+                        var classic = await Windows.Devices.Bluetooth.BluetoothDevice.FromBluetoothAddressAsync(rawAddress);
+                        if (classic != null && classic.ConnectionStatus == Windows.Devices.Bluetooth.BluetoothConnectionStatus.Connected)
+                        {
+                            deviceId = classic.DeviceId;
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(deviceId))
+                    {
+                        var devInfo = await Windows.Devices.Enumeration.DeviceInformation.CreateFromIdAsync(
+                            deviceId, 
+                            new[] { "System.Devices.BatteryLifePercent" });
+                        if (devInfo != null && devInfo.Properties.TryGetValue("System.Devices.BatteryLifePercent", out var val) && val != null)
+                        {
+                            return (int?)Convert.ToInt32(val);
+                        }
+                    }
+                    return null;
+                });
+
+                if (task.Wait(350))
+                {
+                    return task.Result;
+                }
+            }
+            catch { }
+            return null;
         }
     }
 }

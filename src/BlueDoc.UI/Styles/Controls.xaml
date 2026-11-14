@@ -394,5 +394,81 @@
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
     </Style>
 
+    <!-- Status Text Styles -->
+    <Style x:Key="StatusTextSuccess" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource SuccessTextBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="11" />
+    </Style>
+
+    <!-- ==========================================
+         MAC OS MINIMALIST ROUNDED SCROLLBAR (7px Width, Rounded Thumb, No Arrows)
+         ========================================== -->
+    <Style x:Key="MacOsScrollBarThumbFallback" TargetType="{x:Type Thumb}">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Thumb}">
+                    <Border x:Name="thumbBorder"
+                            Background="{DynamicResource ScrollBarThumbBrush}"
+                            CornerRadius="3.5"
+                            SnapsToDevicePixels="True" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="thumbBorder" Property="Background" Value="{DynamicResource ScrollBarThumbHoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="thumbBorder" Property="Background" Value="{DynamicResource ScrollBarThumbPressedBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type ScrollBar}">
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Vertical">
+                <Setter Property="Width" Value="7" />
+                <Setter Property="Height" Value="Auto" />
+                <Setter Property="Margin" Value="1,2" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ScrollBar}">
+                            <Grid Background="Transparent" SnapsToDevicePixels="True">
+                                <Track x:Name="PART_Track" IsDirectionReversed="True" SnapsToDevicePixels="True">
+                                    <Track.Thumb>
+                                        <Thumb Style="{StaticResource MacOsScrollBarThumbFallback}" />
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+            <Trigger Property="Orientation" Value="Horizontal">
+                <Setter Property="Height" Value="7" />
+                <Setter Property="Width" Value="Auto" />
+                <Setter Property="Margin" Value="2,1" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ScrollBar}">
+                            <Grid Background="Transparent" SnapsToDevicePixels="True">
+                                <Track x:Name="PART_Track" SnapsToDevicePixels="True">
+                                    <Track.Thumb>
+                                        <Thumb Style="{StaticResource MacOsScrollBarThumbFallback}" />
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
 </ResourceDictionary>
 

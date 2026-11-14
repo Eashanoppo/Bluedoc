@@ -39,6 +39,41 @@ namespace BlueDoc.UI.Views
                 typeof(DeviceCard), 
                 new PropertyMetadata(false));
 
+        public static readonly DependencyProperty StatusSubtitleProperty =
+            DependencyProperty.Register(
+                nameof(StatusSubtitle), 
+                typeof(string), 
+                typeof(DeviceCard), 
+                new PropertyMetadata("Not Connected"));
+
+        public static readonly DependencyProperty IsHeadphoneProperty =
+            DependencyProperty.Register(
+                nameof(IsHeadphone), 
+                typeof(bool), 
+                typeof(DeviceCard), 
+                new PropertyMetadata(false));
+
+        public static readonly DependencyProperty IsSpeakerProperty =
+            DependencyProperty.Register(
+                nameof(IsSpeaker), 
+                typeof(bool), 
+                typeof(DeviceCard), 
+                new PropertyMetadata(false));
+
+        public static readonly DependencyProperty IsMouseProperty =
+            DependencyProperty.Register(
+                nameof(IsMouse), 
+                typeof(bool), 
+                typeof(DeviceCard), 
+                new PropertyMetadata(false));
+
+        public static readonly DependencyProperty IsKeyboardProperty =
+            DependencyProperty.Register(
+                nameof(IsKeyboard), 
+                typeof(bool), 
+                typeof(DeviceCard), 
+                new PropertyMetadata(false));
+
         public static readonly DependencyProperty ConnectCommandProperty =
             DependencyProperty.Register(
                 nameof(ConnectCommand), 
@@ -77,6 +112,36 @@ namespace BlueDoc.UI.Views
         {
             get => (bool)GetValue(IsConnectedProperty);
             set => SetValue(IsConnectedProperty, value);
+        }
+
+        public string StatusSubtitle
+        {
+            get => (string)GetValue(StatusSubtitleProperty);
+            set => SetValue(StatusSubtitleProperty, value);
+        }
+
+        public bool IsHeadphone
+        {
+            get => (bool)GetValue(IsHeadphoneProperty);
+            set => SetValue(IsHeadphoneProperty, value);
+        }
+
+        public bool IsSpeaker
+        {
+            get => (bool)GetValue(IsSpeakerProperty);
+            set => SetValue(IsSpeakerProperty, value);
+        }
+
+        public bool IsMouse
+        {
+            get => (bool)GetValue(IsMouseProperty);
+            set => SetValue(IsMouseProperty, value);
+        }
+
+        public bool IsKeyboard
+        {
+            get => (bool)GetValue(IsKeyboardProperty);
+            set => SetValue(IsKeyboardProperty, value);
         }
 
         public ICommand ConnectCommand
@@ -153,6 +218,11 @@ namespace BlueDoc.UI.Views
             DeviceType = info.DeviceTypeDisplay;
             MacAddress = info.BluetoothAddress;
             IsConnected = info.IsConnected;
+            StatusSubtitle = info.StatusSubtitleDisplay;
+            IsHeadphone = info.IsHeadphone;
+            IsSpeaker = info.IsSpeaker;
+            IsMouse = info.IsMouse;
+            IsKeyboard = info.IsKeyboard;
         }
 
         private async void ConnectButton_Click(object sender, RoutedEventArgs e)

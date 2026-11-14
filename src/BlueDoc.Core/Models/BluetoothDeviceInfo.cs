@@ -24,6 +24,7 @@ namespace BlueDoc.Core.Models
         private bool _isRemembered;
         private string _discoverySource = "Inquiry";
         private string _advertisedServices = string.Empty;
+        private int? _batteryLevel;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -307,7 +308,40 @@ namespace BlueDoc.Core.Models
             }
         }
 
-        public string StatusColor => IsConnected ? "#2EA043" : "#8B949E";
+        public int? BatteryLevel
+        {
+            get => _batteryLevel;
+            set
+            {
+                if (_batteryLevel != value)
+                {
+                    _batteryLevel = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(StatusSubtitleDisplay));
+                    OnPropertyChanged(nameof(BatteryDisplay));
+                }
+            }
+        }
+
+        public string BatteryDisplay => BatteryLevel.HasValue ? $"{BatteryLevel.Value}%" : string.Empty;
+
+        public string StatusSubtitleDisplay
+        {
+            get
+            {
+                if (IsConnected)
+                {
+                    if (BatteryLevel.HasValue)
+                    {
+                        return $"Connected {BatteryLevel.Value}% 🔋";
+                    }
+                    return "Connected";
+                }
+                return "Not Connected";
+            }
+        }
+
+        public string StatusColor => IsConnected ? "#1B8C3D" : "#86868B";
 
         public string SignalStrengthDisplay
         {

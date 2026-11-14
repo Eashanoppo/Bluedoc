@@ -9,6 +9,7 @@ using BlueDoc.Core.Interfaces;
 using BlueDoc.Core.Models;
 using BlueDoc.Infrastructure.Hardware;
 using BlueDoc.Infrastructure.Native;
+using BlueDoc.Infrastructure.Platform;
 
 namespace BlueDoc.Bluetooth.Legacy
 {
@@ -178,7 +179,11 @@ namespace BlueDoc.Bluetooth.Legacy
 
                                 if (dictionary.TryGetValue(formattedAddress, out var existing))
                                 {
-                                    existing.IsConnected = devInfo.fConnected;
+                                    // Preserve verified link status on Win10/11; only accept devInfo.fConnected on Win7
+                                    if (!OperatingSystemInspector.IsWindows10OrGreater())
+                                    {
+                                        existing.IsConnected = devInfo.fConnected;
+                                    }
                                     existing.IsPaired = existing.IsPaired || devInfo.fAuthenticated;
                                     existing.IsRemembered = existing.IsRemembered || devInfo.fRemembered;
                                     if (!string.IsNullOrWhiteSpace(devInfo.szName)) existing.DeviceName = devInfo.szName;
@@ -192,12 +197,18 @@ namespace BlueDoc.Bluetooth.Legacy
                                 }
                                 else
                                 {
+                                    bool isConn = devInfo.fConnected;
+                                    if (OperatingSystemInspector.IsWindows10OrGreater() && devInfo.Address != 0)
+                                    {
+                                        isConn = PnpBluetoothDeviceInspector.CheckDeviceConnectedWinRt(devInfo.Address, false);
+                                    }
+
                                     var device = new BluetoothDeviceInfo
                                     {
                                         DeviceName = devInfo.szName,
                                         BluetoothAddress = formattedAddress,
                                         RawAddress = devInfo.Address,
-                                        IsConnected = devInfo.fConnected,
+                                        IsConnected = isConn,
                                         IsPaired = devInfo.fAuthenticated,
                                         IsRemembered = devInfo.fRemembered,
                                         DeviceType = DeviceType.Classic,

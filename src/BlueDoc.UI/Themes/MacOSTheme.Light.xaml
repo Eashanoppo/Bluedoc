@@ -9,36 +9,50 @@
          ========================================================================= -->
 
     <!-- ==========================================
-         1. COLOR DEFINITIONS (LIGHT THEME)
+         1. COLOR DEFINITIONS (LIGHT THEME - NEUTRALIZED MINIMALIST MAC OS SONOMA)
          ========================================== -->
-    <Color x:Key="MacOsLightSidebarStartColor">#F7D6C4</Color>
-    <Color x:Key="MacOsLightSidebarMidColor">#E8D5F5</Color>
-    <Color x:Key="MacOsLightSidebarEndColor">#D4C5F0</Color>
+    <!-- Neutralized Clean Light Gray Sidebar (#F5F5F7) -->
+    <Color x:Key="MacOsLightSidebarStartColor">#FAFAFA</Color>
+    <Color x:Key="MacOsLightSidebarMidColor">#F5F5F7</Color>
+    <Color x:Key="MacOsLightSidebarEndColor">#F0F0F2</Color>
 
     <Color x:Key="MacOsLightMainBgColor">#FFFFFF</Color>
     <Color x:Key="MacOsLightCardBgColor">#FFFFFF</Color>
     <Color x:Key="MacOsLightCardBorderColor">#E5E5E7</Color>
     <Color x:Key="MacOsLightBorderColor">#E5E5E7</Color>
 
+    <!-- macOS Sonoma Typography Hierarchy -->
     <Color x:Key="MacOsLightTextPrimaryColor">#1D1D1F</Color>
     <Color x:Key="MacOsLightTextSecondaryColor">#6E6E73</Color>
     <Color x:Key="MacOsLightTextMutedColor">#86868B</Color>
 
-    <Color x:Key="MacOsLightAccentColor">#007AFF</Color>
-    <Color x:Key="MacOsLightAccentHoverColor">#0062CC</Color>
-    <Color x:Key="MacOsLightAccentSubtleColor">#E5F1FF</Color>
+    <!-- Unified Brand Blue Palette -->
+    <Color x:Key="MacOsLightAccentColor">#0071E3</Color>
+    <Color x:Key="MacOsLightAccentHoverColor">#0060C0</Color>
+    <Color x:Key="MacOsLightAccentPressedColor">#004FB3</Color>
+    <Color x:Key="MacOsLightAccentSubtleColor">#E8F1FD</Color> <!-- Soft Blue (~10% opacity) -->
+
+    <!-- Status & Semantic Colors -->
     <Color x:Key="MacOsLightSuccessColor">#34C759</Color>
+    <Color x:Key="MacOsLightSuccessBgColor">#E8F9ED</Color>
+    <Color x:Key="MacOsLightSuccessTextColor">#1B8C3D</Color>
+
     <Color x:Key="MacOsLightWarningColor">#FF9500</Color>
+    <Color x:Key="MacOsLightWarningBgColor">#FFF8E6</Color>
+    <Color x:Key="MacOsLightWarningTextColor">#B26A00</Color>
+
     <Color x:Key="MacOsLightDangerColor">#FF3B30</Color>
+    <Color x:Key="MacOsLightDangerBgColor">#FDECEC</Color>
+    <Color x:Key="MacOsLightDangerTextColor">#D70015</Color>
 
     <!-- Translucent Overlay Colors for Sidebar States -->
-    <Color x:Key="MacOsNavHoverColor">#26FFFFFF</Color>      <!-- 15% White overlay -->
-    <Color x:Key="MacOsNavSelectedColor">#40FFFFFF</Color>   <!-- 25% White overlay -->
+    <Color x:Key="MacOsNavHoverColor">#0D000000</Color>        <!-- 5% dark hover tint -->
+    <Color x:Key="MacOsNavSelectedColor">#E8F1FD</Color>       <!-- Soft Blue Selection -->
 
     <!-- ==========================================
          2. SEMANTIC BRUSHES
          ========================================== -->
-    <!-- Sidebar Pastel Gradient -->
+    <!-- Neutral Sidebar Gradient (Clean Minimalist Light Gray) -->
     <LinearGradientBrush x:Key="SidebarGradientBrush" StartPoint="0,0" EndPoint="0,1">
         <GradientStop Color="{StaticResource MacOsLightSidebarStartColor}" Offset="0.0" />
         <GradientStop Color="{StaticResource MacOsLightSidebarMidColor}" Offset="0.5" />
@@ -57,10 +71,10 @@
     <SolidColorBrush x:Key="BgDarkBrush" Color="{StaticResource MacOsLightMainBgColor}" />
     <SolidColorBrush x:Key="DarkBgBrush" Color="{StaticResource MacOsLightMainBgColor}" />
     <SolidColorBrush x:Key="SurfaceCanvasBrush" Color="{StaticResource MacOsLightMainBgColor}" />
-    <SolidColorBrush x:Key="SidebarBgBrush" Color="#F5F2F9" />
-    <SolidColorBrush x:Key="SurfaceSidebarBrush" Color="#F5F2F9" />
+    <SolidColorBrush x:Key="SidebarBgBrush" Color="#F5F5F7" />
+    <SolidColorBrush x:Key="SurfaceSidebarBrush" Color="#F5F5F7" />
     <SolidColorBrush x:Key="SurfaceCardBrush" Color="{StaticResource MacOsLightCardBgColor}" />
-    <SolidColorBrush x:Key="SurfaceCardHoverBrush" Color="#F9F9FB" />
+    <SolidColorBrush x:Key="SurfaceCardHoverBrush" Color="#FAFAFC" />
     <SolidColorBrush x:Key="SurfaceElevatedBrush" Color="#FFFFFF" />
     <SolidColorBrush x:Key="SurfaceSunkenBrush" Color="#F2F2F7" />
     <SolidColorBrush x:Key="HeaderBgBrush" Color="{StaticResource MacOsLightMainBgColor}" />
@@ -75,37 +89,48 @@
     <!-- Accent & Feedback Brushes -->
     <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource MacOsLightAccentColor}" />
     <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource MacOsLightAccentHoverColor}" />
-    <SolidColorBrush x:Key="AccentPressedBrush" Color="#004FB3" />
+    <SolidColorBrush x:Key="AccentPressedBrush" Color="{StaticResource MacOsLightAccentPressedColor}" />
     <SolidColorBrush x:Key="AccentSubtleBrush" Color="{StaticResource MacOsLightAccentSubtleColor}" />
 
     <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource MacOsLightSuccessColor}" />
-    <SolidColorBrush x:Key="SuccessSubtleBrush" Color="#E8F8ED" />
+    <SolidColorBrush x:Key="SuccessSubtleBrush" Color="{StaticResource MacOsLightSuccessBgColor}" />
+    <SolidColorBrush x:Key="SuccessTextBrush" Color="{StaticResource MacOsLightSuccessTextColor}" />
+
     <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource MacOsLightWarningColor}" />
-    <SolidColorBrush x:Key="WarningSubtleBrush" Color="#FFF4E5" />
+    <SolidColorBrush x:Key="WarningSubtleBrush" Color="{StaticResource MacOsLightWarningBgColor}" />
+    <SolidColorBrush x:Key="WarningTextBrush" Color="{StaticResource MacOsLightWarningTextColor}" />
+
     <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource MacOsLightDangerColor}" />
-    <SolidColorBrush x:Key="DangerSubtleBrush" Color="#FDECEC" />
+    <SolidColorBrush x:Key="DangerSubtleBrush" Color="{StaticResource MacOsLightDangerBgColor}" />
+    <SolidColorBrush x:Key="DangerTextBrush" Color="{StaticResource MacOsLightDangerTextColor}" />
+
     <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource MacOsLightAccentColor}" />
     <SolidColorBrush x:Key="InfoSubtleBrush" Color="{StaticResource MacOsLightAccentSubtleColor}" />
 
     <!-- Navigation & Pill Brushes -->
-    <SolidColorBrush x:Key="NavActiveBgBrush" Color="{StaticResource MacOsLightAccentColor}" />
-    <SolidColorBrush x:Key="NavActiveTextBrush" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="NavHoverBgBrush" Color="#E5E5EA" />
+    <SolidColorBrush x:Key="NavActiveBgBrush" Color="{StaticResource MacOsLightAccentSubtleColor}" />
+    <SolidColorBrush x:Key="NavActiveTextBrush" Color="{StaticResource MacOsLightAccentColor}" />
+    <SolidColorBrush x:Key="NavHoverBgBrush" Color="#EBEBED" />
     <SolidColorBrush x:Key="NavGroupTextBrush" Color="{StaticResource MacOsLightTextSecondaryColor}" />
     <SolidColorBrush x:Key="NavGroupBgBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="PillBgBrush" Color="#E5E5EA" />
+    <SolidColorBrush x:Key="PillBgBrush" Color="#EBEBED" />
     <SolidColorBrush x:Key="PillActiveBgBrush" Color="#FFFFFF" />
     <SolidColorBrush x:Key="PillActiveTextBrush" Color="{StaticResource MacOsLightTextPrimaryColor}" />
     <SolidColorBrush x:Key="PillInactiveTextBrush" Color="{StaticResource MacOsLightTextSecondaryColor}" />
 
     <!-- macOS Specific Interactive Brushes -->
-    <SolidColorBrush x:Key="MacOSSearchBgBrush" Color="#FFFFFF" Opacity="0.45" />
-    <SolidColorBrush x:Key="MacOSNavHoverBrush" Color="#FFFFFF" Opacity="0.15" />
-    <SolidColorBrush x:Key="MacOSNavSelectedBrush" Color="#FFFFFF" Opacity="0.25" />
+    <SolidColorBrush x:Key="MacOSSearchBgBrush" Color="#FFFFFF" Opacity="0.80" />
+    <SolidColorBrush x:Key="MacOSNavHoverBrush" Color="#0D000000" />
+    <SolidColorBrush x:Key="MacOSNavSelectedBrush" Color="{StaticResource MacOsLightAccentSubtleColor}" />
     <SolidColorBrush x:Key="FocusRingBrush" Color="{StaticResource MacOsLightAccentColor}" />
-    <SolidColorBrush x:Key="OverlayBrush" Color="#40000000" />
-    <SolidColorBrush x:Key="SkeletonBaseBrush" Color="#E5E5EA" />
-    <SolidColorBrush x:Key="SkeletonShimmerBrush" Color="#F2F2F7" />
+    <SolidColorBrush x:Key="OverlayBrush" Color="#30000000" />
+    <SolidColorBrush x:Key="SkeletonBaseBrush" Color="#EBEBED" />
+    <SolidColorBrush x:Key="SkeletonShimmerBrush" Color="#F5F5F7" />
+
+    <!-- ScrollBar Theming Brushes -->
+    <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#D1D1D6" />
+    <SolidColorBrush x:Key="ScrollBarThumbHoverBrush" Color="#8E8E93" />
+    <SolidColorBrush x:Key="ScrollBarThumbPressedBrush" Color="#636366" />
 
     <!-- ==========================================
          3. TYPOGRAPHY & SPACING TOKENS
@@ -192,6 +217,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="#34C759" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
@@ -242,12 +268,12 @@
         </Setter>
     </Style>
 
-    <!-- macOS Primary Button (CornerRadius=8, Padding=12,6, Accent Color) -->
+    <!-- macOS Primary Button (CornerRadius=8, Padding=14,6, Brand Blue #0071E3) -->
     <Style x:Key="MacOsPrimaryButton" TargetType="{x:Type Button}">
         <Setter Property="FontFamily" Value="{StaticResource MacOsFontFamily}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="Padding" Value="14,6" />
         <Setter Property="Height" Value="28" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
@@ -272,7 +298,7 @@
                             <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentPressedBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="border" Property="Opacity" Value="0.5" />
+                            <Setter TargetName="border" Property="Opacity" Value="0.45" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -280,12 +306,12 @@
         </Setter>
     </Style>
 
-    <!-- macOS Secondary Button (Border-only, Transparent Background) -->
+    <!-- macOS Secondary Button (Border-only, Transparent Background, Dark Text) -->
     <Style x:Key="MacOsSecondaryButton" TargetType="{x:Type Button}">
         <Setter Property="FontFamily" Value="{StaticResource MacOsFontFamily}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="Padding" Value="14,6" />
         <Setter Property="Height" Value="28" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
@@ -294,7 +320,7 @@
                 <ControlTemplate TargetType="{x:Type Button}">
                     <Border x:Name="border"
                             Background="Transparent"
-                            BorderBrush="{DynamicResource CardBorderBrush}"
+                            BorderBrush="{DynamicResource BorderStrongBrush}"
                             BorderThickness="1"
                             CornerRadius="8"
                             Padding="{TemplateBinding Padding}"
@@ -306,17 +332,67 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="border" Property="Background" Value="#F2F2F7" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="#C7C7CC" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="#E5E5EA" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="border" Property="Opacity" Value="0.5" />
+                            <Setter TargetName="border" Property="Opacity" Value="0.45" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- macOS Destructive Button (Soft Red #FF3B30, White Text) -->
+    <Style x:Key="MacOsDangerButton" TargetType="{x:Type Button}">
+        <Setter Property="FontFamily" Value="{StaticResource MacOsFontFamily}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Padding" Value="14,6" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="border"
+                            Background="{DynamicResource DangerBrush}"
+                            BorderThickness="0"
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" 
+                                          VerticalAlignment="Center" 
+                                          TextElement.Foreground="#FFFFFF" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#E0352B" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#C72C24" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- macOS Refined Status Badge Style (Background #E8F9ED, Text #1B8C3D, Border #34C759) -->
+    <Style x:Key="MacOsStatusBadge" TargetType="{x:Type Border}">
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="8,2" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="{DynamicResource SuccessSubtleBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
     <!-- macOS Search Box (CornerRadius=8, Border=CardBorder, 40% Opacity Background) -->
@@ -372,11 +448,11 @@
         </Setter>
     </Style>
 
-    <!-- macOS Sidebar ListBox Item Style (Lightweight Storyboards, 0.15s hover, 0.2s select) -->
+    <!-- macOS Sidebar ListBox Item Style (Soft Blue #E8F1FD + Brand Blue Text #0071E3) -->
     <Style x:Key="MacOsSidebarItemStyle" TargetType="{x:Type ListBoxItem}">
         <Setter Property="FontFamily" Value="{StaticResource MacOsFontFamily}" />
         <Setter Property="FontSize" Value="13" />
-        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
         <Setter Property="Padding" Value="12,8" />
         <Setter Property="Margin" Value="8,2" />
         <Setter Property="Cursor" Value="Hand" />
@@ -394,14 +470,14 @@
                                           RecognizesAccessKey="False" />
                     </Border>
                     <ControlTemplate.Triggers>
-                        <!-- Hover: ColorAnimation to #FFFFFF (Opacity 0.15 in Light: #26FFFFFF) over 0.15s -->
+                        <!-- Hover: Subtle Gray #EBEBED over 0.15s -->
                         <Trigger Property="IsMouseOver" Value="True">
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetName="ItemBorder"
                                                         Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                        To="#26FFFFFF"
+                                                        To="#FFEBEBED"
                                                         Duration="0:0:0.15">
                                             <ColorAnimation.EasingFunction>
                                                 <CubicEase EasingMode="EaseOut" />
@@ -426,15 +502,16 @@
                             </Trigger.ExitActions>
                         </Trigger>
 
-                        <!-- Selected: ColorAnimation to #FFFFFF (Opacity 0.25 in Light: #40FFFFFF) over 0.2s -->
+                        <!-- Selected: Soft Blue #E8F1FD + Brand Blue Text #0071E3 over 0.2s -->
                         <Trigger Property="IsSelected" Value="True">
                             <Setter Property="FontWeight" Value="SemiBold" />
+                            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetName="ItemBorder"
                                                         Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                        To="#40FFFFFF"
+                                                        To="#FFE8F1FD"
                                                         Duration="0:0:0.2">
                                             <ColorAnimation.EasingFunction>
                                                 <CubicEase EasingMode="EaseOut" />
@@ -482,6 +559,75 @@
         <Setter Property="CornerRadius" Value="{StaticResource MacOsCardCornerRadius}" />
         <Setter Property="Padding" Value="{StaticResource MacOsCardPadding}" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <!-- ==========================================
+         5. MAC OS MINIMALIST ROUNDED SCROLLBAR (7px Width, Rounded Thumb, No Arrows)
+         ========================================== -->
+    <Style x:Key="MacOsScrollBarThumb" TargetType="{x:Type Thumb}">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Thumb}">
+                    <Border x:Name="thumbBorder"
+                            Background="{DynamicResource ScrollBarThumbBrush}"
+                            CornerRadius="3.5"
+                            SnapsToDevicePixels="True" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="thumbBorder" Property="Background" Value="{DynamicResource ScrollBarThumbHoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="thumbBorder" Property="Background" Value="{DynamicResource ScrollBarThumbPressedBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type ScrollBar}">
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Vertical">
+                <Setter Property="Width" Value="7" />
+                <Setter Property="Height" Value="Auto" />
+                <Setter Property="Margin" Value="1,2" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ScrollBar}">
+                            <Grid Background="Transparent" SnapsToDevicePixels="True">
+                                <Track x:Name="PART_Track" IsDirectionReversed="True" SnapsToDevicePixels="True">
+                                    <Track.Thumb>
+                                        <Thumb Style="{StaticResource MacOsScrollBarThumb}" />
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+            <Trigger Property="Orientation" Value="Horizontal">
+                <Setter Property="Height" Value="7" />
+                <Setter Property="Width" Value="Auto" />
+                <Setter Property="Margin" Value="2,1" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ScrollBar}">
+                            <Grid Background="Transparent" SnapsToDevicePixels="True">
+                                <Track x:Name="PART_Track" SnapsToDevicePixels="True">
+                                    <Track.Thumb>
+                                        <Thumb Style="{StaticResource MacOsScrollBarThumb}" />
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
 </ResourceDictionary>

@@ -34,6 +34,9 @@ namespace BlueDoc.UI.ViewModels
         private string _statusMessage = "Ready";
 
         public ObservableCollection<BluetoothDeviceInfo> ConnectedDevices { get; } = new ObservableCollection<BluetoothDeviceInfo>();
+        public ObservableCollection<BluetoothDeviceInfo> AudioDevices { get; } = new ObservableCollection<BluetoothDeviceInfo>();
+        public ObservableCollection<BluetoothDeviceInfo> PeripheralDevices { get; } = new ObservableCollection<BluetoothDeviceInfo>();
+        public ObservableCollection<BluetoothDeviceInfo> OtherDevices { get; } = new ObservableCollection<BluetoothDeviceInfo>();
         public ObservableCollection<ConnectionHistoryRecord> RecentFailures { get; } = new ObservableCollection<ConnectionHistoryRecord>();
         public ObservableCollection<BluetoothDeviceInfo> NearbyDevices { get; } = new ObservableCollection<BluetoothDeviceInfo>();
 
@@ -110,6 +113,10 @@ namespace BlueDoc.UI.ViewModels
         public int ConnectedCount => ConnectedDevices.Count;
         public int RecentFailuresCount => RecentFailures.Count;
         public int NearbyCount => NearbyDevices.Count;
+        public bool HasAudioDevices => AudioDevices.Count > 0;
+        public bool HasPeripheralDevices => PeripheralDevices.Count > 0;
+        public bool HasOtherDevices => OtherDevices.Count > 0;
+        public int TotalPairedCount => AudioDevices.Count + PeripheralDevices.Count + OtherDevices.Count;
 
         public ICommand RefreshCommand { get; }
         public ICommand RunDiagnosisCommand { get; }
@@ -156,9 +163,17 @@ namespace BlueDoc.UI.ViewModels
                 : "Powering down Bluetooth radio transceiver via Radio Subsystem...";
 
             bool success = await _radioManager.SetRadioPowerStateAsync(targetState, PrimaryAdapter?.DeviceInstanceId);
-            await Task.Delay(500);
+            await Task.Delay(400);
 
-            IsRadioOn = _radioManager.IsRadioPoweredOn(PrimaryAdapter?.DeviceInstanceId);
+            if (success)
+            {
+                IsRadioOn = targetState;
+            }
+            else
+            {
+                IsRadioOn = _radioManager.IsRadioPoweredOn(PrimaryAdapter?.DeviceInstanceId);
+            }
+
             StatusMessage = IsRadioOn
                 ? "Bluetooth radio transceiver active (RF Active, PnP Operational)."
                 : "Bluetooth radio transceiver powered off (RF Stopped, Radio Disabled).";
@@ -193,14 +208,39 @@ namespace BlueDoc.UI.ViewModels
                     ? "Bluetooth hardware operational."
                     : "Bluetooth radio is currently powered off.";
 
-                // Load real connected devices
+                // Load real paired devices categorized into Audio Devices, Peripherals & Other
                 var paired = await _managementService.GetPairedDevicesAsync();
                 ConnectedDevices.Clear();
-                foreach (var d in paired.Where(x => x.IsConnected))
+                AudioDevices.Clear();
+                PeripheralDevices.Clear();
+                OtherDevices.Clear();
+
+                foreach (var d in paired)
                 {
-                    ConnectedDevices.Add(d);
+                    if (d.IsConnected)
+                    {
+                        ConnectedDevices.Add(d);
+                    }
+
+                    if (d.IsAudio)
+                    {
+                        AudioDevices.Add(d);
+                    }
+                    else if (d.IsPeripheral)
+                    {
+                        PeripheralDevices.Add(d);
+                    }
+                    else
+                    {
+                        OtherDevices.Add(d);
+                    }
                 }
+
                 OnPropertyChanged(nameof(ConnectedCount));
+                OnPropertyChanged(nameof(HasAudioDevices));
+                OnPropertyChanged(nameof(HasPeripheralDevices));
+                OnPropertyChanged(nameof(HasOtherDevices));
+                OnPropertyChanged(nameof(TotalPairedCount));
 
                 // Load real recent connection failures from SQLite audit trail
                 var history = await _historyService.GetHistoryAsync(50);

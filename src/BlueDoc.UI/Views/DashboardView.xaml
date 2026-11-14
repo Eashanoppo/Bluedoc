@@ -126,50 +126,123 @@
                 </Grid>
 
                 <!-- ==========================================
-                     3. SECTION 2: WHICH DEVICES ARE CONNECTED?
+                     3. SECTION 2: MAC OS SYSTEM SETTINGS DEVICES (AUDIO DEVICES & PERIPHERALS)
                      ========================================== -->
-                <Grid Margin="0,0,0,8">
+                <!-- Top Section Actions -->
+                <Grid Margin="0,4,0,16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
+                    
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Active Connected Peripherals" Style="{DynamicResource GroupedSectionHeader}" Margin="0" />
-                        <Border Background="{DynamicResource AccentSubtleBrush}" CornerRadius="10" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding ConnectedCount, StringFormat='{}{0} Connected'}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
+                        <TextBlock Text="My Devices" 
+                                   FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI, sans-serif"
+                                   FontSize="18" 
+                                   FontWeight="SemiBold" 
+                                   Foreground="{DynamicResource TextPrimaryBrush}" 
+                                   VerticalAlignment="Center" />
+                        
+                        <Border Background="{DynamicResource AccentSubtleBrush}" 
+                                CornerRadius="10" 
+                                Padding="8,2" 
+                                Margin="10,0,0,0" 
+                                VerticalAlignment="Center">
+                            <TextBlock Text="{Binding ConnectedCount, StringFormat='{}{0} Connected'}" 
+                                       FontSize="11" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="{DynamicResource AccentBrush}" />
                         </Border>
                     </StackPanel>
-                    <Button Grid.Column="1" Content="Manage All Devices →" 
+
+                    <Button Grid.Column="1" 
+                            Content="Device Scanner →" 
                             Command="{Binding NavigateToSectionCommand}" 
-                            CommandParameter="Bluetooth Devices" 
+                            CommandParameter="Device Scanner" 
                             Style="{DynamicResource CompactGhostButton}" 
                             VerticalAlignment="Center" />
                 </Grid>
 
-                <Border Style="{DynamicResource GroupedCardContainer}" Margin="0,0,0,24">
-                    <StackPanel>
-                        <!-- Connected Devices List -->
-                        <ItemsControl ItemsSource="{Binding ConnectedDevices}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <views:DeviceCard Margin="0,0,0,8" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                <!-- 1. Audio Devices (AirPods, Headphones, Speakers, Earbuds) -->
+                <StackPanel Visibility="{Binding HasAudioDevices, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,10">
+                    <TextBlock Text="Audio Devices" 
+                               FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI, sans-serif"
+                               FontSize="14" 
+                               FontWeight="SemiBold" 
+                               Foreground="{DynamicResource TextPrimaryBrush}" 
+                               Margin="2,0,0,10" />
 
-                        <!-- Empty State when 0 connected -->
-                        <Border Visibility="{Binding ConnectedCount, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter=0}" 
-                                Padding="20,24" HorizontalAlignment="Center">
-                            <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="No Bluetooth peripherals currently connected." FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
-                                <TextBlock Text="Turn on your headphones, mouse, or accessories to establish connection." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" Margin="0,3,0,12" />
-                                <Button Content="Browse Paired Devices" 
-                                        Command="{Binding NavigateToSectionCommand}" 
-                                        CommandParameter="Bluetooth Devices" 
-                                        Style="{DynamicResource CompactSecondaryButton}" 
-                                        HorizontalAlignment="Center" />
-                            </StackPanel>
-                        </Border>
+                    <ItemsControl ItemsSource="{Binding AudioDevices}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <views:DeviceCard />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- 2. Peripherals (Mouse, Keyboard, Trackpad) -->
+                <StackPanel Visibility="{Binding HasPeripheralDevices, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,4,0,10">
+                    <TextBlock Text="Peripherals" 
+                               FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI, sans-serif"
+                               FontSize="14" 
+                               FontWeight="SemiBold" 
+                               Foreground="{DynamicResource TextPrimaryBrush}" 
+                               Margin="2,4,0,10" />
+
+                    <ItemsControl ItemsSource="{Binding PeripheralDevices}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <views:DeviceCard />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- 3. Other Devices (Phones, Sensors, etc. if present) -->
+                <StackPanel Visibility="{Binding HasOtherDevices, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,4,0,10">
+                    <TextBlock Text="Other Devices" 
+                               FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI, sans-serif"
+                               FontSize="14" 
+                               FontWeight="SemiBold" 
+                               Foreground="{DynamicResource TextPrimaryBrush}" 
+                               Margin="2,4,0,10" />
+
+                    <ItemsControl ItemsSource="{Binding OtherDevices}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <views:DeviceCard />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- 4. Empty State when 0 paired devices -->
+                <Border Visibility="{Binding TotalPairedCount, Converter={StaticResource EqualityToBooleanConverter}, ConverterParameter=0}" 
+                        Background="{DynamicResource CardBgBrush}"
+                        BorderBrush="{DynamicResource CardBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="28,32" 
+                        Margin="0,0,0,24"
+                        HorizontalAlignment="Stretch">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="No Bluetooth devices currently paired." 
+                                   FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI, sans-serif"
+                                   FontSize="14" 
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" 
+                                   HorizontalAlignment="Center" />
+                        <TextBlock Text="Turn on pairing mode on your headphones, mouse, or keyboard to connect." 
+                                   FontSize="12.5" 
+                                   Foreground="{DynamicResource TextSecondaryBrush}" 
+                                   HorizontalAlignment="Center" 
+                                   Margin="0,4,0,16" />
+                        <Button Content="Discover Nearby Devices" 
+                                Command="{Binding NavigateToSectionCommand}" 
+                                CommandParameter="Device Scanner" 
+                                Style="{StaticResource MacOsPrimaryButton}" 
+                                HorizontalAlignment="Center" />
                     </StackPanel>
                 </Border>
 

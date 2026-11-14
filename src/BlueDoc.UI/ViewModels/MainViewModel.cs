@@ -28,8 +28,8 @@ namespace BlueDoc.UI.ViewModels
         private string _activeGroup = "OVERVIEW & HARDWARE";
         private OsVersionInfo _osVersion;
         private BluetoothAdapterInfo _primaryAdapter;
-        private bool _isDarkTheme = true;
-        private bool _isLightTheme = false;
+        private bool _isDarkTheme = false;
+        private bool _isLightTheme = true;
         private bool _isRadioOn = true;
 
         public DashboardViewModel DashboardVM { get; }

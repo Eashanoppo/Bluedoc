@@ -24,11 +24,11 @@ namespace BlueDoc.UI.Common
 
             if (theme == AppTheme.Light)
             {
-                // macOS Sonoma Sidebar Gradient (#F7D6C4 -> #E8D5F5 -> #D4C5F0)
+                // Neutralized Minimalist macOS Sonoma Sidebar (#FAFAFA -> #F5F5F7 -> #F0F0F2)
                 SetLinearGradient(resources, "SidebarGradientBrush", 
-                    (Color)ColorConverter.ConvertFromString("#F7D6C4"),
-                    (Color)ColorConverter.ConvertFromString("#D4C5F0"),
-                    (Color)ColorConverter.ConvertFromString("#E8D5F5"));
+                    (Color)ColorConverter.ConvertFromString("#FAFAFA"),
+                    (Color)ColorConverter.ConvertFromString("#F0F0F2"),
+                    (Color)ColorConverter.ConvertFromString("#F5F5F7"));
 
                 // Core Canvas & Surfaces
                 SetBrush(resources, "MainBgBrush", "#FFFFFF");
@@ -41,10 +41,10 @@ namespace BlueDoc.UI.Common
                 SetBrush(resources, "BgDarkBrush", "#FFFFFF");
                 SetBrush(resources, "DarkBgBrush", "#FFFFFF");
                 SetBrush(resources, "SurfaceCanvasBrush", "#FFFFFF");
-                SetBrush(resources, "SidebarBgBrush", "#F5F2F9");
-                SetBrush(resources, "SurfaceSidebarBrush", "#F5F2F9");
+                SetBrush(resources, "SidebarBgBrush", "#F5F5F7");
+                SetBrush(resources, "SurfaceSidebarBrush", "#F5F5F7");
                 SetBrush(resources, "SurfaceCardBrush", "#FFFFFF");
-                SetBrush(resources, "SurfaceCardHoverBrush", "#F9F9FB");
+                SetBrush(resources, "SurfaceCardHoverBrush", "#FAFAFC");
                 SetBrush(resources, "SurfaceElevatedBrush", "#FFFFFF");
                 SetBrush(resources, "SurfaceSunkenBrush", "#F2F2F7");
                 SetBrush(resources, "HeaderBgBrush", "#FFFFFF");
@@ -56,40 +56,48 @@ namespace BlueDoc.UI.Common
                 SetBrush(resources, "TextDisabledBrush", "#C7C7CC");
                 SetBrush(resources, "TextOnAccentBrush", "#FFFFFF");
 
-                // Brand / Accent (#007AFF) & Feedback
-                SetBrush(resources, "AccentBrush", "#007AFF");
-                SetBrush(resources, "AccentHoverBrush", "#0062CC");
+                // Unified Brand Blue (#0071E3) & Feedback
+                SetBrush(resources, "AccentBrush", "#0071E3");
+                SetBrush(resources, "AccentHoverBrush", "#0060C0");
                 SetBrush(resources, "AccentPressedBrush", "#004FB3");
-                SetBrush(resources, "AccentSubtleBrush", "#E5F1FF");
+                SetBrush(resources, "AccentSubtleBrush", "#E8F1FD");
 
                 SetBrush(resources, "SuccessBrush", "#34C759");
-                SetBrush(resources, "SuccessSubtleBrush", "#E8F8ED");
+                SetBrush(resources, "SuccessSubtleBrush", "#E8F9ED");
+                SetBrush(resources, "SuccessTextBrush", "#1B8C3D");
                 SetBrush(resources, "WarningBrush", "#FF9500");
-                SetBrush(resources, "WarningSubtleBrush", "#FFF4E5");
+                SetBrush(resources, "WarningSubtleBrush", "#FFF8E6");
+                SetBrush(resources, "WarningTextBrush", "#B26A00");
                 SetBrush(resources, "DangerBrush", "#FF3B30");
                 SetBrush(resources, "DangerSubtleBrush", "#FDECEC");
-                SetBrush(resources, "InfoBrush", "#007AFF");
-                SetBrush(resources, "InfoSubtleBrush", "#E5F1FF");
+                SetBrush(resources, "DangerTextBrush", "#D70015");
+                SetBrush(resources, "InfoBrush", "#0071E3");
+                SetBrush(resources, "InfoSubtleBrush", "#E8F1FD");
 
-                // Navigation & Pills
-                SetBrush(resources, "NavActiveBgBrush", "#007AFF");
-                SetBrush(resources, "NavActiveTextBrush", "#FFFFFF");
-                SetBrush(resources, "NavHoverBgBrush", "#E5E5EA");
+                // Navigation & Pills (Soft Blue Selection #E8F1FD, Active Text #0071E3)
+                SetBrush(resources, "NavActiveBgBrush", "#E8F1FD");
+                SetBrush(resources, "NavActiveTextBrush", "#0071E3");
+                SetBrush(resources, "NavHoverBgBrush", "#EBEBED");
                 SetBrush(resources, "NavGroupTextBrush", "#6E6E73");
                 SetBrush(resources, "NavGroupBgBrush", "#00000000");
-                SetBrush(resources, "PillBgBrush", "#E5E5EA");
+                SetBrush(resources, "PillBgBrush", "#EBEBED");
                 SetBrush(resources, "PillActiveBgBrush", "#FFFFFF");
                 SetBrush(resources, "PillActiveTextBrush", "#1D1D1F");
                 SetBrush(resources, "PillInactiveTextBrush", "#6E6E73");
 
                 // macOS Specific
-                SetBrush(resources, "MacOSSearchBgBrush", "#FFFFFF", 0.45);
-                SetBrush(resources, "MacOSNavHoverBrush", "#FFFFFF", 0.15);
-                SetBrush(resources, "MacOSNavSelectedBrush", "#FFFFFF", 0.25);
-                SetBrush(resources, "FocusRingBrush", "#007AFF");
-                SetBrush(resources, "OverlayBrush", "#40000000");
-                SetBrush(resources, "SkeletonBaseBrush", "#E5E5EA");
-                SetBrush(resources, "SkeletonShimmerBrush", "#F2F2F7");
+                SetBrush(resources, "MacOSSearchBgBrush", "#FFFFFF", 0.80);
+                SetBrush(resources, "MacOSNavHoverBrush", "#0D000000");
+                SetBrush(resources, "MacOSNavSelectedBrush", "#E8F1FD");
+                SetBrush(resources, "FocusRingBrush", "#0071E3");
+                SetBrush(resources, "OverlayBrush", "#30000000");
+                SetBrush(resources, "SkeletonBaseBrush", "#EBEBED");
+                SetBrush(resources, "SkeletonShimmerBrush", "#F5F5F7");
+
+                // ScrollBars
+                SetBrush(resources, "ScrollBarThumbBrush", "#D1D1D6");
+                SetBrush(resources, "ScrollBarThumbHoverBrush", "#8E8E93");
+                SetBrush(resources, "ScrollBarThumbPressedBrush", "#636366");
             }
             else // Dark
             {
@@ -158,6 +166,11 @@ namespace BlueDoc.UI.Common
                 SetBrush(resources, "OverlayBrush", "#80000000");
                 SetBrush(resources, "SkeletonBaseBrush", "#2C2C2E");
                 SetBrush(resources, "SkeletonShimmerBrush", "#3A3A3C");
+
+                // ScrollBars
+                SetBrush(resources, "ScrollBarThumbBrush", "#48484A");
+                SetBrush(resources, "ScrollBarThumbHoverBrush", "#636366");
+                SetBrush(resources, "ScrollBarThumbPressedBrush", "#8E8E93");
             }
 
             ThemeChanged?.Invoke(theme);

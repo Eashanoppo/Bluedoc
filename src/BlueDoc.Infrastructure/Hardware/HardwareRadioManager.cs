@@ -103,6 +103,10 @@ namespace BlueDoc.Infrastructure.Hardware
                 {
                     EnsureBluetoothServiceStarted();
                 }
+                else
+                {
+                    StopBluetoothService();
+                }
 
                 // 3. Fallback for Windows 7 or if WinRT radio control is not supported
                 if (!success)
@@ -263,6 +267,22 @@ namespace BlueDoc.Infrastructure.Hardware
                     {
                         sc.Start();
                         sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(5));
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private void StopBluetoothService()
+        {
+            try
+            {
+                using (var sc = new ServiceController("bthserv"))
+                {
+                    if (sc.Status == ServiceControllerStatus.Running)
+                    {
+                        sc.Stop();
+                        sc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(3));
                     }
                 }
             }
