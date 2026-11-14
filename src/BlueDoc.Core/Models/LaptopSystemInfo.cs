@@ -22,3 +22,4 @@ namespace BlueDoc.Core.Models
         public string FormFactorDescription => IsLaptop ? "Notebook / Laptop" : "Desktop Workstation / PC";
     }
 }
+

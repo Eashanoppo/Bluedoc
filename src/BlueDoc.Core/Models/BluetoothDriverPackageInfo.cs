@@ -37,3 +37,4 @@ namespace BlueDoc.Core.Models
         public string DownloadedFilePath { get; set; } = string.Empty;
     }
 }
+
