@@ -16,6 +16,11 @@ namespace BlueDoc.UI
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             Trace.WriteLine($"[CRITICAL UI EXCEPTION] {e.Exception.Message}\n{e.Exception.StackTrace}");
+            try
+            {
+                System.IO.File.WriteAllText(@"E:\BlueDoc\crash_log.txt", $"{e.Exception}\n\nInnerException: {e.Exception.InnerException}");
+            }
+            catch { }
             MessageBox.Show($"An unexpected UI exception occurred:\n\n{e.Exception.Message}\n\nThe operation was safely handled.", "BlueDoc Protection", MessageBoxButton.OK, MessageBoxImage.Warning);
             e.Handled = true;
         }

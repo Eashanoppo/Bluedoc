@@ -12,36 +12,6 @@
         <TranslateTransform x:Name="CardOffsetTransform" Y="0" />
     </UserControl.RenderTransform>
 
-    <UserControl.Triggers>
-        <!-- Smooth Elevation Animation on Hover (TranslateY: -2px, 0.2s, CubicEase) -->
-        <EventTrigger RoutedEvent="MouseEnter">
-            <BeginStoryboard>
-                <Storyboard>
-                    <DoubleAnimation Storyboard.TargetName="CardOffsetTransform"
-                                     Storyboard.TargetProperty="Y"
-                                     To="-2" Duration="0:0:0.2">
-                        <DoubleAnimation.EasingFunction>
-                            <CubicEase EasingMode="EaseOut" />
-                        </DoubleAnimation.EasingFunction>
-                    </DoubleAnimation>
-                </Storyboard>
-            </BeginStoryboard>
-        </EventTrigger>
-        <EventTrigger RoutedEvent="MouseLeave">
-            <BeginStoryboard>
-                <Storyboard>
-                    <DoubleAnimation Storyboard.TargetName="CardOffsetTransform"
-                                     Storyboard.TargetProperty="Y"
-                                     To="0" Duration="0:0:0.2">
-                        <DoubleAnimation.EasingFunction>
-                            <CubicEase EasingMode="EaseOut" />
-                        </DoubleAnimation.EasingFunction>
-                    </DoubleAnimation>
-                </Storyboard>
-            </BeginStoryboard>
-        </EventTrigger>
-    </UserControl.Triggers>
-
     <Border Background="{DynamicResource CardBgBrush}"
             BorderBrush="{DynamicResource CardBorderBrush}"
             BorderThickness="1"

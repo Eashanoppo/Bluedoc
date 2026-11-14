@@ -177,10 +177,8 @@
                     <Border x:Name="Track" 
                             Width="42" Height="24" 
                             CornerRadius="12"
+                            Background="#E5E5E7"
                             SnapsToDevicePixels="True">
-                        <Border.Background>
-                            <SolidColorBrush x:Name="TrackBrush" Color="#E5E5E7" />
-                        </Border.Background>
                         <Ellipse x:Name="Thumb" 
                                  Width="20" Height="20" 
                                  Fill="#FFFFFF" 
@@ -197,8 +195,8 @@
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="TrackBrush"
-                                                        Storyboard.TargetProperty="Color"
+                                        <ColorAnimation Storyboard.TargetName="Track"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
                                                         To="#34C759" Duration="0:0:0.2">
                                             <ColorAnimation.EasingFunction>
                                                 <CubicEase EasingMode="EaseOut" />
@@ -217,8 +215,8 @@
                             <Trigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="TrackBrush"
-                                                        Storyboard.TargetProperty="Color"
+                                        <ColorAnimation Storyboard.TargetName="Track"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
                                                         To="#E5E5E7" Duration="0:0:0.2">
                                             <ColorAnimation.EasingFunction>
                                                 <CubicEase EasingMode="EaseOut" />
@@ -388,11 +386,9 @@
                 <ControlTemplate TargetType="{x:Type ListBoxItem}">
                     <Border x:Name="ItemBorder"
                             CornerRadius="8"
+                            Background="#00FFFFFF"
                             Padding="{TemplateBinding Padding}"
                             SnapsToDevicePixels="True">
-                        <Border.Background>
-                            <SolidColorBrush x:Name="ItemBg" Color="#00FFFFFF" />
-                        </Border.Background>
                         <ContentPresenter x:Name="ContentPresenter"
                                           VerticalAlignment="Center" 
                                           RecognizesAccessKey="False" />
@@ -403,8 +399,8 @@
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="ItemBg"
-                                                        Storyboard.TargetProperty="Color"
+                                        <ColorAnimation Storyboard.TargetName="ItemBorder"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
                                                         To="#26FFFFFF"
                                                         Duration="0:0:0.15">
                                             <ColorAnimation.EasingFunction>
@@ -417,8 +413,8 @@
                             <Trigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="ItemBg"
-                                                        Storyboard.TargetProperty="Color"
+                                        <ColorAnimation Storyboard.TargetName="ItemBorder"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
                                                         To="#00FFFFFF"
                                                         Duration="0:0:0.15">
                                             <ColorAnimation.EasingFunction>
@@ -436,8 +432,8 @@
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="ItemBg"
-                                                        Storyboard.TargetProperty="Color"
+                                        <ColorAnimation Storyboard.TargetName="ItemBorder"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
                                                         To="#40FFFFFF"
                                                         Duration="0:0:0.2">
                                             <ColorAnimation.EasingFunction>
@@ -450,8 +446,8 @@
                             <Trigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="ItemBg"
-                                                        Storyboard.TargetProperty="Color"
+                                        <ColorAnimation Storyboard.TargetName="ItemBorder"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
                                                         To="#00FFFFFF"
                                                         Duration="0:0:0.2">
                                             <ColorAnimation.EasingFunction>

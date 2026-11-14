@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using BlueDoc.Application.Services;
 using BlueDoc.Core.Models;
 
@@ -95,6 +96,26 @@ namespace BlueDoc.UI.Views
             InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             Unloaded += (s, e) => DetachTrackedInfo();
+        }
+
+        protected override void OnMouseEnter(MouseEventArgs e)
+        {
+            base.OnMouseEnter(e);
+            var anim = new DoubleAnimation(-2, TimeSpan.FromSeconds(0.2))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
+            CardOffsetTransform?.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, anim);
+        }
+
+        protected override void OnMouseLeave(MouseEventArgs e)
+        {
+            base.OnMouseLeave(e);
+            var anim = new DoubleAnimation(0, TimeSpan.FromSeconds(0.2))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
+            CardOffsetTransform?.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, anim);
         }
 
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)

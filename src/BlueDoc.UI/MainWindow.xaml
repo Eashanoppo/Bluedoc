@@ -232,7 +232,7 @@
                                 <ColumnDefinition Width="22" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <Path Grid.Column="0" Data="{StaticResource IconDiagnosticsPath}" Width="14" Height="14" Fill="{DynamicResource TextSecondaryBrush}" Stretch="Uniform" VerticalAlignment="Center" />
+                            <Path Grid.Column="0" Data="{StaticResource IconDiagnosticPath}" Width="14" Height="14" Fill="{DynamicResource TextSecondaryBrush}" Stretch="Uniform" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="1" Text="Diagnostics" Margin="10,0,0,0" VerticalAlignment="Center" />
                         </Grid>
                     </ListBoxItem>
