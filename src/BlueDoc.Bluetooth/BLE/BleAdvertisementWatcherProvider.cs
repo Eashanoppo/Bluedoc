@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.Advertisement;
 using BlueDoc.Core.Enums;
 using BlueDoc.Core.Models;
@@ -220,7 +221,10 @@ namespace BlueDoc.Bluetooth.BLE
         private void OnWatcherStopped(BluetoothLEAdvertisementWatcher sender, BluetoothLEAdvertisementWatcherStoppedEventArgs args)
         {
             _isScanning = false;
-            ScanStatusChanged?.Invoke(this, $"BLE Advertisement Watcher stopped (Status: {args.Error}).");
+            if (args.Error != BluetoothError.Success)
+            {
+                ScanStatusChanged?.Invoke(this, $"Classic RF inquiry active (Searching speakers & peripherals). BLE: {args.Error}.");
+            }
         }
 
         public IReadOnlyList<BluetoothDeviceInfo> GetDiscoveredDevices()

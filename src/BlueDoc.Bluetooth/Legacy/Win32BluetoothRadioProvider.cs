@@ -164,6 +164,37 @@ namespace BlueDoc.Bluetooth.Legacy
                     };
 
                     IntPtr hFind = BluetoothFindFirstDevice(ref searchParams, ref devInfo);
+                    if ((hFind == IntPtr.Zero || hFind == (IntPtr)(-1)) && !cancellationToken.IsCancellationRequested)
+                    {
+                        // Fallback: On Windows 7 or specific vendor stacks, query explicit radio handle
+                        try
+                        {
+                            var pRadioParams = new BluetoothNative.BLUETOOTH_FIND_RADIO_PARAMS
+                            {
+                                dwSize = (uint)Marshal.SizeOf(typeof(BluetoothNative.BLUETOOTH_FIND_RADIO_PARAMS))
+                            };
+                            IntPtr hRadio = IntPtr.Zero;
+                            IntPtr hFindRadio = BluetoothNative.BluetoothFindFirstRadio(ref pRadioParams, out hRadio);
+                            if (hFindRadio != IntPtr.Zero && hFindRadio != (IntPtr)(-1))
+                            {
+                                try
+                                {
+                                    if (hRadio != IntPtr.Zero)
+                                    {
+                                        searchParams.hRadio = hRadio;
+                                        hFind = BluetoothFindFirstDevice(ref searchParams, ref devInfo);
+                                    }
+                                }
+                                finally
+                                {
+                                    if (hRadio != IntPtr.Zero) BluetoothNative.CloseHandle(hRadio);
+                                    BluetoothNative.BluetoothFindRadioClose(hFindRadio);
+                                }
+                            }
+                        }
+                        catch { }
+                    }
+
                     if (hFind != IntPtr.Zero && hFind != (IntPtr)(-1))
                     {
                         try
@@ -251,32 +282,19 @@ namespace BlueDoc.Bluetooth.Legacy
                     return discovered.Values.ToList();
                 }
 
-                // Query physical radio handle
-                IntPtr hRadio = IntPtr.Zero;
-                IntPtr hFindRadio = IntPtr.Zero;
-                try
-                {
-                    var pRadioParams = new BluetoothNative.BLUETOOTH_FIND_RADIO_PARAMS
-                    {
-                        dwSize = (uint)Marshal.SizeOf(typeof(BluetoothNative.BLUETOOTH_FIND_RADIO_PARAMS))
-                    };
-                    hFindRadio = BluetoothNative.BluetoothFindFirstRadio(ref pRadioParams, out hRadio);
-                }
-                catch { }
-
                 // Active radio inquiry: ONLY return devices that physically respond to RF inquiry or are actively connected
                 try
                 {
                     var searchParams = new BLUETOOTH_DEVICE_SEARCH_PARAMS
                     {
                         dwSize = (uint)Marshal.SizeOf(typeof(BLUETOOTH_DEVICE_SEARCH_PARAMS)),
-                        fReturnAuthenticated = false, // Do NOT return offline authenticated devices
+                        fReturnAuthenticated = true,  // Return paired devices if responding to inquiry
                         fReturnRemembered = false,    // Do NOT return offline cached devices
                         fReturnUnknown = true,       // Return newly broadcasting devices discovered in the air
                         fReturnConnected = true,     // Return actively connected devices
                         fIssueInquiry = true,        // Send physical 1.28s RF inquiry packets
                         cTimeoutMultiplier = (byte)Math.Min(Math.Max(2, timeoutSeconds / 1.28), 10),
-                        hRadio = hRadio
+                        hRadio = IntPtr.Zero         // Set to NULL to perform search across all local Bluetooth hardware radios
                     };
 
                     var devInfo = new BLUETOOTH_DEVICE_INFO
@@ -285,6 +303,37 @@ namespace BlueDoc.Bluetooth.Legacy
                     };
 
                     IntPtr hFind = BluetoothFindFirstDevice(ref searchParams, ref devInfo);
+                    if ((hFind == IntPtr.Zero || hFind == (IntPtr)(-1)) && !cancellationToken.IsCancellationRequested)
+                    {
+                        // Fallback: On Windows 7 or specific vendor stacks, query explicit radio handle
+                        try
+                        {
+                            var pRadioParams = new BluetoothNative.BLUETOOTH_FIND_RADIO_PARAMS
+                            {
+                                dwSize = (uint)Marshal.SizeOf(typeof(BluetoothNative.BLUETOOTH_FIND_RADIO_PARAMS))
+                            };
+                            IntPtr hRadio = IntPtr.Zero;
+                            IntPtr hFindRadio = BluetoothNative.BluetoothFindFirstRadio(ref pRadioParams, out hRadio);
+                            if (hFindRadio != IntPtr.Zero && hFindRadio != (IntPtr)(-1))
+                            {
+                                try
+                                {
+                                    if (hRadio != IntPtr.Zero)
+                                    {
+                                        searchParams.hRadio = hRadio;
+                                        hFind = BluetoothFindFirstDevice(ref searchParams, ref devInfo);
+                                    }
+                                }
+                                finally
+                                {
+                                    if (hRadio != IntPtr.Zero) BluetoothNative.CloseHandle(hRadio);
+                                    BluetoothNative.BluetoothFindRadioClose(hFindRadio);
+                                }
+                            }
+                        }
+                        catch { }
+                    }
+
                     if (hFind != IntPtr.Zero && hFind != (IntPtr)(-1))
                     {
                         try
@@ -353,17 +402,6 @@ namespace BlueDoc.Bluetooth.Legacy
                     }
                 }
                 catch { }
-                finally
-                {
-                    if (hRadio != IntPtr.Zero)
-                    {
-                        BluetoothNative.CloseHandle(hRadio);
-                    }
-                    if (hFindRadio != IntPtr.Zero && hFindRadio != (IntPtr)(-1))
-                    {
-                        BluetoothNative.BluetoothFindRadioClose(hFindRadio);
-                    }
-                }
 
                 return discovered.Values.ToList();
             }, cancellationToken);

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BlueDoc.Bluetooth.Abstractions;
 using BlueDoc.Bluetooth.BLE;
+using BlueDoc.Bluetooth.WinRT;
 using BlueDoc.Core.Enums;
 using BlueDoc.Core.Models;
 using BlueDoc.Infrastructure.Platform;
@@ -15,6 +16,7 @@ namespace BlueDoc.Application.Services
     {
         private readonly BluetoothManager _bluetoothManager;
         private readonly BleAdvertisementWatcherProvider _bleWatcher;
+        private readonly WinRtDeviceWatcherProvider _classicWatcher;
         private readonly Dictionary<string, BluetoothDeviceInfo> _discoveredMaster = new Dictionary<string, BluetoothDeviceInfo>(StringComparer.OrdinalIgnoreCase);
         private readonly object _lock = new object();
 
@@ -37,6 +39,18 @@ namespace BlueDoc.Application.Services
 
             if (OperatingSystemInspector.IsWindows10OrGreater())
             {
+                try
+                {
+                    _classicWatcher = new WinRtDeviceWatcherProvider();
+                    _classicWatcher.DeviceDiscovered += (s, dev) => MergeClassicDevice(dev);
+                    _classicWatcher.DeviceUpdated += (s, dev) => MergeClassicDevice(dev);
+                    _classicWatcher.ScanStatusChanged += (s, msg) => StatusChanged?.Invoke(this, msg);
+                }
+                catch
+                {
+                    _classicWatcher = null;
+                }
+
                 try
                 {
                     _bleWatcher = new BleAdvertisementWatcherProvider();
@@ -89,6 +103,12 @@ namespace BlueDoc.Application.Services
                 tasks.Add(Task.Run(async () =>
                 {
                     StatusChanged?.Invoke(this, "Initiating Classic Bluetooth radio inquiry...");
+                    
+                    if (_classicWatcher != null && _classicWatcher.IsSupported)
+                    {
+                        _classicWatcher.StartScanning();
+                    }
+
                     var progress = new Progress<BluetoothDeviceInfo>(classicDev =>
                     {
                         MergeClassicDevice(classicDev);
@@ -96,12 +116,18 @@ namespace BlueDoc.Application.Services
 
                     try
                     {
-                        await _bluetoothManager.DiscoverDevicesAsync(timeoutSeconds, progress, _scanCts.Token);
+                        var bthTask = _bluetoothManager.DiscoverDevicesAsync(timeoutSeconds, progress, _scanCts.Token);
+                        var delayTask = Task.Delay(TimeSpan.FromSeconds(timeoutSeconds), _scanCts.Token);
+                        await Task.WhenAny(bthTask, delayTask);
                     }
                     catch (OperationCanceledException) { }
                     catch (Exception ex)
                     {
                         StatusChanged?.Invoke(this, $"Classic Inquiry: {ex.Message}");
+                    }
+                    finally
+                    {
+                        _classicWatcher?.StopScanning();
                     }
                 }));
             }
@@ -135,6 +161,7 @@ namespace BlueDoc.Application.Services
             {
                 _isScanning = false;
                 ScanningStateChanged?.Invoke(this, false);
+                _classicWatcher?.StopScanning();
                 _bleWatcher?.StopScanning();
                 _scanCts?.Dispose();
                 _scanCts = null;
@@ -150,6 +177,7 @@ namespace BlueDoc.Application.Services
         {
             if (_isScanning)
             {
+                _classicWatcher?.StopScanning();
                 _bleWatcher?.StopScanning();
                 if (_scanCts != null && !_scanCts.IsCancellationRequested)
                 {
@@ -286,6 +314,7 @@ namespace BlueDoc.Application.Services
         public void Dispose()
         {
             StopScanning();
+            _classicWatcher?.Dispose();
             _bleWatcher?.Dispose();
         }
     }

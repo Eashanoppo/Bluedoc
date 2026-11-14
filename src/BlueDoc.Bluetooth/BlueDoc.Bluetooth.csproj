@@ -58,6 +58,7 @@
     <Compile Include="BLE\BleAdvertisementWatcherProvider.cs" />
     <Compile Include="BLE\BlePairingProvider.cs" />
     <Compile Include="BLE\BleGattClientProvider.cs" />
+    <Compile Include="WinRT\WinRtDeviceWatcherProvider.cs" />
     <Compile Include="WinRtClassicConnector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -28,7 +28,7 @@ namespace BlueDoc.UI.ViewModels
         private BluetoothPairingStage _pairingStage = BluetoothPairingStage.Idle;
         private string _statusMessage = "Ready";
         private string _searchText = string.Empty;
-        private string _selectedFilter = "Available";
+        private string _selectedFilter = "All";
 
         // In-App Native Pairing Workflow State
         private bool _isPairingModalOpen;
