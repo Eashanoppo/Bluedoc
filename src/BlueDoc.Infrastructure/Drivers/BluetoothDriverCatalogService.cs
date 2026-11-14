@@ -84,24 +84,24 @@ namespace BlueDoc.Infrastructure.Drivers
                     info.ChipsetFamily = "Realtek Bluetooth 5.0 / 5.2 / 5.3 Universal (RTL8822CE / RTL8852BE / RTL8761B / RTL8723DE)";
                     info.PackageName = "Realtek Bluetooth Universal WHQL Driver Package";
                     info.RecommendedVersion = "1.1072.2312.2501";
-                    info.ReleaseDate = "2024-07-12";
-                    info.FileSizeFormatted = "48.2 MB";
-                    info.FileSizeBytes = 50541312;
+                    info.ReleaseDate = "2026-10-25";
+                    info.FileSizeFormatted = "283 KB";
+                    info.FileSizeBytes = 283876;
                     info.VendorPortalUrl = "https://www.realtek.com/en/component/zoo/category/pci-wireless-lan-pci-express-software";
-                    info.DownloadUrl = "https://catalog.s.download.windowsupdate.com/d/msdownload/update/driver/drvs/2024/07/realtek_bluetooth_1.1072.2312.2501.cab";
-                    info.ReleaseNotes = "Optimized A2DP stereo audio buffers, improved Bluetooth 5.3 LE Audio coexistence, and enhanced low-latency peripheral paging.";
+                    info.DownloadUrl = "https://catalog.s.download.windowsupdate.com/d/msdownload/update/driver/drvs/2026/10/548fffa2-d5f1-422c-b6a5-c5956392aa75_91477c30a39b61c29ccec5f004b96df1bc184aa8.cab";
+                    info.ReleaseNotes = "Certified Realtek WHQL package with low-latency A2DP stereo audio buffers and Bluetooth LE coexistence.";
                     break;
 
                 case "8087": // Intel
                     info.ChipsetFamily = "Intel Wireless Bluetooth (AX200 / AX201 / AX210 / AX211 / AC-9560 / AC-8265 / 7260)";
                     info.PackageName = "Intel Wireless Bluetooth Driver Package";
                     info.RecommendedVersion = "23.40.0.4";
-                    info.ReleaseDate = "2024-06-20";
-                    info.FileSizeFormatted = "54.8 MB";
-                    info.FileSizeBytes = 57461952;
+                    info.ReleaseDate = "2026-08-14";
+                    info.FileSizeFormatted = "984 KB";
+                    info.FileSizeBytes = 984501;
                     info.VendorPortalUrl = "https://www.intel.com/content/www/us/en/download/18649/intel-wireless-bluetooth-for-windows-10-and-windows-11.html";
-                    info.DownloadUrl = "https://downloadmirror.intel.com/824317/BT-23.40.0-64UWD-Win10-Win11.exe";
-                    info.ReleaseNotes = "Fixed audio glitching during heavy Wi-Fi traffic, enhanced BLE HID mouse reconnect latency, updated security fixes.";
+                    info.DownloadUrl = "https://catalog.s.download.windowsupdate.com/c/msdownload/update/driver/drvs/2026/08/50daa17f-1520-4243-9202-e05f2eb1c584_1567f9c8450884ac7e94387e3c295026d852cd5d.cab";
+                    info.ReleaseNotes = "Official Intel Wireless Bluetooth WHQL package for Windows 10/11 with enhanced RF paging and audio stability.";
                     break;
 
                 case "0A5C": // Broadcom
@@ -255,6 +255,7 @@ namespace BlueDoc.Infrastructure.Drivers
             {
                 using (var client = new WebClient())
                 {
+                    client.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
                     ct.Register(() => client.CancelAsync());
 
                     var report = new DownloadProgressReport();

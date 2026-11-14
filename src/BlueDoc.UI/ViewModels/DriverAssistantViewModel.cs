@@ -89,11 +89,14 @@ namespace BlueDoc.UI.ViewModels
                 if (SetProperty(ref _downloadedFilePath, value))
                 {
                     OnPropertyChanged(nameof(HasDownloadedFile));
+                    OnPropertyChanged(nameof(CanInstallPackage));
+                    System.Windows.Input.CommandManager.InvalidateRequerySuggested();
                 }
             }
         }
 
         public bool HasDownloadedFile => !string.IsNullOrEmpty(DownloadedFilePath) && File.Exists(DownloadedFilePath);
+        public bool CanInstallPackage => (HasDownloadedFile || (DriverPackage != null && DriverPackage.IsLocallyBundled)) && !IsInstalling;
 
         public string StatusMessage
         {
@@ -152,7 +155,7 @@ namespace BlueDoc.UI.ViewModels
             CheckUpdatesCommand = new RelayCommand(async () => await LoadDriverInfoAsync());
             DownloadPackageCommand = new RelayCommand(async () => await DownloadDriverAsync(), () => !IsDownloading && HasDriverPackage);
             CancelDownloadCommand = new RelayCommand(() => _downloadCts?.Cancel(), () => IsDownloading);
-            InstallPackageCommand = new RelayCommand(async () => await InstallDriverAsync(), () => HasDownloadedFile && !IsInstalling);
+            InstallPackageCommand = new RelayCommand(async () => await InstallDriverAsync(), () => CanInstallPackage);
             BackupDriverCommand = new RelayCommand(async () => await BackupDriverAsync(), () => !IsLoading);
 
             OpenOemSupportCommand = new RelayCommand(() => OpenUrl(SystemInfo?.OemSupportUrl));
@@ -224,6 +227,14 @@ namespace BlueDoc.UI.ViewModels
         {
             if (DriverPackage == null) return;
 
+            if (DriverPackage.IsLocallyBundled && File.Exists(DriverPackage.LocalInfPath))
+            {
+                DownloadedFilePath = DriverPackage.LocalInfPath;
+                StatusMessage = $"Certified offline driver package '{Path.GetFileName(DriverPackage.LocalInfPath)}' is loaded. Click 'Install Driver Package'.";
+                NotificationService.Instance.ShowSuccess("Package Ready", "Bundled WHQL driver and firmware ready for 1-click install.");
+                return;
+            }
+
             IsDownloading = true;
             _downloadCts = new CancellationTokenSource();
             DownloadReport = new DownloadProgressReport { StatusMessage = "Initiating download from verified catalog..." };
@@ -260,7 +271,17 @@ namespace BlueDoc.UI.ViewModels
 
         public async Task InstallDriverAsync()
         {
-            if (!HasDownloadedFile) return;
+            if (string.IsNullOrEmpty(DownloadedFilePath) && DriverPackage != null && DriverPackage.IsLocallyBundled && File.Exists(DriverPackage.LocalInfPath))
+            {
+                DownloadedFilePath = DriverPackage.LocalInfPath;
+            }
+
+            if (!HasDownloadedFile)
+            {
+                StatusMessage = "No driver package file is ready. Please click 'Download Driver Package' first.";
+                NotificationService.Instance.ShowWarning("Setup Required", "Please click 'Download Driver Package' before installing.");
+                return;
+            }
 
             IsInstalling = true;
             StatusMessage = "Launching Windows driver installer with administrative elevation...";
