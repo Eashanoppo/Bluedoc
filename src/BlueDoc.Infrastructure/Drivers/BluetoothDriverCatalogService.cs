@@ -108,25 +108,51 @@ namespace BlueDoc.Infrastructure.Drivers
                     info.ChipsetFamily = "Broadcom BCM20702 / BCM43142 / BCM43xx Bluetooth Controller";
                     info.PackageName = "Broadcom Bluetooth Filter & PatchRAM WHQL Package";
                     info.RecommendedVersion = "12.0.1.1012";
-                    info.ReleaseDate = "2022-11-15";
-                    info.FileSizeFormatted = "28.4 MB";
-                    info.FileSizeBytes = 29779520;
+                    info.ReleaseDate = "2016-09-15";
+                    info.FileSizeFormatted = "459 KB";
+                    info.FileSizeBytes = 459450;
                     info.VendorPortalUrl = "https://www.broadcom.com/support";
-                    info.DownloadUrl = "https://catalog.s.download.windowsupdate.com/c/msdownload/update/driver/drvs/2016/10/20902891_74135e0c5fe691b8fbf957df47629618b76c0e5a.cab";
+                    info.DownloadUrl = "https://catalog.s.download.windowsupdate.com/c/msdownload/update/driver/drvs/2016/09/20925359_273803a5d756bf50f07e5f73e15f18878bdcdf8b.cab";
                     info.ReleaseNotes = "Certified Broadcom PatchRAM firmware filter driver (bcbtums.sys); loads RAM patch into BCM20702/BCM43142 silicon.";
+
+                    string localBroadcomInf = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Drivers", "Broadcom", "bcbtums.inf");
+                    if (!File.Exists(localBroadcomInf))
+                    {
+                        string devPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\src\BlueDoc.UI\Drivers\Broadcom\bcbtums.inf"));
+                        if (File.Exists(devPath)) localBroadcomInf = devPath;
+                    }
+                    if (File.Exists(localBroadcomInf))
+                    {
+                        info.IsLocallyBundled = true;
+                        info.LocalInfPath = localBroadcomInf;
+                        info.FileSizeFormatted = "459 KB (Bundled Offline)";
+                    }
                     break;
 
                 case "0CF3": // Qualcomm / Atheros
                 case "17CB":
                     info.ChipsetFamily = "Qualcomm Atheros Bluetooth Suite (AR3011 / AR3012 / QCA61x4 / QCA9377)";
                     info.PackageName = "Qualcomm Atheros Bluetooth Filter & RAM-Patch Driver Package";
-                    info.RecommendedVersion = "10.0.3.22";
-                    info.ReleaseDate = "2023-09-08";
-                    info.FileSizeFormatted = "36.2 MB";
-                    info.FileSizeBytes = 37958464;
+                    info.RecommendedVersion = "10.0.3.21";
+                    info.ReleaseDate = "2019-07-16";
+                    info.FileSizeFormatted = "258 KB";
+                    info.FileSizeBytes = 258466;
                     info.VendorPortalUrl = "https://www.qualcomm.com/products/features/bluetooth";
-                    info.DownloadUrl = "https://catalog.s.download.windowsupdate.com/d/msdownload/update/driver/drvs/2016/05/20822606_2e20ffae8bb51d0aa0dcabf972b9a7c3cead99df.cab";
-                    info.ReleaseNotes = "Official Qualcomm Atheros AR3011/AR3012/QCA61x4 firmware and filter driver (btath_bus.sys) for Sony VAIO SVE, HP, and Acer.";
+                    info.DownloadUrl = "https://catalog.s.download.windowsupdate.com/c/msdownload/update/driver/drvs/2019/10/893f18db-5b81-47e5-81fe-212dd3dc5f6b_ff141b862be949142063602aadc51e804f2d7316.cab";
+                    info.ReleaseNotes = "Official Qualcomm Atheros AR3011/AR3012/QCA61x4 firmware and filter driver (btfilter.sys) for Sony VAIO SVE, HP, and Acer.";
+
+                    string localAtherosInf = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Drivers", "Atheros", "btfilter.inf");
+                    if (!File.Exists(localAtherosInf))
+                    {
+                        string devPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\src\BlueDoc.UI\Drivers\Atheros\btfilter.inf"));
+                        if (File.Exists(devPath)) localAtherosInf = devPath;
+                    }
+                    if (File.Exists(localAtherosInf))
+                    {
+                        info.IsLocallyBundled = true;
+                        info.LocalInfPath = localAtherosInf;
+                        info.FileSizeFormatted = "258 KB (Bundled Offline)";
+                    }
                     break;
 
                 case "0E8D": // MediaTek
@@ -187,7 +213,25 @@ namespace BlueDoc.Infrastructure.Drivers
             IProgress<DownloadProgressReport> progress,
             CancellationToken ct = default(CancellationToken))
         {
-            if (package == null || string.IsNullOrWhiteSpace(package.DownloadUrl))
+            if (package == null)
+            {
+                throw new ArgumentNullException(nameof(package));
+            }
+
+            if (package.IsLocallyBundled && !string.IsNullOrEmpty(package.LocalInfPath) && File.Exists(package.LocalInfPath))
+            {
+                var report = new DownloadProgressReport
+                {
+                    IsCompleted = true,
+                    Percentage = 100,
+                    DownloadedFilePath = package.LocalInfPath,
+                    StatusMessage = $"Bundled offline certified driver & firmware package '{Path.GetFileName(package.LocalInfPath)}' is ready."
+                };
+                progress?.Report(report);
+                return package.LocalInfPath;
+            }
+
+            if (string.IsNullOrWhiteSpace(package.DownloadUrl))
             {
                 throw new InvalidOperationException("No valid driver package download URL specified.");
             }

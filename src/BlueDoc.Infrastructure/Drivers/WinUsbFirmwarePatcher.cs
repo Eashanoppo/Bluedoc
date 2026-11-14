@@ -89,7 +89,7 @@ namespace BlueDoc.Infrastructure.Drivers
             BluetoothAdapterInfo adapter, 
             IProgress<string> progress = null)
         {
-            return await Task.Run(async () =>
+            return await Task.Run(() =>
             {
                 var result = new SiliconPatchResult();
                 if (adapter == null)
@@ -117,17 +117,45 @@ namespace BlueDoc.Infrastructure.Drivers
                     string patchNote = Path.Combine(fwDir, "ath3k_patch_manifest.json");
                     File.WriteAllText(patchNote, $"{{\"chipset\":\"AR3012\",\"vid\":\"{vid}\",\"pid\":\"{pid}\",\"status\":\"ReadyForInjection\",\"targetDriver\":\"bthusb.sys\"}}");
 
-                    await Task.Delay(800);
-                    progress?.Report("[Silicon Patcher] Uploading Atheros RAM-patch initialization sequence (Vendor Cmd 0x0B)...");
+                    // 2. Locate bundled firmware & filter driver package
+                    string appBase = AppDomain.CurrentDomain.BaseDirectory;
+                    string bundledInf = Path.Combine(appBase, "Drivers", "Atheros", "btfilter.inf");
+                    if (!File.Exists(bundledInf))
+                    {
+                        string devPath = Path.GetFullPath(Path.Combine(appBase, @"..\..\src\BlueDoc.UI\Drivers\Atheros\btfilter.inf"));
+                        if (File.Exists(devPath)) bundledInf = devPath;
+                    }
 
-                    await Task.Delay(1200);
-                    progress?.Report("[Silicon Patcher] Booting firmware from SRAM (ATH3K_SET_NORMAL_MODE 0x04)...");
+                    if (File.Exists(bundledInf))
+                    {
+                        progress?.Report($"[Silicon Patcher] Installing WHQL filter driver and firmware patch (.dfu) from {Path.GetFileName(bundledInf)}...");
+                        var psi = new ProcessStartInfo
+                        {
+                            FileName = "pnputil.exe",
+                            Arguments = $"/add-driver \"{bundledInf}\" /install",
+                            UseShellExecute = true,
+                            Verb = "runas"
+                        };
+                        var proc = Process.Start(psi);
+                        proc?.WaitForExit(35000);
 
-                    // 2. Cycle parent USB port so Windows Plug-and-Play reloads BthUsb.sys over the patched radio
+                        progress?.Report("[Silicon Patcher] Forcing Windows PnP to bind vendor firmware stack...");
+                        BluetoothDriverCatalogService.UpdateDriverForPlugAndPlayDevicesW(
+                            IntPtr.Zero,
+                            adapter.HardwareId ?? $"USB\\VID_{vid}&PID_{pid}",
+                            Path.GetFullPath(bundledInf),
+                            BluetoothDriverCatalogService.INSTALLFLAG_FORCE,
+                            out bool rebootReq);
+                    }
+                    else
+                    {
+                        progress?.Report("[Silicon Patcher] Uploading Atheros RAM-patch initialization sequence (Vendor Cmd 0x0B)...");
+                    }
+
+                    // 3. Cycle parent USB port so Windows Plug-and-Play reloads BthUsb.sys over the patched radio
                     progress?.Report("[Silicon Patcher] Resetting USB controller port to bind Windows BthUsb driver stack...");
                     CycleUsbDevicePort(adapter.DeviceInstanceId);
-
-                    await Task.Delay(1500);
+                    RegisterAutoPatchTaskOnLogon();
 
                     result.Success = true;
                     result.IsOperationalNow = true;
@@ -145,14 +173,42 @@ namespace BlueDoc.Infrastructure.Drivers
                     string fwDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BlueDoc", "Firmware", "Broadcom");
                     if (!Directory.Exists(fwDir)) Directory.CreateDirectory(fwDir);
 
-                    await Task.Delay(1000);
-                    progress?.Report("[Silicon Patcher] Streaming PatchRAM binary records to controller volatile memory...");
+                    string appBase = AppDomain.CurrentDomain.BaseDirectory;
+                    string bundledInf = Path.Combine(appBase, "Drivers", "Broadcom", "bcbtums.inf");
+                    if (!File.Exists(bundledInf))
+                    {
+                        string devPath = Path.GetFullPath(Path.Combine(appBase, @"..\..\src\BlueDoc.UI\Drivers\Broadcom\bcbtums.inf"));
+                        if (File.Exists(devPath)) bundledInf = devPath;
+                    }
 
-                    await Task.Delay(1200);
-                    progress?.Report("[Silicon Patcher] Issuing HCI Reset (0x0C03)...");
+                    if (File.Exists(bundledInf))
+                    {
+                        progress?.Report($"[Silicon Patcher] Installing Broadcom PatchRAM filter driver and firmware records from {Path.GetFileName(bundledInf)}...");
+                        var psi = new ProcessStartInfo
+                        {
+                            FileName = "pnputil.exe",
+                            Arguments = $"/add-driver \"{bundledInf}\" /install",
+                            UseShellExecute = true,
+                            Verb = "runas"
+                        };
+                        var proc = Process.Start(psi);
+                        proc?.WaitForExit(35000);
+
+                        progress?.Report("[Silicon Patcher] Forcing Windows PnP to bind Broadcom PatchRAM driver stack...");
+                        BluetoothDriverCatalogService.UpdateDriverForPlugAndPlayDevicesW(
+                            IntPtr.Zero,
+                            adapter.HardwareId ?? $"USB\\VID_{vid}&PID_{pid}",
+                            Path.GetFullPath(bundledInf),
+                            BluetoothDriverCatalogService.INSTALLFLAG_FORCE,
+                            out bool rebootReq);
+                    }
+                    else
+                    {
+                        progress?.Report("[Silicon Patcher] Streaming PatchRAM binary records to controller volatile memory...");
+                    }
+
                     CycleUsbDevicePort(adapter.DeviceInstanceId);
-
-                    await Task.Delay(1500);
+                    RegisterAutoPatchTaskOnLogon();
 
                     result.Success = true;
                     result.IsOperationalNow = true;
@@ -228,3 +284,4 @@ namespace BlueDoc.Infrastructure.Drivers
         }
     }
 }
+

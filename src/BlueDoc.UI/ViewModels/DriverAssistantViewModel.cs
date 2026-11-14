@@ -194,6 +194,11 @@ namespace BlueDoc.UI.ViewModels
                     // 3. Match Driver Package
                     DriverPackage = await Task.Run(() => _driverService.GetMatchingDriverPackage(Adapter, SystemInfo));
                     StatusMessage = DriverPackage.UpdateStatusSummary;
+
+                    if (DriverPackage != null && DriverPackage.IsLocallyBundled && File.Exists(DriverPackage.LocalInfPath))
+                    {
+                        DownloadedFilePath = DriverPackage.LocalInfPath;
+                    }
                 }
                 else
                 {

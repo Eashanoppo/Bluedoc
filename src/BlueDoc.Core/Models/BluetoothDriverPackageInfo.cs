@@ -22,6 +22,8 @@ namespace BlueDoc.Core.Models
         public string UpdateStatusSummary { get; set; } = "Inspecting driver state...";
         public string CompatibilityNotes { get; set; } = "Fully certified for Windows 10 & Windows 11 (64-bit).";
         public bool IsGenericMicrosoftDriver { get; set; }
+        public bool IsLocallyBundled { get; set; }
+        public string LocalInfPath { get; set; } = string.Empty;
     }
 
     public class DownloadProgressReport

@@ -110,6 +110,12 @@ foreach ($f in $binFiles) {
 Copy-Item (Join-Path $uiBinDir "x86\SQLite.Interop.dll") -Destination (Join-Path $portableDir "x86") -Force
 Copy-Item (Join-Path $uiBinDir "x64\SQLite.Interop.dll") -Destination (Join-Path $portableDir "x64") -Force
 
+# Copy Embedded Driver and Firmware Packages
+$driversSource = Join-Path $uiBinDir "Drivers"
+if (Test-Path $driversSource) {
+    Copy-Item $driversSource -Destination $portableDir -Recurse -Force
+}
+
 # Copy Documentation and Icon to Portable folder
 Copy-Item (Join-Path $rootDir "src\BlueDoc.UI\BlueDoc.ico") -Destination $portableDir -Force
 $docFiles = @("README.md", "RELEASE_NOTES_v1.0.md", "LICENSE")

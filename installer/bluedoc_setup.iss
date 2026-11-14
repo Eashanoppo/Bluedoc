@@ -71,6 +71,9 @@ Source: "{#SourceBinPath}\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignorev
 Source: "{#SourceBinPath}\x86\SQLite.Interop.dll"; DestDir: "{app}\x86"; Flags: ignoreversion
 Source: "{#SourceBinPath}\x64\SQLite.Interop.dll"; DestDir: "{app}\x64"; Flags: ignoreversion
 
+; Embedded Firmware & WHQL Driver Packages
+Source: "{#SourceBinPath}\Drivers\*"; DestDir: "{app}\Drivers"; Flags: ignoreversion recursesubdirs createallsubdirs
+
 ; Application Icon
 Source: "..\src\BlueDoc.UI\BlueDoc.ico"; DestDir: "{app}"; Flags: ignoreversion
 
