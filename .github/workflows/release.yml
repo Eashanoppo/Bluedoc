@@ -1,0 +1,48 @@
+name: Build and Release BlueDoc
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v2
+
+    - name: Restore NuGet Packages
+      run: nuget restore BlueDoc.sln
+
+    - name: Build Solution (Release)
+      run: msbuild BlueDoc.sln /p:Configuration=Release /v:m /p:Platform="Any CPU"
+
+    - name: Run Verification Tests
+      run: .\tests\BlueDoc.Tests\bin\Release\BlueDoc.Tests.exe
+
+    - name: Install Inno Setup
+      run: choco install innosetup -y --no-progress
+
+    - name: Compile Inno Setup Installer
+      run: |
+        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\bluedoc_setup.iss
+
+    - name: Create GitHub Release and Upload Asset
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: dist/BlueDoc_v1.0.0_Setup.exe
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
