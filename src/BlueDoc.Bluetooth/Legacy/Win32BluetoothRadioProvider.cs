@@ -178,7 +178,7 @@ namespace BlueDoc.Bluetooth.Legacy
 
                                 if (dictionary.TryGetValue(formattedAddress, out var existing))
                                 {
-                                    existing.IsConnected = existing.IsConnected || devInfo.fConnected;
+                                    existing.IsConnected = devInfo.fConnected;
                                     existing.IsPaired = existing.IsPaired || devInfo.fAuthenticated;
                                     existing.IsRemembered = existing.IsRemembered || devInfo.fRemembered;
                                     if (!string.IsNullOrWhiteSpace(devInfo.szName)) existing.DeviceName = devInfo.szName;
@@ -284,7 +284,7 @@ namespace BlueDoc.Bluetooth.Legacy
 
                                 if (discovered.TryGetValue(formattedAddress, out var existing))
                                 {
-                                    existing.IsConnected = existing.IsConnected || devInfo.fConnected;
+                                    existing.IsConnected = devInfo.fConnected;
                                     existing.IsPaired = existing.IsPaired || devInfo.fAuthenticated;
                                     existing.IsRemembered = existing.IsRemembered || devInfo.fRemembered;
                                     if (!string.IsNullOrWhiteSpace(devInfo.szName)) existing.DeviceName = devInfo.szName;

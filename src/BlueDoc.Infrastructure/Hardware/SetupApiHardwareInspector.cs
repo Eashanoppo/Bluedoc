@@ -106,17 +106,23 @@ namespace BlueDoc.Infrastructure.Hardware
                 return false;
             }
 
-            // Must match Bluetooth bus/hardware patterns
             string id = adapter.DeviceInstanceId ?? "";
             string desc = adapter.DeviceDescription ?? "";
             string name = adapter.FriendlyName ?? "";
 
+            // Discard peripheral endpoint enumerator child nodes (e.g. BTHENUM audio endpoints, BTHLE GATT devices)
+            if (id.StartsWith("BTHENUM\\", StringComparison.OrdinalIgnoreCase) ||
+                id.StartsWith("BTHLE\\", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            // Must match physical Bluetooth controller hardware bus patterns
             return id.StartsWith("USB\\", StringComparison.OrdinalIgnoreCase) ||
                    id.StartsWith("PCI\\", StringComparison.OrdinalIgnoreCase) ||
                    id.StartsWith("BTH\\", StringComparison.OrdinalIgnoreCase) ||
-                   id.StartsWith("BTHENUM\\", StringComparison.OrdinalIgnoreCase) ||
-                   desc.IndexOf("Bluetooth", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                   name.IndexOf("Bluetooth", StringComparison.OrdinalIgnoreCase) >= 0;
+                   desc.IndexOf("Bluetooth Adapter", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   name.IndexOf("Bluetooth Adapter", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         public BluetoothAdapterInfo GetPrimaryAdapter()

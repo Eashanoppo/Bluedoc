@@ -132,6 +132,12 @@ namespace BlueDoc.Infrastructure.Hardware
         {
             try
             {
+                try
+                {
+                    await Radio.RequestAccessAsync();
+                }
+                catch { }
+
                 var radios = await Radio.GetRadiosAsync();
                 var btRadio = radios.FirstOrDefault(r => r.Kind == RadioKind.Bluetooth);
                 if (btRadio != null)

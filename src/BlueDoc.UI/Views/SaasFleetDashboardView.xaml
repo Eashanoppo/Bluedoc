@@ -244,7 +244,7 @@
 
             <!-- ══ CREDENTIAL CONFIGURATION & TENANT ONBOARDING ════════════════ -->
             <Expander Header="⚙ Cloud Connection &amp; Enterprise Tenant Setup"
-                      IsExpanded="{Binding IsConfigured, Converter={StaticResource InverseBooleanConverter}}">
+                      IsExpanded="{Binding IsConfigured, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}">
                 <Border Background="{DynamicResource SurfaceCardBrush}"
                         BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,8,0,0">

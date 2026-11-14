@@ -418,7 +418,6 @@
                                        Margin="0,0,10,0" />
                             <ToggleButton Style="{StaticResource MacOSToggleSwitch}"
                                           IsChecked="{Binding IsRadioOn, Mode=TwoWay}"
-                                          Command="{Binding ToggleRadioPowerCommand}"
                                           ToolTip="Toggle Bluetooth Radio Power" />
                         </StackPanel>
 

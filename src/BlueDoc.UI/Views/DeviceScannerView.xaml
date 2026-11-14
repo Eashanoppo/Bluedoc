@@ -369,11 +369,11 @@
                                             <Style TargetType="Border">
                                                 <Setter Property="Background" Value="{DynamicResource BorderStrongBrush}" />
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsConnected}" Value="True">
-                                                        <Setter Property="Background" Value="{DynamicResource SuccessBrush}" />
-                                                    </DataTrigger>
                                                     <DataTrigger Binding="{Binding IsPaired}" Value="True">
                                                         <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource SuccessBrush}" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -425,13 +425,13 @@
                                                     <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
                                                     <Setter Property="BorderThickness" Value="1" />
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsConnected}" Value="True">
-                                                            <Setter Property="Background" Value="{DynamicResource SuccessSubtleBrush}" />
-                                                            <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
-                                                        </DataTrigger>
                                                         <DataTrigger Binding="{Binding IsPaired}" Value="True">
                                                             <Setter Property="Background" Value="{DynamicResource AccentSubtleBrush}" />
                                                             <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource SuccessSubtleBrush}" />
+                                                            <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -441,11 +441,11 @@
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
-                                                                <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
-                                                            </DataTrigger>
                                                             <DataTrigger Binding="{Binding IsPaired}" Value="True">
                                                                 <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                                <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -524,13 +524,13 @@
                                                 <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
                                                 <Setter Property="BorderThickness" Value="1" />
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding SelectedDevice.IsConnected}" Value="True">
-                                                        <Setter Property="Background" Value="{DynamicResource SuccessSubtleBrush}" />
-                                                        <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
-                                                    </DataTrigger>
                                                     <DataTrigger Binding="{Binding SelectedDevice.IsPaired}" Value="True">
                                                         <Setter Property="Background" Value="{DynamicResource AccentSubtleBrush}" />
                                                         <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedDevice.IsConnected}" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource SuccessSubtleBrush}" />
+                                                        <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -540,11 +540,11 @@
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding SelectedDevice.IsConnected}" Value="True">
-                                                            <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
-                                                        </DataTrigger>
                                                         <DataTrigger Binding="{Binding SelectedDevice.IsPaired}" Value="True">
                                                             <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding SelectedDevice.IsConnected}" Value="True">
+                                                            <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>

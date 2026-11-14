@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using BlueDoc.Core.Enums;
 using BlueDoc.Core.Models;
 using BlueDoc.Infrastructure.Native;
+using BlueDoc.Infrastructure.Platform;
 
 namespace BlueDoc.Infrastructure.Hardware
 {
@@ -66,26 +69,34 @@ namespace BlueDoc.Infrastructure.Hardware
                         continue;
                     }
 
-                    // Check dev node status
-                    uint statusFlags = 0;
-                    uint problemCode = 0;
-                    uint cr = CfgMgr32Native.CM_Get_DevNode_Status(out statusFlags, out problemCode, devInfoData.DevInst, 0);
-
-                    bool isConnected = false;
-                    if (cr == CfgMgr32Native.CR_SUCCESS)
-                    {
-                        if ((statusFlags & CfgMgr32Native.DN_STARTED) != 0 && (statusFlags & CfgMgr32Native.DN_HAS_PROBLEM) == 0)
-                        {
-                            isConnected = true;
-                        }
-                    }
-
                     ulong rawAddress = 0;
                     try
                     {
                         rawAddress = Convert.ToUInt64(rawAddressHex, 16);
                     }
                     catch { }
+
+                    // Determine real physical connection state (not just whether the PnP driver is loaded)
+                    bool isConnected = false;
+                    if (rawAddress != 0)
+                    {
+                        if (busKind == "BTHENUM")
+                        {
+                            var bthInfo = new BluetoothNative.BLUETOOTH_DEVICE_INFO
+                            {
+                                dwSize = (uint)Marshal.SizeOf(typeof(BluetoothNative.BLUETOOTH_DEVICE_INFO)),
+                                Address = rawAddress
+                            };
+                            if (BluetoothNative.BluetoothGetDeviceInfo(IntPtr.Zero, ref bthInfo) == 0)
+                            {
+                                isConnected = bthInfo.fConnected;
+                            }
+                        }
+                        else if (busKind == "BTHLE" && OperatingSystemInspector.IsWindows10OrGreater())
+                        {
+                            isConnected = CheckBleDeviceConnectedWinRt(rawAddress);
+                        }
+                    }
 
                     var device = new BluetoothDeviceInfo
                     {
@@ -139,6 +150,25 @@ namespace BlueDoc.Infrastructure.Hardware
                 return Encoding.Unicode.GetString(buffer, 0, (int)reqSize).TrimEnd('\0');
             }
             return string.Empty;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool CheckBleDeviceConnectedWinRt(ulong rawAddress)
+        {
+            try
+            {
+                var task = Task.Run(async () =>
+                {
+                    var bleDev = await Windows.Devices.Bluetooth.BluetoothLEDevice.FromBluetoothAddressAsync(rawAddress);
+                    return bleDev != null && bleDev.ConnectionStatus == Windows.Devices.Bluetooth.BluetoothConnectionStatus.Connected;
+                });
+                if (task.Wait(300))
+                {
+                    return task.Result;
+                }
+            }
+            catch { }
+            return false;
         }
     }
 }

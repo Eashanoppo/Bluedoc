@@ -75,11 +75,11 @@ namespace BlueDoc.UI.ViewModels
             get => _isDarkTheme;
             set
             {
-                if (SetProperty(ref _isDarkTheme, value) && value)
+                if (SetProperty(ref _isDarkTheme, value))
                 {
-                    _isLightTheme = false;
+                    _isLightTheme = !value;
                     OnPropertyChanged(nameof(IsLightTheme));
-                    ThemeManager.SetTheme(AppTheme.Dark);
+                    ThemeManager.SetTheme(value ? AppTheme.Dark : AppTheme.Light);
                 }
             }
         }
@@ -89,11 +89,11 @@ namespace BlueDoc.UI.ViewModels
             get => _isLightTheme;
             set
             {
-                if (SetProperty(ref _isLightTheme, value) && value)
+                if (SetProperty(ref _isLightTheme, value))
                 {
-                    _isDarkTheme = false;
+                    _isDarkTheme = !value;
                     OnPropertyChanged(nameof(IsDarkTheme));
-                    ThemeManager.SetTheme(AppTheme.Light);
+                    ThemeManager.SetTheme(value ? AppTheme.Light : AppTheme.Dark);
                 }
             }
         }
@@ -118,6 +118,7 @@ namespace BlueDoc.UI.ViewModels
                 if (SetProperty(ref _isRadioOn, value))
                 {
                     OnPropertyChanged(nameof(RadioStateDisplay));
+                    _ = UpdateRadioPowerAsync(value);
                 }
             }
         }
@@ -248,31 +249,18 @@ namespace BlueDoc.UI.ViewModels
                 }
             });
 
-            ToggleRadioPowerCommand = new RelayCommand(async () =>
+            ToggleRadioPowerCommand = new RelayCommand(() =>
             {
-                // In WPF, the TwoWay IsChecked binding has already updated IsRadioOn to the desired state.
-                bool targetState = IsRadioOn;
-                string target = targetState ? "ON" : "OFF";
-                var op = Notifications.ShowRunning("Bluetooth Radio", $"Switching radio power {target} via Hardware Bus...");
-                try
-                {
-                    await DashboardVM.SetRadioPowerAsync(targetState);
-                    IsRadioOn = DashboardVM.IsRadioOn;
-                    PrimaryAdapter = DashboardVM.PrimaryAdapter;
-                    op.CompleteSuccess("Radio Power Updated", $"Bluetooth controller radio is now {RadioStateDisplay}.");
-                }
-                catch (Exception ex)
-                {
-                    IsRadioOn = DashboardVM.IsRadioOn;
-                    op.CompleteError("Radio Power Error", ex.Message);
-                }
+                IsRadioOn = !IsRadioOn;
             });
 
             DashboardVM.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(DashboardVM.IsRadioOn))
+                if (e.PropertyName == nameof(DashboardVM.IsRadioOn) && !_isUpdatingRadioPower)
                 {
-                    IsRadioOn = DashboardVM.IsRadioOn;
+                    _isRadioOn = DashboardVM.IsRadioOn;
+                    OnPropertyChanged(nameof(IsRadioOn));
+                    OnPropertyChanged(nameof(RadioStateDisplay));
                 }
                 if (e.PropertyName == nameof(DashboardVM.PrimaryAdapter))
                 {
@@ -282,6 +270,39 @@ namespace BlueDoc.UI.ViewModels
 
             // Start on Dashboard
             CurrentViewModel = DashboardVM;
+        }
+
+        private bool _isUpdatingRadioPower = false;
+        private async Task UpdateRadioPowerAsync(bool targetState)
+        {
+            if (_isUpdatingRadioPower) return;
+            _isUpdatingRadioPower = true;
+
+            string target = targetState ? "ON" : "OFF";
+            var op = Notifications.ShowRunning("Bluetooth Radio", $"Switching radio power {target} via Hardware Bus...");
+            try
+            {
+                await DashboardVM.SetRadioPowerAsync(targetState);
+                if (_isRadioOn != DashboardVM.IsRadioOn)
+                {
+                    _isRadioOn = DashboardVM.IsRadioOn;
+                    OnPropertyChanged(nameof(IsRadioOn));
+                    OnPropertyChanged(nameof(RadioStateDisplay));
+                }
+                PrimaryAdapter = DashboardVM.PrimaryAdapter;
+                op.CompleteSuccess("Radio Power Updated", $"Bluetooth controller radio is now {RadioStateDisplay}.");
+            }
+            catch (Exception ex)
+            {
+                _isRadioOn = DashboardVM.IsRadioOn;
+                OnPropertyChanged(nameof(IsRadioOn));
+                OnPropertyChanged(nameof(RadioStateDisplay));
+                op.CompleteError("Radio Power Error", ex.Message);
+            }
+            finally
+            {
+                _isUpdatingRadioPower = false;
+            }
         }
 
         public async Task InitializeAsync()

@@ -183,7 +183,7 @@ namespace BlueDoc.Application.Services
             {
                 if (_discoveredMaster.TryGetValue(classicDev.BluetoothAddress, out target))
                 {
-                    target.IsConnected = target.IsConnected || classicDev.IsConnected;
+                    target.IsConnected = classicDev.IsConnected;
                     target.IsPaired = target.IsPaired || classicDev.IsPaired;
                     target.IsRemembered = target.IsRemembered || classicDev.IsRemembered;
                     if (!string.IsNullOrWhiteSpace(classicDev.DeviceName)) target.DeviceName = classicDev.DeviceName;
