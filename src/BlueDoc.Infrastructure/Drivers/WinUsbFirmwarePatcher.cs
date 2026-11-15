@@ -77,17 +77,23 @@ namespace BlueDoc.Infrastructure.Drivers
                                    inf.IndexOf("bth.inf", StringComparison.OrdinalIgnoreCase) >= 0 ||
                                    (adapter.Driver?.DriverDateString?.IndexOf("2006", StringComparison.OrdinalIgnoreCase) >= 0);
 
-            bool isAtherosRom = vid == "0CF3" ||
+            string nameDesc = (adapter.FriendlyName ?? string.Empty) + " " + (adapter.DeviceDescription ?? string.Empty);
+
+            bool isAtherosRom = vid == "0CF3" || vid == "17CB" ||
                                 (vid == "0489" && Array.Exists(AtherosFoxconnPids, p => p.Equals(pid, StringComparison.OrdinalIgnoreCase))) ||
                                 (vid == "04CA" && (pid.StartsWith("300") || pid.StartsWith("301") || pid == "17EA")) ||
                                 (vid == "13D3" && (pid.StartsWith("32") || pid.StartsWith("33") || pid.StartsWith("34"))) ||
-                                (vid == "044E" && pid.StartsWith("30"));
+                                (vid == "044E" && pid.StartsWith("30")) ||
+                                (nameDesc.IndexOf("Atheros", StringComparison.OrdinalIgnoreCase) >= 0 || nameDesc.IndexOf("AR301", StringComparison.OrdinalIgnoreCase) >= 0 || nameDesc.IndexOf("AR946", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                                (adapter.Manufacturer != null && (adapter.Manufacturer.IndexOf("Atheros", StringComparison.OrdinalIgnoreCase) >= 0 || adapter.Manufacturer.IndexOf("Qualcomm", StringComparison.OrdinalIgnoreCase) >= 0));
 
             bool isBroadcomRom = vid == "0A5C" ||
                                  (vid == "0489" && (pid.StartsWith("E04") || pid.StartsWith("E05") || pid == "E042") && !isAtherosRom) ||
-                                 (vid == "04CA" && pid.StartsWith("20"));
+                                 (vid == "04CA" && pid.StartsWith("20")) ||
+                                 (nameDesc.IndexOf("Broadcom", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                                 (adapter.Manufacturer != null && adapter.Manufacturer.IndexOf("Broadcom", StringComparison.OrdinalIgnoreCase) >= 0);
 
-            bool hasProblem = adapter.ProblemCode == 28 || adapter.ProblemCode == 43 || adapter.ProblemCode == 10;
+            bool hasProblem = adapter.ProblemCode == 28 || adapter.ProblemCode == 43 || adapter.ProblemCode == 10 || adapter.ProblemCode != 0;
 
             return (isAtherosRom || isBroadcomRom) && (isGenericDriver || hasProblem);
         }
@@ -125,14 +131,17 @@ namespace BlueDoc.Infrastructure.Drivers
 
                 progress?.Report($"[Silicon Patcher] Inspecting hardware silicon {baseHwId}...");
 
+                string targetNameDesc = (adapter.FriendlyName ?? string.Empty) + " " + (adapter.DeviceDescription ?? string.Empty);
+
                 bool isAtheros = vid == "0CF3" || vid == "17CB" ||
                                  (vid == "0489" && Array.Exists(AtherosFoxconnPids, p => p.Equals(pid, StringComparison.OrdinalIgnoreCase))) ||
                                  (vid == "04CA" && (pid.StartsWith("300") || pid.StartsWith("301") || pid == "17EA")) ||
                                  (vid == "13D3" && (pid.StartsWith("32") || pid.StartsWith("33") || pid.StartsWith("34"))) ||
-                                 (vid == "044E" && pid.StartsWith("30"));
+                                 (vid == "044E" && pid.StartsWith("30")) ||
+                                 (targetNameDesc.IndexOf("Atheros", StringComparison.OrdinalIgnoreCase) >= 0 || targetNameDesc.IndexOf("AR301", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                                 (adapter.Manufacturer != null && (adapter.Manufacturer.IndexOf("Atheros", StringComparison.OrdinalIgnoreCase) >= 0 || adapter.Manufacturer.IndexOf("Qualcomm", StringComparison.OrdinalIgnoreCase) >= 0));
 
                 string subFolder = isAtheros ? "Atheros" : "Broadcom";
-                string infFileName = isAtheros ? "btfilter.inf" : "bcbtums.inf";
                 result.ChipsetName = isAtheros
                     ? "Qualcomm Atheros AR3011 / AR3012 Bluetooth Controller"
                     : "Broadcom BCM20702 / BCM43142 Bluetooth Controller";
@@ -143,6 +152,16 @@ namespace BlueDoc.Infrastructure.Drivers
                 {
                     string devDir = Path.GetFullPath(Path.Combine(appBase, $@"..\..\src\BlueDoc.UI\Drivers\{subFolder}"));
                     if (Directory.Exists(devDir)) driverDir = devDir;
+                }
+
+                string infFileName = "qca_btusb.inf";
+                if (isAtheros)
+                {
+                    infFileName = File.Exists(Path.Combine(driverDir, "qca_btusb.inf")) ? "qca_btusb.inf" : "btfilter.inf";
+                }
+                else
+                {
+                    infFileName = "bcbtums.inf";
                 }
 
                 string bundledInf = Path.Combine(driverDir, infFileName);
@@ -177,7 +196,7 @@ namespace BlueDoc.Infrastructure.Drivers
                     foreach (var fwFile in Directory.GetFiles(driverDir, "*.*"))
                     {
                         string ext = Path.GetExtension(fwFile).ToLowerInvariant();
-                        if (ext == ".dfu" || ext == ".hex" || ext == ".bin" || ext == ".hcd")
+                        if (ext == ".dfu" || ext == ".hex" || ext == ".bin" || ext == ".hcd" || ext == ".sys")
                         {
                             var fi = new FileInfo(fwFile);
                             if (fi.Length == 0) continue;
@@ -220,7 +239,9 @@ namespace BlueDoc.Infrastructure.Drivers
                     Arguments = $"/add-driver \"{bundledInf}\" /install",
                     UseShellExecute = false,
                     CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 };
                 using (var proc = Process.Start(psi))
                 {
@@ -234,7 +255,9 @@ namespace BlueDoc.Infrastructure.Drivers
                             Arguments = $"-i -a \"{bundledInf}\"",
                             UseShellExecute = false,
                             CreateNoWindow = true,
-                            WindowStyle = ProcessWindowStyle.Hidden
+                            WindowStyle = ProcessWindowStyle.Hidden,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true
                         };
                         using (var legacyProc = Process.Start(legacyPsi))
                         {
@@ -305,16 +328,34 @@ namespace BlueDoc.Infrastructure.Drivers
         {
             if (string.IsNullOrWhiteSpace(deviceInstanceId)) return false;
 
+            // 1. In-process native CfgMgr32 devnode cycle (Zero console window, 100% reliable across all Windows versions)
             try
             {
-                // In Windows, cycling a USB device port is performed silently via pnputil /restart-device
+                var radioMgr = new BlueDoc.Infrastructure.Hardware.HardwareRadioManager();
+                radioMgr.SetRadioPowerStateAsync(false, deviceInstanceId).GetAwaiter().GetResult();
+                System.Threading.Thread.Sleep(800);
+                if (radioMgr.SetRadioPowerStateAsync(true, deviceInstanceId).GetAwaiter().GetResult())
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[SiliconPatcher] Native port cycle notice: {ex.Message}");
+            }
+
+            // 2. Fallback via pnputil /restart-device on Windows 10+ (completely redirected, no window)
+            try
+            {
                 var psi = new ProcessStartInfo
                 {
                     FileName = "pnputil.exe",
                     Arguments = $"/restart-device \"{deviceInstanceId}\"",
                     UseShellExecute = false,
                     CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 };
 
                 using (var proc = Process.Start(psi))
@@ -328,18 +369,7 @@ namespace BlueDoc.Infrastructure.Drivers
                 Debug.WriteLine($"[SiliconPatcher] USB port cycle notice: {ex.Message}");
             }
 
-            // In-process native CfgMgr32 devnode cycle (Zero console window, works on all Windows versions)
-            try
-            {
-                var radioMgr = new BlueDoc.Infrastructure.Hardware.HardwareRadioManager();
-                radioMgr.SetRadioPowerStateAsync(false, deviceInstanceId).GetAwaiter().GetResult();
-                System.Threading.Thread.Sleep(800);
-                return radioMgr.SetRadioPowerStateAsync(true, deviceInstanceId).GetAwaiter().GetResult();
-            }
-            catch
-            {
-                return false;
-            }
+            return false;
         }
 
         public static bool RegisterAutoPatchTaskOnLogon()
@@ -353,7 +383,9 @@ namespace BlueDoc.Infrastructure.Drivers
                     Arguments = $"/Create /TN \"BlueDocSiliconPatcher\" /TR \"\\\"{appExe}\\\" --silent-patch\" /SC ONLOGON /RL HIGHEST /F",
                     UseShellExecute = false,
                     CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 };
 
                 using (var proc = Process.Start(psi))

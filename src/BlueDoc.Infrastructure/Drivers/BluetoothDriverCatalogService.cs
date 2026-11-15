@@ -131,27 +131,31 @@ namespace BlueDoc.Infrastructure.Drivers
 
                 case "0CF3": // Qualcomm / Atheros
                 case "17CB":
-                    info.ChipsetFamily = "Qualcomm Atheros Bluetooth Suite (AR3011 / AR3012 / QCA61x4 / QCA9377)";
+                    info.ChipsetFamily = "Qualcomm Atheros Bluetooth Suite (AR3011 / AR3012 / AR9462 / QCA9565)";
                     info.PackageName = "Qualcomm Atheros Bluetooth Filter & RAM-Patch Driver Package";
-                    info.RecommendedVersion = "10.0.3.21";
-                    info.ReleaseDate = "2019-07-16";
-                    info.FileSizeFormatted = "258 KB";
-                    info.FileSizeBytes = 258466;
+                    info.RecommendedVersion = "10.0.1.15";
+                    info.ReleaseDate = "2017-06-13";
+                    info.FileSizeFormatted = "1.2 MB";
+                    info.FileSizeBytes = 1253872;
                     info.VendorPortalUrl = "https://www.qualcomm.com/products/features/bluetooth";
-                    info.DownloadUrl = "https://catalog.s.download.windowsupdate.com/c/msdownload/update/driver/drvs/2019/10/893f18db-5b81-47e5-81fe-212dd3dc5f6b_ff141b862be949142063602aadc51e804f2d7316.cab";
-                    info.ReleaseNotes = "Official Qualcomm Atheros AR3011/AR3012/QCA61x4 firmware and filter driver (btfilter.sys) for Sony VAIO SVE, HP, and Acer.";
+                    info.DownloadUrl = "https://catalog.s.download.windowsupdate.com/d/msdownload/update/driver/drvs/2017/08/e452f20f-2964-46aa-830d-b6731a8f4883_25208064d7ac4f1228654e8080fce9c716980924.cab";
+                    info.ReleaseNotes = "Official Qualcomm Atheros AR3011/AR3012/QCA9565 firmware and filter driver (qca_btusb.inf) for Sony VAIO SVE, HP, Asus, and Acer.";
 
-                    string localAtherosInf = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Drivers", "Atheros", "btfilter.inf");
+                    string localAtherosInf = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Drivers", "Atheros", "qca_btusb.inf");
                     if (!File.Exists(localAtherosInf))
                     {
-                        string devPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\src\BlueDoc.UI\Drivers\Atheros\btfilter.inf"));
+                        localAtherosInf = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Drivers", "Atheros", "btfilter.inf");
+                    }
+                    if (!File.Exists(localAtherosInf))
+                    {
+                        string devPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\src\BlueDoc.UI\Drivers\Atheros\qca_btusb.inf"));
                         if (File.Exists(devPath)) localAtherosInf = devPath;
                     }
                     if (File.Exists(localAtherosInf))
                     {
                         info.IsLocallyBundled = true;
                         info.LocalInfPath = localAtherosInf;
-                        info.FileSizeFormatted = "258 KB (Bundled Offline)";
+                        info.FileSizeFormatted = "1.2 MB (Bundled Offline)";
                     }
                     break;
 
@@ -371,7 +375,9 @@ namespace BlueDoc.Infrastructure.Drivers
                             Arguments = $"/add-driver \"{infToInstall}\" /install",
                             UseShellExecute = false,
                             CreateNoWindow = true,
-                            WindowStyle = ProcessWindowStyle.Hidden
+                            WindowStyle = ProcessWindowStyle.Hidden,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true
                         };
                         var proc = Process.Start(psi);
                         proc?.WaitForExit(35000);
@@ -385,7 +391,9 @@ namespace BlueDoc.Infrastructure.Drivers
                                 Arguments = $"-i -a \"{infToInstall}\"",
                                 UseShellExecute = false,
                                 CreateNoWindow = true,
-                                WindowStyle = ProcessWindowStyle.Hidden
+                                WindowStyle = ProcessWindowStyle.Hidden,
+                                RedirectStandardOutput = true,
+                                RedirectStandardError = true
                             };
                             var legacyProc = Process.Start(legacyPsi);
                             legacyProc?.WaitForExit(35000);
@@ -489,7 +497,10 @@ namespace BlueDoc.Infrastructure.Drivers
                         FileName = "pnputil.exe",
                         Arguments = $"/export-driver * \"{targetDir}\"",
                         UseShellExecute = false,
-                        CreateNoWindow = true
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
                     };
                     var proc = Process.Start(psi);
                     proc?.WaitForExit(25000);

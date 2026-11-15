@@ -108,7 +108,25 @@ namespace BlueDoc.Infrastructure.Hardware
                     StopBluetoothService();
                 }
 
-                // 3. Fallback for Windows 7 or if WinRT radio control is not supported
+                // 3. Fallback: Silicon Provisioning (if controller needs firmware or has problem code 10/43/28)
+                if (enable && !success)
+                {
+                    var primary = _inspector.GetPrimaryAdapter();
+                    if (BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.IsSiliconUnpatched(primary))
+                    {
+                        var patchRes = await BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.ProvisionAndPatchSiliconAsync(primary);
+                        if (patchRes.Success)
+                        {
+                            success = true;
+                            if (OperatingSystemInspector.IsWindows10OrGreater())
+                            {
+                                await SetWinRtRadioStateInternalAsync(true);
+                            }
+                        }
+                    }
+                }
+
+                // 4. Fallback for Windows 7 or if WinRT radio control is not supported
                 if (!success)
                 {
                     var primary = _inspector.GetPrimaryAdapter();
@@ -261,6 +279,22 @@ namespace BlueDoc.Infrastructure.Hardware
         {
             try
             {
+                try
+                {
+                    using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\bthserv", true))
+                    {
+                        if (key != null)
+                        {
+                            object val = key.GetValue("Start");
+                            if (val is int startVal && startVal == 4) // 4 = Disabled
+                            {
+                                key.SetValue("Start", 2, Microsoft.Win32.RegistryValueKind.DWord); // 2 = Auto
+                            }
+                        }
+                    }
+                }
+                catch { }
+
                 using (var sc = new ServiceController("bthserv"))
                 {
                     if (sc.Status != ServiceControllerStatus.Running && sc.Status != ServiceControllerStatus.StartPending)
