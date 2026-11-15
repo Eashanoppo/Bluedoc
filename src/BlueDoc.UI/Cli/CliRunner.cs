@@ -62,6 +62,35 @@ namespace BlueDoc.UI.Cli
 
         public static async Task<int> RunAsync(string[] args)
         {
+            if (args == null || args.Length == 0)
+            {
+                InitializeConsole();
+                PrintHelp();
+                return 4;
+            }
+
+            var command = args[0].TrimStart('-', '/').ToLowerInvariant();
+
+            // Headless execution: Never allocate console or print banners for silent operations
+            if (command == "silent-patch")
+            {
+                try
+                {
+                    var inspector = new BlueDoc.Infrastructure.Hardware.SetupApiHardwareInspector();
+                    var primary = inspector.GetPrimaryAdapter();
+                    if (BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.IsSiliconUnpatched(primary))
+                    {
+                        var res = await BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.ProvisionAndPatchSiliconAsync(primary);
+                        return res.Success ? 0 : 2;
+                    }
+                    return 0;
+                }
+                catch
+                {
+                    return 1;
+                }
+            }
+
             InitializeConsole();
 
             Console.WriteLine();
@@ -70,14 +99,6 @@ namespace BlueDoc.UI.Cli
             Console.WriteLine("  Product: BlueDoc v1.0.0 | UNLEFT LLC");
             Console.WriteLine("  Lead Architect & Developer: Golam Morshed Eashan");
             Console.WriteLine("===============================================================");
-
-            if (args == null || args.Length == 0)
-            {
-                PrintHelp();
-                return 4;
-            }
-
-            var command = args[0].TrimStart('-', '/').ToLowerInvariant();
 
             try
             {

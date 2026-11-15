@@ -177,19 +177,35 @@ namespace BlueDoc.Infrastructure.Drivers
                     Debug.WriteLine($"[Silicon Patcher] Firmware staging warning: {ex.Message}");
                 }
 
-                // 2. Stage INF in Driver Store via pnputil
+                // 2. Stage INF in Driver Store via pnputil (completely silent without console popups)
                 progress?.Report($"[Silicon Patcher] Staging WHQL driver '{infFileName}' via PnPUtil...");
                 var psi = new ProcessStartInfo
                 {
                     FileName = "pnputil.exe",
                     Arguments = $"/add-driver \"{bundledInf}\" /install",
-                    UseShellExecute = true,
-                    Verb = "runas",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden
                 };
                 using (var proc = Process.Start(psi))
                 {
                     proc?.WaitForExit(35000);
+                    // Legacy Windows fallback (Windows 7 / 8 / early Windows 10 syntax)
+                    if (proc?.ExitCode != 0)
+                    {
+                        var legacyPsi = new ProcessStartInfo
+                        {
+                            FileName = "pnputil.exe",
+                            Arguments = $"-i -a \"{bundledInf}\"",
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                            WindowStyle = ProcessWindowStyle.Hidden
+                        };
+                        using (var legacyProc = Process.Start(legacyPsi))
+                        {
+                            legacyProc?.WaitForExit(35000);
+                        }
+                    }
                 }
 
                 // 3. Force PnP to replace generic Microsoft bth.inf with vendor filter driver using clean baseHwId
@@ -217,24 +233,37 @@ namespace BlueDoc.Infrastructure.Drivers
 
             try
             {
-                // In Windows, cycling a USB device port is performed by restarting the PnP device node via pnputil / restart-device
+                // In Windows, cycling a USB device port is performed silently via pnputil /restart-device
                 var psi = new ProcessStartInfo
                 {
                     FileName = "pnputil.exe",
                     Arguments = $"/restart-device \"{deviceInstanceId}\"",
-                    UseShellExecute = true,
-                    Verb = "runas"
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
                 };
 
                 using (var proc = Process.Start(psi))
                 {
                     proc?.WaitForExit(10000);
-                    return proc?.ExitCode == 0;
+                    if (proc?.ExitCode == 0) return true;
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[SiliconPatcher] USB port cycle notice: {ex.Message}");
+            }
+
+            // In-process native CfgMgr32 devnode cycle (Zero console window, works on all Windows versions)
+            try
+            {
+                var radioMgr = new BlueDoc.Infrastructure.Hardware.HardwareRadioManager();
+                radioMgr.SetRadioPowerStateAsync(false, deviceInstanceId).GetAwaiter().GetResult();
+                System.Threading.Thread.Sleep(800);
+                return radioMgr.SetRadioPowerStateAsync(true, deviceInstanceId).GetAwaiter().GetResult();
+            }
+            catch
+            {
                 return false;
             }
         }
@@ -248,8 +277,9 @@ namespace BlueDoc.Infrastructure.Drivers
                 {
                     FileName = "schtasks.exe",
                     Arguments = $"/Create /TN \"BlueDocSiliconPatcher\" /TR \"\\\"{appExe}\\\" --silent-patch\" /SC ONLOGON /RL HIGHEST /F",
-                    UseShellExecute = true,
-                    Verb = "runas"
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
                 };
 
                 using (var proc = Process.Start(psi))

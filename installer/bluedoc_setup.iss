@@ -89,8 +89,8 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 Type: filesandordirs; Name: "{localappdata}\UNLEFT\BlueDoc"
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Parameters: "--silent-patch"; Flags: runhidden waituntilterminated
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--silent-patch"; Flags: runhidden waituntilterminated runascurrentuser
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser
 
 [Code]
 // Verify .NET Framework 4.7.1 or higher is present (Release key >= 461308)

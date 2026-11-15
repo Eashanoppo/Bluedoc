@@ -464,8 +464,8 @@ namespace BlueDoc.Infrastructure.Repairs
                     {
                         FileName = "powershell.exe",
                         Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"Restart-Service -Name '{serviceName}' -Force\"",
-                        Verb = "runas",
-                        UseShellExecute = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
                         WindowStyle = ProcessWindowStyle.Hidden
                     };
                     var proc = Process.Start(psi);

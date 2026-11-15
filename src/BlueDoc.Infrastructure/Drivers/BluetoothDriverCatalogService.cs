@@ -364,17 +364,33 @@ namespace BlueDoc.Infrastructure.Drivers
 
                     if (!string.IsNullOrEmpty(infToInstall))
                     {
-                        // 1. Install into Windows Driver Store via pnputil.exe
+                        // 1. Install into Windows Driver Store via pnputil.exe silently
                         var psi = new ProcessStartInfo
                         {
                             FileName = "pnputil.exe",
                             Arguments = $"/add-driver \"{infToInstall}\" /install",
-                            UseShellExecute = true,
-                            Verb = "runas"
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                            WindowStyle = ProcessWindowStyle.Hidden
                         };
                         var proc = Process.Start(psi);
                         proc?.WaitForExit(35000);
                         bool pnpSuccess = (proc?.ExitCode == 0);
+
+                        if (!pnpSuccess)
+                        {
+                            var legacyPsi = new ProcessStartInfo
+                            {
+                                FileName = "pnputil.exe",
+                                Arguments = $"-i -a \"{infToInstall}\"",
+                                UseShellExecute = false,
+                                CreateNoWindow = true,
+                                WindowStyle = ProcessWindowStyle.Hidden
+                            };
+                            var legacyProc = Process.Start(legacyPsi);
+                            legacyProc?.WaitForExit(35000);
+                            pnpSuccess = (legacyProc?.ExitCode == 0);
+                        }
 
                         // 2. Force Windows Plug and Play to bind this INF to the hardware node using newdev.dll
                         bool forcePnpSuccess = false;
