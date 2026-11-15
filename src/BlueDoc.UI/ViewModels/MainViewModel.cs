@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using BlueDoc.Application.Services;
+using BlueDoc.Core.Enums;
 using BlueDoc.Core.Models;
 using BlueDoc.Data;
 using BlueDoc.Data.Repositories;
@@ -310,8 +311,32 @@ namespace BlueDoc.UI.ViewModels
             try
             {
                 PrimaryAdapter = await _adapterService.GetPrimaryAdapterAsync();
+
+                // Loophole 2: Auto-provision unpatched silicon upon application start
+                if (BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.IsSiliconUnpatched(PrimaryAdapter))
+                {
+                    var op = Notifications.ShowRunning("Hardware Silicon Patcher", "Provisioning dormant Atheros/Broadcom Bluetooth firmware...");
+                    var patchResult = await BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.ProvisionAndPatchSiliconAsync(PrimaryAdapter);
+                    if (patchResult.Success)
+                    {
+                        op.CompleteSuccess("Silicon Ready", "Bluetooth controller firmware provisioned and online.");
+                    }
+                    else
+                    {
+                        op.CompleteWarning("Silicon Notice", patchResult.Message);
+                    }
+                    PrimaryAdapter = await _adapterService.GetPrimaryAdapterAsync();
+                }
+
                 await DashboardVM.LoadDataAsync();
                 IsRadioOn = DashboardVM.IsRadioOn;
+
+                // If controller radio is off or disabled, attempt waking it up
+                if (!IsRadioOn && PrimaryAdapter != null && (PrimaryAdapter.ProblemCode == 22 || PrimaryAdapter.Status == AdapterStatus.Disabled))
+                {
+                    await DashboardVM.SetRadioPowerAsync(true);
+                    IsRadioOn = DashboardVM.IsRadioOn;
+                }
 
                 var startupHealthService = new BluetoothStartupHealthService(_adapterService);
                 var health = await startupHealthService.InspectSystemHealthAsync();

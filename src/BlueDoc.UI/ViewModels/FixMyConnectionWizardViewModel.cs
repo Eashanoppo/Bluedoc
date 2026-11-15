@@ -383,10 +383,34 @@ namespace BlueDoc.UI.ViewModels
                     CandidateDevices.Add(d);
                 }
 
-                // If no device is currently selected, pick the first disconnected audio or HID device
+                // Loophole 3: If no candidate devices or no disconnected candidates exist,
+                // scan for nearby discoverable peripherals (such as fresh unpaired speakers/headsets)
+                if (CandidateDevices.Count == 0 || !CandidateDevices.Any(d => !d.IsConnected))
+                {
+                    try
+                    {
+                        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                        var nearby = await _deviceDiscoveryService.StartScanningAsync(5, DiscoveryMode.DualMode, cts.Token);
+                        if (nearby != null)
+                        {
+                            foreach (var d in nearby)
+                            {
+                                if (!CandidateDevices.Any(existing => existing.BluetoothAddress.Equals(d.BluetoothAddress, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    CandidateDevices.Add(d);
+                                }
+                            }
+                        }
+                    }
+                    catch { }
+                }
+
+                // If no device is currently selected, pick the first disconnected audio or peripheral device
                 if (TargetDevice == null && CandidateDevices.Count > 0)
                 {
-                    var troubled = CandidateDevices.FirstOrDefault(d => !d.IsConnected) ?? CandidateDevices.FirstOrDefault();
+                    var troubled = CandidateDevices.FirstOrDefault(d => !d.IsConnected && (d.CategoryName.IndexOf("Audio", StringComparison.OrdinalIgnoreCase) >= 0 || d.CategoryName.IndexOf("Speaker", StringComparison.OrdinalIgnoreCase) >= 0 || d.CategoryName.IndexOf("Headset", StringComparison.OrdinalIgnoreCase) >= 0))
+                                  ?? CandidateDevices.FirstOrDefault(d => !d.IsConnected)
+                                  ?? CandidateDevices.FirstOrDefault();
                     if (troubled != null)
                     {
                         TargetDevice = troubled;

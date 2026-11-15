@@ -326,6 +326,16 @@ namespace BlueDoc.Application.Services
                     adapter = await _adapterService.GetPrimaryAdapterAsync();
                 }
 
+                if (!adapter.IsEnabled || adapter.Status == AdapterStatus.Disabled || adapter.ProblemCode == 22)
+                {
+                    step2.StatusMessage = "Radio transceiver is disabled in Windows. Waking controller up...";
+                    NotifyStepUpdated(step2);
+                    var radioMgr = new BlueDoc.Infrastructure.Hardware.HardwareRadioManager();
+                    await radioMgr.SetRadioPowerStateAsync(true, adapter.DeviceInstanceId);
+                    await Task.Delay(1500);
+                    adapter = await _adapterService.GetPrimaryAdapterAsync();
+                }
+
                 if (adapter.ProblemCode != 0)
                 {
                     step2.Status = DeviceOperationStatus.Failed;

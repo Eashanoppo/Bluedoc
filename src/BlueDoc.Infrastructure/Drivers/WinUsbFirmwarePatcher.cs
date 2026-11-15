@@ -81,10 +81,10 @@ namespace BlueDoc.Infrastructure.Drivers
             string nameDesc = (adapter.FriendlyName ?? string.Empty) + " " + (adapter.DeviceDescription ?? string.Empty);
 
             bool isAtherosRom = vid == "0CF3" || vid == "17CB" ||
-                                (vid == "0489" && Array.Exists(AtherosFoxconnPids, p => p.Equals(pid, StringComparison.OrdinalIgnoreCase))) ||
+                                (vid == "0489" && (Array.Exists(AtherosFoxconnPids, p => p.Equals(pid, StringComparison.OrdinalIgnoreCase)) || pid.StartsWith("E03", StringComparison.OrdinalIgnoreCase) || pid.StartsWith("E02", StringComparison.OrdinalIgnoreCase))) ||
                                 (vid == "04CA" && (pid.StartsWith("300") || pid.StartsWith("301") || pid == "17EA")) ||
                                 (vid == "13D3" && (pid.StartsWith("32") || pid.StartsWith("33") || pid.StartsWith("34"))) ||
-                                (vid == "044E" && pid.StartsWith("30")) ||
+                                (vid == "044E") || // Alps Electric (Sony VAIO / Fujitsu Atheros silicon)
                                 (nameDesc.IndexOf("Atheros", StringComparison.OrdinalIgnoreCase) >= 0 || nameDesc.IndexOf("AR301", StringComparison.OrdinalIgnoreCase) >= 0 || nameDesc.IndexOf("AR946", StringComparison.OrdinalIgnoreCase) >= 0) ||
                                 (adapter.Manufacturer != null && (adapter.Manufacturer.IndexOf("Atheros", StringComparison.OrdinalIgnoreCase) >= 0 || adapter.Manufacturer.IndexOf("Qualcomm", StringComparison.OrdinalIgnoreCase) >= 0));
 
@@ -135,10 +135,10 @@ namespace BlueDoc.Infrastructure.Drivers
                 string targetNameDesc = (adapter.FriendlyName ?? string.Empty) + " " + (adapter.DeviceDescription ?? string.Empty);
 
                 bool isAtheros = vid == "0CF3" || vid == "17CB" ||
-                                 (vid == "0489" && Array.Exists(AtherosFoxconnPids, p => p.Equals(pid, StringComparison.OrdinalIgnoreCase))) ||
+                                 (vid == "0489" && (Array.Exists(AtherosFoxconnPids, p => p.Equals(pid, StringComparison.OrdinalIgnoreCase)) || pid.StartsWith("E03", StringComparison.OrdinalIgnoreCase) || pid.StartsWith("E02", StringComparison.OrdinalIgnoreCase))) ||
                                  (vid == "04CA" && (pid.StartsWith("300") || pid.StartsWith("301") || pid == "17EA")) ||
                                  (vid == "13D3" && (pid.StartsWith("32") || pid.StartsWith("33") || pid.StartsWith("34"))) ||
-                                 (vid == "044E" && pid.StartsWith("30")) ||
+                                 (vid == "044E") || // Alps Electric (Sony VAIO / Fujitsu Atheros silicon)
                                  (targetNameDesc.IndexOf("Atheros", StringComparison.OrdinalIgnoreCase) >= 0 || targetNameDesc.IndexOf("AR301", StringComparison.OrdinalIgnoreCase) >= 0) ||
                                  (adapter.Manufacturer != null && (adapter.Manufacturer.IndexOf("Atheros", StringComparison.OrdinalIgnoreCase) >= 0 || adapter.Manufacturer.IndexOf("Qualcomm", StringComparison.OrdinalIgnoreCase) >= 0));
 
@@ -258,6 +258,12 @@ namespace BlueDoc.Infrastructure.Drivers
                 // 3. Force PnP to replace generic Microsoft bth.inf with vendor filter driver using clean baseHwId
                 progress?.Report($"[Silicon Patcher] Force-binding '{infFileName}' to {baseHwId} via newdev.dll...");
                 bool bound = BluetoothDriverCatalogService.ForceBindDriverToHardware(bundledInf, adapter, out int win32Err);
+
+                // Fix Loopholes 1 & 4: Unblock Atheros filter transceiver (AthBTDeviceDisable=0) and inject BtFilter if unlisted OEM PID
+                if (isAtheros)
+                {
+                    EnsureAtherosFilterUnlockedAndBound(adapter, bound);
+                }
 
                 // 4. Cycle USB port so the filter driver uploads RAM patch to the controller
                 CycleUsbDevicePort(adapter.DeviceInstanceId);
@@ -383,6 +389,71 @@ namespace BlueDoc.Infrastructure.Drivers
             catch
             {
                 return false;
+            }
+        }
+
+        public static void EnsureAtherosFilterUnlockedAndBound(BluetoothAdapterInfo adapter, bool infBound)
+        {
+            try
+            {
+                // 1. Fix Loophole 1: qca_btusb.inf line 265 sets AthBTDeviceDisable = 1, which soft-blocks the 2.4 GHz radio!
+                // Force AthBTDeviceDisable = 0 so btfilter.sys enables the radio transceiver immediately upon port cycle.
+                using (var key = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(
+                    @"SYSTEM\CurrentControlSet\Services\BtFilter\Parameters", true))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("AthBTDeviceDisable", 0, Microsoft.Win32.RegistryValueKind.DWord);
+                        key.SetValue("DownloadFirmware", 1, Microsoft.Win32.RegistryValueKind.DWord);
+                        key.SetValue("DownloadPatch", 1, Microsoft.Win32.RegistryValueKind.DWord);
+                        key.SetValue("DownloadSysCfg", 1, Microsoft.Win32.RegistryValueKind.DWord);
+                        key.SetValue("BtFilterSelectiveSuspendEnable", 0, Microsoft.Win32.RegistryValueKind.DWord);
+                        key.SetValue("BinPath", @"\DosDevices\C:\Windows\System32\drivers\AtherosBT.bin", Microsoft.Win32.RegistryValueKind.String);
+                        key.SetValue("BinFilePath", @"\DosDevices\C:\Windows\System32\drivers\", Microsoft.Win32.RegistryValueKind.String);
+                    }
+                }
+
+                // 2. Fix Loophole 4: If OEM VID/PID (e.g. Alps VID_044E) wasn't in qca_btusb.inf, attach WHQL-signed btfilter.sys directly over bth.inf
+                if (!infBound && !string.IsNullOrWhiteSpace(adapter?.DeviceInstanceId))
+                {
+                    var scPsi = new ProcessStartInfo
+                    {
+                        FileName = "sc.exe",
+                        Arguments = "create BtFilter type= kernel start= demand error= normal binPath= system32\\drivers\\btfilter.sys",
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    };
+                    Process.Start(scPsi)?.WaitForExit(5000);
+
+                    using (var devKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+                        $@"SYSTEM\CurrentControlSet\Enum\{adapter.DeviceInstanceId}", true))
+                    {
+                        if (devKey != null)
+                        {
+                            devKey.SetValue("UpperFilters", new[] { "BtFilter" }, Microsoft.Win32.RegistryValueKind.MultiString);
+                            devKey.SetValue("LowerFilters", new[] { "BtFilter" }, Microsoft.Win32.RegistryValueKind.MultiString);
+                        }
+                    }
+                }
+
+                // 3. Start Atheros companion service if registered
+                try
+                {
+                    using (var sc = new System.ServiceProcess.ServiceController("AtherosSvc"))
+                    {
+                        if (sc.Status != System.ServiceProcess.ServiceControllerStatus.Running && sc.Status != System.ServiceProcess.ServiceControllerStatus.StartPending)
+                        {
+                            sc.Start();
+                            sc.WaitForStatus(System.ServiceProcess.ServiceControllerStatus.Running, TimeSpan.FromSeconds(3));
+                        }
+                    }
+                }
+                catch { }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[SiliconPatcher] Filter registry unlock notice: {ex.Message}");
             }
         }
     }

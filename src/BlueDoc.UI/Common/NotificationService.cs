@@ -79,6 +79,15 @@ namespace BlueDoc.UI.Common
             NotificationService.Instance.ScheduleDismiss(this, durationSeconds);
         }
 
+        public void CompleteWarning(string title, string message, int durationSeconds = 5)
+        {
+            Title = title;
+            Message = message;
+            Type = NotificationType.Warning;
+            IsIndeterminate = false;
+            NotificationService.Instance.ScheduleDismiss(this, durationSeconds);
+        }
+
         public void CompleteError(string title, string message, int durationSeconds = 6)
         {
             Title = title;

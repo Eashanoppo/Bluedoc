@@ -92,6 +92,29 @@ namespace BlueDoc.Application.Services
                 }
             }
 
+            // Loophole 2: Auto-provision unpatched silicon & ensure radio is powered on before scan
+            try
+            {
+                var inspector = new BlueDoc.Infrastructure.Hardware.SetupApiHardwareInspector();
+                var primary = inspector.GetPrimaryAdapter();
+                if (BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.IsSiliconUnpatched(primary))
+                {
+                    StatusChanged?.Invoke(this, "Initializing dormant Bluetooth silicon firmware before scan...");
+                    await BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.ProvisionAndPatchSiliconAsync(primary);
+                    await Task.Delay(1500, externalToken);
+                    primary = inspector.GetPrimaryAdapter();
+                }
+
+                var radioMgr = new BlueDoc.Infrastructure.Hardware.HardwareRadioManager(inspector);
+                if (!radioMgr.IsRadioPoweredOn(primary?.DeviceInstanceId))
+                {
+                    StatusChanged?.Invoke(this, "Waking up Bluetooth radio transceiver...");
+                    await radioMgr.SetRadioPowerStateAsync(true, primary?.DeviceInstanceId);
+                    await Task.Delay(1000, externalToken);
+                }
+            }
+            catch { }
+
             _activeMode = mode;
             // On Windows 7, force ClassicOnly
             if (!IsBleSupported && _activeMode != DiscoveryMode.ClassicOnly)

@@ -27,6 +27,23 @@ namespace BlueDoc.Infrastructure.Hardware
         {
             try
             {
+                // Check if Atheros filter is soft-disabling the radio transceiver (Loophole 1)
+                try
+                {
+                    using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\BtFilter\Parameters", false))
+                    {
+                        if (key != null)
+                        {
+                            var val = key.GetValue("AthBTDeviceDisable");
+                            if (val != null && Convert.ToInt32(val) == 1)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+                catch { }
+
                 // 1. On Windows 10/11, check the modern Radio Manager first
                 if (OperatingSystemInspector.IsWindows10OrGreater())
                 {
@@ -95,6 +112,26 @@ namespace BlueDoc.Infrastructure.Hardware
                 var targetId = !string.IsNullOrEmpty(deviceInstanceId)
                     ? deviceInstanceId
                     : primary?.DeviceInstanceId;
+
+                // Loophole 1: Clear Atheros AthBTDeviceDisable flag so btfilter.sys transmits RF
+                if (enable)
+                {
+                    try
+                    {
+                        using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\BtFilter\Parameters", true))
+                        {
+                            if (key != null)
+                            {
+                                var val = key.GetValue("AthBTDeviceDisable");
+                                if (val != null && Convert.ToInt32(val) != 0)
+                                {
+                                    key.SetValue("AthBTDeviceDisable", 0, Microsoft.Win32.RegistryValueKind.DWord);
+                                }
+                            }
+                        }
+                    }
+                    catch { }
+                }
 
                 // 1. If turning ON and the adapter is administratively disabled (Code 22), 
                 // prioritize clearing the hardware disable state first!

@@ -53,12 +53,16 @@ namespace BlueDoc.Infrastructure.Drivers
                              (adapter.FriendlyName.IndexOf("Generic", StringComparison.OrdinalIgnoreCase) >= 0 || currentVer.StartsWith("10.0.") || currentVer.StartsWith("6.1."));
             info.IsGenericMicrosoftDriver = isGeneric;
 
-            // Map OEM sub-vendors to effective chipset families (Sony VAIO Foxconn 0489, Lite-On 04CA, Alps 044E)
+            // Map OEM sub-vendors to effective chipset families (Sony VAIO Foxconn 0489, Lite-On 04CA, Alps 044E, AzureWave 13D3)
             string effectiveVid = vid;
-            if (vid == "0489" || vid == "04CA" || vid == "13D3")
+            if (vid == "0489" || vid == "04CA" || vid == "13D3" || vid == "044E")
             {
+                if (vid == "044E")
+                {
+                    effectiveVid = "0CF3"; // Alps Atheros silicon (Sony VAIO / Fujitsu)
+                }
                 // Sony VAIO SVE151 / Foxconn Atheros AR3012: PIDs starting with E03, 300, or E02
-                if (pid.StartsWith("E03", StringComparison.OrdinalIgnoreCase) || 
+                else if (pid.StartsWith("E03", StringComparison.OrdinalIgnoreCase) || 
                     pid.StartsWith("300", StringComparison.OrdinalIgnoreCase) ||
                     pid.StartsWith("E02", StringComparison.OrdinalIgnoreCase))
                 {
@@ -131,6 +135,7 @@ namespace BlueDoc.Infrastructure.Drivers
 
                 case "0CF3": // Qualcomm / Atheros
                 case "17CB":
+                case "044E": // Alps Electric (Sony VAIO / Fujitsu)
                     info.ChipsetFamily = "Qualcomm Atheros Bluetooth Suite (AR3011 / AR3012 / AR9462 / QCA9565)";
                     info.PackageName = "Qualcomm Atheros Bluetooth Filter & RAM-Patch Driver Package";
                     info.RecommendedVersion = "10.0.1.15";
