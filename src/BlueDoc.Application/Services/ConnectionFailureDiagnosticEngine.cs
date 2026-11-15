@@ -63,6 +63,8 @@ namespace BlueDoc.Application.Services
             if (adapter.ProblemCode != 0)
             {
                 diagnosis.IsAdapterIssue = true;
+                bool isSiliconUnpatched = WinUsbFirmwarePatcher.IsSiliconUnpatched(adapter);
+
                 checks.Add(new ConnectionDiagnosticCheckItem
                 {
                     Name = "Adapter Problem Code",
@@ -71,12 +73,25 @@ namespace BlueDoc.Application.Services
                     Confidence = ConfidenceLevel.High
                 });
 
-                diagnosis.PrimaryRootCause = $"Bluetooth Adapter Reported Error Code {(int)adapter.ProblemCode}";
-                diagnosis.DetailedEvidence = $"Hardware adapter '{adapter.FriendlyName}' has an active problem code {(int)adapter.ProblemCode}. Recommended action: power cycle controller or reinstall manufacturer driver.";
-                diagnosis.Confidence = ConfidenceLevel.High;
-                diagnosis.SuggestedRepairKey = "CycleBluetoothRadio";
-                diagnosis.SuggestedRepairTitle = "Reset & Cycle Radio Transceiver";
-                diagnosis.SuggestedRepairExplanation = "Power cycle the adapter controller to clear hardware FIFO stalls and driver timeouts.";
+                if (isSiliconUnpatched)
+                {
+                    diagnosis.PrimaryRootCause = $"Bluetooth Silicon Firmware Failure (Problem Code {(int)adapter.ProblemCode})";
+                    diagnosis.DetailedEvidence = $"Hardware adapter '{adapter.FriendlyName}' (VID_{adapter.HardwareDetails?.VendorId}&PID_{adapter.HardwareDetails?.ProductId}) failed to start (Code {(int)adapter.ProblemCode}). Certified RAM-patch firmware is required to initialize the radio baseband.";
+                    diagnosis.Confidence = ConfidenceLevel.High;
+                    diagnosis.SuggestedRepairKey = "ProvisionSiliconFirmware";
+                    diagnosis.SuggestedRepairTitle = "Provision Silicon Firmware & Resolve Code 10";
+                    diagnosis.SuggestedRepairExplanation = "Deploys verified binary DFU firmware patches to DriverStore and resets the controller port to clear Code 10.";
+                }
+                else
+                {
+                    diagnosis.PrimaryRootCause = $"Bluetooth Adapter Reported Error Code {(int)adapter.ProblemCode}";
+                    diagnosis.DetailedEvidence = $"Hardware adapter '{adapter.FriendlyName}' has an active problem code {(int)adapter.ProblemCode}. Recommended action: power cycle controller or reinstall manufacturer driver.";
+                    diagnosis.Confidence = ConfidenceLevel.High;
+                    diagnosis.SuggestedRepairKey = "CycleBluetoothRadio";
+                    diagnosis.SuggestedRepairTitle = "Reset & Cycle Radio Transceiver";
+                    diagnosis.SuggestedRepairExplanation = "Power cycle the adapter controller to clear hardware FIFO stalls and driver timeouts.";
+                }
+
                 diagnosis.CheckItems = checks;
                 return diagnosis;
             }

@@ -309,18 +309,9 @@ namespace BlueDoc.Application.Services
                     return await ExecuteDiagnosticConclusionAsync(finalResult, 1001, "No Bluetooth adapter detected.");
                 }
 
-                if (adapter.ProblemCode != 0)
-                {
-                    step2.Status = DeviceOperationStatus.Failed;
-                    step2.StatusMessage = $"Adapter error CM_PROB ({(int)adapter.ProblemCode}).";
-                    step2.Evidence = $"Adapter '{adapter.FriendlyName}' has hardware problem code {(int)adapter.ProblemCode}.";
-                    NotifyStepUpdated(step2);
-                    return await ExecuteDiagnosticConclusionAsync(finalResult, (uint)adapter.ProblemCode, step2.StatusMessage);
-                }
-
                 if (BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.IsSiliconUnpatched(adapter))
                 {
-                    step2.StatusMessage = "Unprovisioned silicon detected (Microsoft 2006 generic driver). Provisioning firmware...";
+                    step2.StatusMessage = "Unprovisioned or misconfigured silicon detected. Provisioning firmware...";
                     NotifyStepUpdated(step2);
                     var patchRes = await BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.ProvisionAndPatchSiliconAsync(adapter);
                     if (!patchRes.Success)
@@ -333,6 +324,15 @@ namespace BlueDoc.Application.Services
                     }
                     await Task.Delay(2000);
                     adapter = await _adapterService.GetPrimaryAdapterAsync();
+                }
+
+                if (adapter.ProblemCode != 0)
+                {
+                    step2.Status = DeviceOperationStatus.Failed;
+                    step2.StatusMessage = $"Adapter error CM_PROB ({(int)adapter.ProblemCode}).";
+                    step2.Evidence = $"Adapter '{adapter.FriendlyName}' has hardware problem code {(int)adapter.ProblemCode}.";
+                    NotifyStepUpdated(step2);
+                    return await ExecuteDiagnosticConclusionAsync(finalResult, (uint)adapter.ProblemCode, step2.StatusMessage);
                 }
 
                 if (!adapter.IsEnabled || adapter.Status == AdapterStatus.Disabled)

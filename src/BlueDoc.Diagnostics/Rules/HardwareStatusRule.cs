@@ -57,7 +57,7 @@ namespace BlueDoc.Diagnostics.Rules
                 result.TechnicalDetails = "Windows reports problem code 10 (CM_PROB_FAILED_START). The driver failed to initialize the hardware communication interface or firmware.";
                 result.Evidence = $"ProblemCode: 10 (CM_PROB_FAILED_START)";
                 result.PossibleCause = "1. Corrupted driver installation.\n2. Power interruption during wake/sleep.\n3. Incompatible driver update.\n4. USB port power suspension.";
-                result.RecommendedAction = "Reinstall the manufacturer Bluetooth driver or power cycle the computer (complete shutdown).";
+                result.RecommendedAction = "Run 'Provision Bluetooth Silicon Firmware' in Safe Repair Center to stage certified binary firmware or use 'Rollback to Microsoft Generic Driver'.";
                 result.RequiresAdmin = true;
             }
             else if (adapter.ProblemCode == 43)

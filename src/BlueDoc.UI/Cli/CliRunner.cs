@@ -91,6 +91,21 @@ namespace BlueDoc.UI.Cli
                 }
             }
 
+            if (command == "rollback")
+            {
+                try
+                {
+                    var inspector = new BlueDoc.Infrastructure.Hardware.SetupApiHardwareInspector();
+                    var primary = inspector.GetPrimaryAdapter();
+                    bool rolledBack = BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.RollbackToGenericDriver(primary);
+                    return rolledBack ? 0 : 2;
+                }
+                catch
+                {
+                    return 1;
+                }
+            }
+
             InitializeConsole();
 
             Console.WriteLine();

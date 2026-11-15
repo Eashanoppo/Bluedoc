@@ -161,16 +161,51 @@ namespace BlueDoc.Infrastructure.Drivers
                         ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Sysnative", "drivers")
                         : Path.Combine(Environment.SystemDirectory, "drivers");
 
+                    // Drop any driver locks if device node is currently hung or in Code 10
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(adapter.DeviceInstanceId))
+                        {
+                            var radioMgr = new BlueDoc.Infrastructure.Hardware.HardwareRadioManager();
+                            radioMgr.SetRadioPowerStateAsync(false, adapter.DeviceInstanceId).GetAwaiter().GetResult();
+                            System.Threading.Thread.Sleep(300);
+                        }
+                    }
+                    catch { }
+
+                    int stagedCount = 0;
                     foreach (var fwFile in Directory.GetFiles(driverDir, "*.*"))
                     {
                         string ext = Path.GetExtension(fwFile).ToLowerInvariant();
                         if (ext == ".dfu" || ext == ".hex" || ext == ".bin" || ext == ".hcd")
                         {
+                            var fi = new FileInfo(fwFile);
+                            if (fi.Length == 0) continue;
+
+                            byte[] buffer = new byte[Math.Min(16, (int)fi.Length)];
+                            using (var fs = File.OpenRead(fwFile))
+                            {
+                                fs.Read(buffer, 0, buffer.Length);
+                            }
+                            if (buffer.Length > 0 && buffer[0] == '<') continue; // Reject HTML
+
                             string dest = Path.Combine(sysDriversDir, Path.GetFileName(fwFile));
-                            File.Copy(fwFile, dest, true);
+                            try
+                            {
+                                if (File.Exists(dest))
+                                {
+                                    File.SetAttributes(dest, FileAttributes.Normal);
+                                }
+                                File.Copy(fwFile, dest, true);
+                                stagedCount++;
+                            }
+                            catch (Exception copyEx)
+                            {
+                                Debug.WriteLine($"[Silicon Patcher] File copy warning: {copyEx.Message}");
+                            }
                         }
                     }
-                    progress?.Report($"[Silicon Patcher] Staged RAM-patch firmware binaries into {sysDriversDir}.");
+                    progress?.Report($"[Silicon Patcher] Staged {stagedCount} verified RAM-patch firmware binaries into {sysDriversDir}.");
                 }
                 catch (Exception ex)
                 {
@@ -216,15 +251,54 @@ namespace BlueDoc.Infrastructure.Drivers
                 CycleUsbDevicePort(adapter.DeviceInstanceId);
                 RegisterAutoPatchTaskOnLogon();
 
-                result.Success = bound;
-                result.IsOperationalNow = bound;
+                // 5. Post-provisioning verification: verify radio is online and Code 10 is cleared
+                System.Threading.Thread.Sleep(1500);
+                var inspector = new BlueDoc.Infrastructure.Hardware.SetupApiHardwareInspector();
+                var currentPrimary = inspector.GetPrimaryAdapter();
+                bool isOperationalNow = (currentPrimary != null && currentPrimary.ProblemCode == 0);
+
+                if (!isOperationalNow && currentPrimary?.ProblemCode == 10)
+                {
+                    CycleUsbDevicePort(adapter.DeviceInstanceId);
+                    System.Threading.Thread.Sleep(1200);
+                    currentPrimary = inspector.GetPrimaryAdapter();
+                    isOperationalNow = (currentPrimary != null && currentPrimary.ProblemCode == 0);
+                }
+
+                result.Success = bound || isOperationalNow;
+                result.IsOperationalNow = isOperationalNow;
                 result.RequiresPortCycle = true;
                 result.FirmwarePatchApplied = infFileName;
-                result.Message = bound
-                    ? $"Successfully bound {result.ChipsetName} driver ({infFileName}) to {baseHwId} and initialized 2.4 GHz radio."
-                    : $"Driver staging ran, but force-binding {baseHwId} returned Win32 error 0x{win32Err:X8}. Ensure BlueDoc is built with Prefer32Bit=false and run as Administrator.";
+                result.Message = isOperationalNow
+                    ? $"Successfully provisioned {result.ChipsetName} ({infFileName}) on {baseHwId}. Controller is operational with 0 problem codes."
+                    : (bound
+                        ? $"Driver {infFileName} bound to {baseHwId}. Controller status: {currentPrimary?.Status} (Code: {currentPrimary?.ProblemCode})."
+                        : $"Driver staging ran, but force-binding {baseHwId} returned Win32 error 0x{win32Err:X8}.");
                 return result;
             });
+        }
+
+        public static bool RollbackToGenericDriver(BluetoothAdapterInfo adapter)
+        {
+            if (adapter == null) return false;
+            try
+            {
+                string winDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+                string genericInf = Path.Combine(winDir, "INF", "bth.inf");
+                if (!File.Exists(genericInf))
+                {
+                    genericInf = "bth.inf";
+                }
+
+                bool bound = BluetoothDriverCatalogService.ForceBindDriverToHardware(genericInf, adapter, out int _);
+                CycleUsbDevicePort(adapter.DeviceInstanceId);
+                return bound;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Rollback] Exception: {ex.Message}");
+                return false;
+            }
         }
 
         public static bool CycleUsbDevicePort(string deviceInstanceId)

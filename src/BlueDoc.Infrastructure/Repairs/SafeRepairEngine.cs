@@ -71,7 +71,8 @@ namespace BlueDoc.Infrastructure.Repairs
                 GetRepairDefinition("RePairDevice"),
                 GetRepairDefinition("ResetBluetoothStackComplete"),
                 GetRepairDefinition("RouteDefaultAudio"),
-                GetRepairDefinition("ProvisionSiliconFirmware")
+                GetRepairDefinition("ProvisionSiliconFirmware"),
+                GetRepairDefinition("RollbackToGenericDriver")
             };
         }
 
@@ -247,6 +248,19 @@ namespace BlueDoc.Infrastructure.Repairs
                         VerificationProcedure = "Installs bundled WHQL filter driver and forces PnP device binding via newdev.dll."
                     };
 
+                case "RollbackToGenericDriver":
+                    return new RepairActionDefinition
+                    {
+                        Key = "RollbackToGenericDriver",
+                        Title = "Rollback to Microsoft Generic Driver (bth.inf)",
+                        Description = "Restores Microsoft's default inbox Bluetooth stack driver (bth.inf / BthUsb.sys) to clear third-party driver conflicts or Code 10 controller startup faults.",
+                        Consequences = "Unbinds vendor filter driver, resets controller USB port, and binds Microsoft inbox driver.",
+                        RequiresAdmin = true,
+                        TargetComponent = "Microsoft Bluetooth Stack (bth.inf)",
+                        IssueDescription = "A third-party or filter driver failed to start (Code 10) or caused system instability.",
+                        VerificationProcedure = "Restores bth.inf binding and verifies controller operational status."
+                    };
+
                 default:
                     return new RepairActionDefinition
                     {
@@ -411,6 +425,20 @@ namespace BlueDoc.Infrastructure.Repairs
                         if (!patchResult.Success)
                         {
                             record.ErrorMessage = patchResult.Message;
+                        }
+                        break;
+
+                    case "RollbackToGenericDriver":
+                        var rbInspector = new BlueDoc.Infrastructure.Hardware.SetupApiHardwareInspector();
+                        var rbPrimary = rbInspector.GetPrimaryAdapter();
+                        bool rbSuccess = BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.RollbackToGenericDriver(rbPrimary);
+                        record.Status = rbSuccess ? "Success" : "Failed";
+                        record.VerificationResult = rbSuccess
+                            ? "Successfully rolled back to Microsoft Generic Bluetooth Driver (bth.inf) and cleared Problem Code 10."
+                            : "Rollback failed. Verify Administrator privileges.";
+                        if (!rbSuccess)
+                        {
+                            record.ErrorMessage = "Unable to force-bind Microsoft generic bth.inf.";
                         }
                         break;
 
