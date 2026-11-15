@@ -270,12 +270,12 @@ namespace BlueDoc.Application.KnowledgeBase
                     TechnicalExplanation = "Configuration Manager reports CM_PROB_DISABLED (Code 22), meaning the PnP manager has marked the device as administratively disabled. The hardware is physically intact and detected, but Windows driver loading has been halted by configuration.",
                     StepByStepRemediation = new List<string>
                     {
-                        "1. Open BlueDoc Safe Repair Center and select 'Open Device Manager'.",
-                        "2. In Device Manager, right-click the disabled Bluetooth adapter and select 'Enable device'.",
-                        "3. Run Full Diagnosis in BlueDoc to verify the adapter returns to Operational state (Code 0)."
+                        "1. In BlueDoc Safe Repair Center, click 'Enable Bluetooth Controller (Clear Code 22)' or toggle the radio switch on the Dashboard.",
+                        "2. BlueDoc automatically invokes SetupAPI and PnPUtil to re-activate the devnode and power ON the 2.4 GHz radio.",
+                        "3. Alternatively, open Device Manager (devmgmt.msc), right-click the disabled adapter, and select 'Enable device'."
                     },
                     RelatedRuleIds = new List<string> { "RULE_HW_STATUS", "RULE_ADAPTER_DETECT" },
-                    RecommendedRepairActionId = "OpenDeviceManager"
+                    RecommendedRepairActionId = "EnableBluetoothController"
                 }
             };
         }

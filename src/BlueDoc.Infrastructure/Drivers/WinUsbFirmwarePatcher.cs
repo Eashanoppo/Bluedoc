@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using BlueDoc.Core.Enums;
 using BlueDoc.Core.Models;
 using BlueDoc.Infrastructure.Platform;
 
@@ -180,18 +181,6 @@ namespace BlueDoc.Infrastructure.Drivers
                         ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Sysnative", "drivers")
                         : Path.Combine(Environment.SystemDirectory, "drivers");
 
-                    // Drop any driver locks if device node is currently hung or in Code 10
-                    try
-                    {
-                        if (!string.IsNullOrEmpty(adapter.DeviceInstanceId))
-                        {
-                            var radioMgr = new BlueDoc.Infrastructure.Hardware.HardwareRadioManager();
-                            radioMgr.SetRadioPowerStateAsync(false, adapter.DeviceInstanceId).GetAwaiter().GetResult();
-                            System.Threading.Thread.Sleep(300);
-                        }
-                    }
-                    catch { }
-
                     int stagedCount = 0;
                     foreach (var fwFile in Directory.GetFiles(driverDir, "*.*"))
                     {
@@ -274,15 +263,16 @@ namespace BlueDoc.Infrastructure.Drivers
                 CycleUsbDevicePort(adapter.DeviceInstanceId);
                 RegisterAutoPatchTaskOnLogon();
 
-                // 5. Post-provisioning verification: verify radio is online and Code 10 is cleared
+                // 5. Post-provisioning verification: verify radio is online, Code 22 cleared, and Code 10 resolved
                 System.Threading.Thread.Sleep(1500);
                 var inspector = new BlueDoc.Infrastructure.Hardware.SetupApiHardwareInspector();
                 var currentPrimary = inspector.GetPrimaryAdapter();
                 bool isOperationalNow = (currentPrimary != null && currentPrimary.ProblemCode == 0);
 
-                if (!isOperationalNow && currentPrimary?.ProblemCode == 10)
+                if (!isOperationalNow && (currentPrimary?.ProblemCode == 22 || currentPrimary?.Status == AdapterStatus.Disabled || currentPrimary?.ProblemCode == 10))
                 {
-                    CycleUsbDevicePort(adapter.DeviceInstanceId);
+                    var radioMgr = new BlueDoc.Infrastructure.Hardware.HardwareRadioManager();
+                    radioMgr.SetRadioPowerStateAsync(true, adapter.DeviceInstanceId).GetAwaiter().GetResult();
                     System.Threading.Thread.Sleep(1200);
                     currentPrimary = inspector.GetPrimaryAdapter();
                     isOperationalNow = (currentPrimary != null && currentPrimary.ProblemCode == 0);
@@ -328,23 +318,7 @@ namespace BlueDoc.Infrastructure.Drivers
         {
             if (string.IsNullOrWhiteSpace(deviceInstanceId)) return false;
 
-            // 1. In-process native CfgMgr32 devnode cycle (Zero console window, 100% reliable across all Windows versions)
-            try
-            {
-                var radioMgr = new BlueDoc.Infrastructure.Hardware.HardwareRadioManager();
-                radioMgr.SetRadioPowerStateAsync(false, deviceInstanceId).GetAwaiter().GetResult();
-                System.Threading.Thread.Sleep(800);
-                if (radioMgr.SetRadioPowerStateAsync(true, deviceInstanceId).GetAwaiter().GetResult())
-                {
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[SiliconPatcher] Native port cycle notice: {ex.Message}");
-            }
-
-            // 2. Fallback via pnputil /restart-device on Windows 10+ (completely redirected, no window)
+            // 1. pnputil /restart-device (Graceful devnode driver restart without administrative disable)
             try
             {
                 var psi = new ProcessStartInfo
@@ -360,16 +334,28 @@ namespace BlueDoc.Infrastructure.Drivers
 
                 using (var proc = Process.Start(psi))
                 {
-                    proc?.WaitForExit(10000);
+                    proc?.WaitForExit(8000);
                     if (proc?.ExitCode == 0) return true;
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[SiliconPatcher] USB port cycle notice: {ex.Message}");
+                Debug.WriteLine($"[SiliconPatcher] USB port restart notice: {ex.Message}");
             }
 
-            return false;
+            // 2. Full PnP devnode power cycle and re-enable
+            try
+            {
+                var radioMgr = new BlueDoc.Infrastructure.Hardware.HardwareRadioManager();
+                radioMgr.SetRadioPowerStateAsync(false, deviceInstanceId).GetAwaiter().GetResult();
+                System.Threading.Thread.Sleep(800);
+                return radioMgr.SetRadioPowerStateAsync(true, deviceInstanceId).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[SiliconPatcher] Native port cycle notice: {ex.Message}");
+                return false;
+            }
         }
 
         public static bool RegisterAutoPatchTaskOnLogon()

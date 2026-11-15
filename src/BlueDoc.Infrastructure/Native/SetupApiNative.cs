@@ -133,10 +133,22 @@ namespace BlueDoc.Infrastructure.Native
         public static extern bool SetupDiDestroyDeviceInfoList(IntPtr DeviceInfoSet);
 
         [DllImport("setupapi.dll", SetLastError = true)]
+        public static extern bool SetupDiChangeState(
+            IntPtr DeviceInfoSet,
+            ref SP_DEVINFO_DATA DeviceInfoData);
+
+        [DllImport("setupapi.dll", SetLastError = true)]
         public static extern bool SetupDiSetClassInstallParams(
             IntPtr DeviceInfoSet,
             ref SP_DEVINFO_DATA DeviceInfoData,
             ref SP_PROPCHANGE_PARAMS ClassInstallParams,
+            int ClassInstallParamsSize);
+
+        [DllImport("setupapi.dll", SetLastError = true)]
+        public static extern bool SetupDiSetClassInstallParams(
+            IntPtr DeviceInfoSet,
+            ref SP_DEVINFO_DATA DeviceInfoData,
+            IntPtr ClassInstallParams,
             int ClassInstallParamsSize);
 
         [DllImport("setupapi.dll", SetLastError = true)]

@@ -83,6 +83,11 @@ namespace BlueDoc.Infrastructure.Native
         [DllImport("cfgmgr32.dll", SetLastError = true)]
         public static extern uint CM_Disable_DevNode(uint dnDevInst, uint ulFlags);
 
+        public const uint CM_REENUMERATE_NORMAL = 0x00000000;
+
+        [DllImport("cfgmgr32.dll", SetLastError = true)]
+        public static extern uint CM_Reenumerate_DevNode(uint dnDevInst, uint ulFlags);
+
         [DllImport("cfgmgr32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern uint CM_Locate_DevNode(out uint pdnDevInst, string pDeviceID, uint ulFlags);
     }

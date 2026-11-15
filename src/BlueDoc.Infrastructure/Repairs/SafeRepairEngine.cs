@@ -72,7 +72,8 @@ namespace BlueDoc.Infrastructure.Repairs
                 GetRepairDefinition("ResetBluetoothStackComplete"),
                 GetRepairDefinition("RouteDefaultAudio"),
                 GetRepairDefinition("ProvisionSiliconFirmware"),
-                GetRepairDefinition("RollbackToGenericDriver")
+                GetRepairDefinition("RollbackToGenericDriver"),
+                GetRepairDefinition("EnableBluetoothController")
             };
         }
 
@@ -261,6 +262,19 @@ namespace BlueDoc.Infrastructure.Repairs
                         VerificationProcedure = "Restores bth.inf binding and verifies controller operational status."
                     };
 
+                case "EnableBluetoothController":
+                    return new RepairActionDefinition
+                    {
+                        Key = "EnableBluetoothController",
+                        Title = "Enable Bluetooth Controller (Clear Code 22)",
+                        Description = "Re-enables the Bluetooth hardware devnode in the Windows Plug and Play system using SetupAPI, PnPUtil, and WMI, clearing administrative disable status (Problem Code 22).",
+                        Consequences = "The Bluetooth controller is re-activated in Windows Device Manager and the radio transceiver is powered ON.",
+                        RequiresAdmin = true,
+                        TargetComponent = "Windows Plug and Play Manager (Code 22)",
+                        IssueDescription = "The Bluetooth controller was administratively disabled (CM_PROB_DISABLED / Code 22). Windows halted all radio communications.",
+                        VerificationProcedure = "Inspects devnode status flags via CM_Get_DevNode_Status and verifies problem code is 0."
+                    };
+
                 default:
                     return new RepairActionDefinition
                     {
@@ -440,6 +454,15 @@ namespace BlueDoc.Infrastructure.Repairs
                         {
                             record.ErrorMessage = "Unable to force-bind Microsoft generic bth.inf.";
                         }
+                        break;
+
+                    case "EnableBluetoothController":
+                        var enableRadioMgr = new HardwareRadioManager();
+                        bool enabled = await enableRadioMgr.SetRadioPowerStateAsync(true);
+                        record.Status = enabled ? "Success" : "Failed";
+                        record.VerificationResult = enabled
+                            ? "Bluetooth controller successfully enabled in Windows. Problem Code 22 cleared and radio is operational."
+                            : "Failed to enable Bluetooth controller. Check Group Policy or hardware switch.";
                         break;
 
                     default:
