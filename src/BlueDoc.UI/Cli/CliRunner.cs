@@ -55,6 +55,7 @@ namespace BlueDoc.UI.Cli
                    first == "inspect" || first == "i" ||
                    first == "benchmark" || first == "b" ||
                    first == "kb" || first == "repair" ||
+                   first == "silent-patch" ||
                    first == "version" || first == "v" ||
                    first == "help" || first == "h" || first == "?";
         }
@@ -113,6 +114,16 @@ namespace BlueDoc.UI.Cli
                     case "repair":
                     case "r":
                         return await ExecuteRepairAsync(args);
+
+                    case "silent-patch":
+                        var inspector = new BlueDoc.Infrastructure.Hardware.SetupApiHardwareInspector();
+                        var primary = inspector.GetPrimaryAdapter();
+                        if (BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.IsSiliconUnpatched(primary))
+                        {
+                            var res = await BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.ProvisionAndPatchSiliconAsync(primary);
+                            return res.Success ? 0 : 2;
+                        }
+                        return 0;
 
                     default:
                         Console.WriteLine($"[ERROR] Unrecognized CLI command: '{args[0]}'");

@@ -78,6 +78,21 @@ namespace BlueDoc.Application.Services
                         }
                     }
 
+                    // 1b. Check for unprovisioned silicon (cold-boot ROM mode with generic Microsoft driver)
+                    if (BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.IsSiliconUnpatched(adapter))
+                    {
+                        assessment.IsHealthy = false;
+                        assessment.DriverOperational = false;
+                        assessment.ActionableIssues.Add(new StartupHealthIssue
+                        {
+                            Title = "Unprovisioned Radio Firmware Detected",
+                            Description = $"Chipset '{adapter.FriendlyName}' is running in unprovisioned cold-boot mode under generic Microsoft 2006 driver. Radio RF transceiver is asleep. Certified WHQL driver & RAM-patch firmware are bundled and ready to load.",
+                            Severity = "Critical",
+                            SuggestedRepairKey = "ProvisionSiliconFirmware",
+                            ActionButtonText = "Provision Firmware Now"
+                        });
+                    }
+
                     // 2. Radio Transceiver Availability
                     assessment.RadioAvailable = adapter.IsEnabled && adapter.Status == AdapterStatus.Operational;
                     if (!assessment.RadioAvailable)

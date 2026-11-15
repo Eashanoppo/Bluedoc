@@ -180,6 +180,28 @@ namespace BlueDoc.Infrastructure.Hardware
             {
                 details.IdentifiedChipsetFamily = "Qualcomm Atheros AR3011 / AR3012 / QCA61x4 Series";
             }
+            // OEM Sub-vendors (Foxconn 0489, Lite-On 04CA, AzureWave 13D3, Alps 044E)
+            else if (details.VendorId == "0489" || details.VendorId == "04CA" || details.VendorId == "13D3" || details.VendorId == "044E")
+            {
+                if (details.ProductId.StartsWith("E03", StringComparison.OrdinalIgnoreCase) ||
+                    details.ProductId.StartsWith("300", StringComparison.OrdinalIgnoreCase) ||
+                    details.ProductId.StartsWith("E02", StringComparison.OrdinalIgnoreCase) ||
+                    details.ProductId == "E036" || details.ProductId == "E03D")
+                {
+                    details.IdentifiedChipsetFamily = "Qualcomm Atheros AR3011 / AR3012 Series (OEM)";
+                }
+                else if (details.ProductId.StartsWith("E04", StringComparison.OrdinalIgnoreCase) ||
+                         details.ProductId.StartsWith("E05", StringComparison.OrdinalIgnoreCase) ||
+                         details.ProductId.StartsWith("E07", StringComparison.OrdinalIgnoreCase) ||
+                         details.ProductId == "E042")
+                {
+                    details.IdentifiedChipsetFamily = "Broadcom BCM20702 / BCM43142 Series (OEM)";
+                }
+                else
+                {
+                    details.IdentifiedChipsetFamily = "OEM Integrated Bluetooth Controller";
+                }
+            }
             // CSR heuristics
             else if (details.VendorId == "0A12")
             {

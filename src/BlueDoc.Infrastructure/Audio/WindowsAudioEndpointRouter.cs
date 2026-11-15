@@ -14,6 +14,7 @@ namespace BlueDoc.Infrastructure.Audio
         public string Message { get; set; } = string.Empty;
         public bool IsPlaybackDefault { get; set; }
         public bool IsCommunicationsDefault { get; set; }
+        public bool IsMicrophoneDefault { get; set; }
     }
 
     public enum ERole
@@ -129,6 +130,24 @@ namespace BlueDoc.Infrastructure.Audio
         [PreserveSig] int SetEndpointVisibility(string pszDeviceName, int bVisible);
     }
 
+    [ComImport]
+    [Guid("568b9108-44bf-40b4-9006-86afe5b5a620")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    internal interface IPolicyConfigVista
+    {
+        [PreserveSig] int GetMixFormat(string pszDeviceName, out IntPtr ppFormat);
+        [PreserveSig] int GetDeviceFormat(string pszDeviceName, int bDefault, out IntPtr ppFormat);
+        [PreserveSig] int SetDeviceFormat(string pszDeviceName, IntPtr pEndpointFormat, IntPtr MixFormat);
+        [PreserveSig] int GetProcessingPeriod(string pszDeviceName, int bDefault, out long pmftDefaultPeriod, out long pmftMinimumPeriod);
+        [PreserveSig] int SetProcessingPeriod(string pszDeviceName, ref long pmftPeriod);
+        [PreserveSig] int GetShareMode(string pszDeviceName, out IntPtr pMode);
+        [PreserveSig] int SetShareMode(string pszDeviceName, IntPtr mode);
+        [PreserveSig] int GetPropertyValue(string pszDeviceName, bool bFxStore, IntPtr key, out IntPtr pv);
+        [PreserveSig] int SetPropertyValue(string pszDeviceName, bool bFxStore, IntPtr key, ref IntPtr pv);
+        [PreserveSig] int SetDefaultEndpoint([MarshalAs(UnmanagedType.LPWStr)] string pszDeviceName, ERole role);
+        [PreserveSig] int SetEndpointVisibility([MarshalAs(UnmanagedType.LPWStr)] string pszDeviceName, int bVisible);
+    }
+
     [ComImport, Guid("870af99c-171d-4f9e-af0d-e63df40c2bc9")]
     internal class _PolicyConfigClient
     {
@@ -144,6 +163,27 @@ namespace BlueDoc.Infrastructure.Audio
             pid = 14
         };
 
+        private static bool SetDefaultEndpointInternal(string endpointId, ERole role)
+        {
+            try
+            {
+                var client = new _PolicyConfigClient();
+                if (client is IPolicyConfig policyConfig)
+                {
+                    if (policyConfig.SetDefaultEndpoint(endpointId, role) == 0) return true;
+                }
+                if (client is IPolicyConfigVista policyConfigVista)
+                {
+                    if (policyConfigVista.SetDefaultEndpoint(endpointId, role) == 0) return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[AudioRouter] SetDefaultEndpoint notice: {ex.Message}");
+            }
+            return false;
+        }
+
         public static async Task<AudioRoutingResult> RouteDefaultAudioToDeviceAsync(string deviceDisplayName)
         {
             return await Task.Run(() =>
@@ -155,39 +195,54 @@ namespace BlueDoc.Infrastructure.Audio
                     return result;
                 }
 
-                // 1. Try Native COM CoreAudio IPolicyConfig
+                // 1. Try Native COM CoreAudio IPolicyConfig & IPolicyConfigVista for both Speakers (eRender) and Microphones (eCapture)
                 try
                 {
-                    string targetId = null;
-                    string matchedName = null;
-
                     var enumerator = new MMDeviceEnumeratorComObject() as IMMDeviceEnumerator;
                     if (enumerator != null)
                     {
-                        if (enumerator.EnumAudioEndpoints(EDataFlow.eRender, DEVICE_STATE_ACTIVE, out var collection) == 0 && collection != null)
+                        foreach (var flow in new[] { EDataFlow.eRender, EDataFlow.eCapture })
                         {
-                            collection.GetCount(out uint count);
-                            for (uint i = 0; i < count; i++)
+                            if (enumerator.EnumAudioEndpoints(flow, DEVICE_STATE_ACTIVE, out var collection) == 0 && collection != null)
                             {
-                                if (collection.Item(i, out var device) == 0 && device != null)
+                                collection.GetCount(out uint count);
+                                for (uint i = 0; i < count; i++)
                                 {
-                                    device.GetId(out string id);
-                                    if (device.OpenPropertyStore(STGM_READ, out var store) == 0 && store != null)
+                                    if (collection.Item(i, out var device) == 0 && device != null)
                                     {
-                                        var pkey = PKEY_Device_FriendlyName;
-                                        if (store.GetValue(ref pkey, out var pv) == 0 && pv.pwszVal != IntPtr.Zero)
+                                        device.GetId(out string id);
+                                        if (device.OpenPropertyStore(STGM_READ, out var store) == 0 && store != null)
                                         {
-                                            string friendlyName = Marshal.PtrToStringUni(pv.pwszVal);
-                                            if (!string.IsNullOrEmpty(friendlyName))
+                                            var pkey = PKEY_Device_FriendlyName;
+                                            if (store.GetValue(ref pkey, out var pv) == 0 && pv.pwszVal != IntPtr.Zero)
                                             {
-                                                if (friendlyName.IndexOf(deviceDisplayName, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                                    deviceDisplayName.IndexOf(friendlyName, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                                    (friendlyName.IndexOf("Bluetooth", StringComparison.OrdinalIgnoreCase) >= 0 &&
-                                                     friendlyName.IndexOf("Hands-Free", StringComparison.OrdinalIgnoreCase) < 0))
+                                                string friendlyName = Marshal.PtrToStringUni(pv.pwszVal);
+                                                if (!string.IsNullOrEmpty(friendlyName))
                                                 {
-                                                    targetId = id;
-                                                    matchedName = friendlyName;
-                                                    break;
+                                                    bool isMatch = friendlyName.IndexOf(deviceDisplayName, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                                                   deviceDisplayName.IndexOf(friendlyName, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                                                   (friendlyName.IndexOf("Bluetooth", StringComparison.OrdinalIgnoreCase) >= 0);
+
+                                                    if (isMatch)
+                                                    {
+                                                        bool r1 = SetDefaultEndpointInternal(id, ERole.eConsole);
+                                                        bool r2 = SetDefaultEndpointInternal(id, ERole.eMultimedia);
+                                                        bool r3 = SetDefaultEndpointInternal(id, ERole.eCommunications);
+
+                                                        if (flow == EDataFlow.eRender)
+                                                        {
+                                                            result.Success = true;
+                                                            result.EndpointName = friendlyName;
+                                                            result.EndpointId = id;
+                                                            result.IsPlaybackDefault = r1 || r2;
+                                                            result.IsCommunicationsDefault = r3;
+                                                        }
+                                                        else if (flow == EDataFlow.eCapture)
+                                                        {
+                                                            result.IsMicrophoneDefault = r1 || r2 || r3;
+                                                        }
+                                                        break;
+                                                    }
                                                 }
                                             }
                                         }
@@ -195,27 +250,12 @@ namespace BlueDoc.Infrastructure.Audio
                                 }
                             }
                         }
-                    }
 
-                    if (!string.IsNullOrEmpty(targetId))
-                    {
-                        var policyConfig = new _PolicyConfigClient() as IPolicyConfig;
-                        if (policyConfig != null)
+                        if (result.Success)
                         {
-                            int r1 = policyConfig.SetDefaultEndpoint(targetId, ERole.eConsole);
-                            int r2 = policyConfig.SetDefaultEndpoint(targetId, ERole.eMultimedia);
-                            int r3 = policyConfig.SetDefaultEndpoint(targetId, ERole.eCommunications);
-
-                            if (r1 == 0 || r2 == 0)
-                            {
-                                result.Success = true;
-                                result.EndpointName = matchedName ?? deviceDisplayName;
-                                result.EndpointId = targetId;
-                                result.IsPlaybackDefault = true;
-                                result.IsCommunicationsDefault = (r3 == 0);
-                                result.Message = $"Active Windows CoreAudio playback endpoint successfully routed to '{result.EndpointName}'.";
-                                return result;
-                            }
+                            string micNote = result.IsMicrophoneDefault ? " and default recording microphone" : "";
+                            result.Message = $"Active Windows CoreAudio playback{micNote} successfully routed to '{result.EndpointName}'.";
+                            return result;
                         }
                     }
                 }

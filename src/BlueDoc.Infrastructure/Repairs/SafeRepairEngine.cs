@@ -70,7 +70,8 @@ namespace BlueDoc.Infrastructure.Repairs
                 GetRepairDefinition("RemoveStalePairing"),
                 GetRepairDefinition("RePairDevice"),
                 GetRepairDefinition("ResetBluetoothStackComplete"),
-                GetRepairDefinition("RouteDefaultAudio")
+                GetRepairDefinition("RouteDefaultAudio"),
+                GetRepairDefinition("ProvisionSiliconFirmware")
             };
         }
 

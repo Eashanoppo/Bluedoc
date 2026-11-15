@@ -57,6 +57,13 @@ namespace BlueDoc.Infrastructure.Drivers
         private const uint FILE_SHARE_WRITE = 0x00000002;
         private const uint OPEN_EXISTING = 3;
 
+        private static readonly string[] AtherosFoxconnPids = new[]
+        {
+            "E015", "E027", "E02C", "E036", "E03C", "E03D", "E043", "E048", "E04A",
+            "E04C", "E04D", "E04E", "E056", "E057", "E05F", "E060", "E061", "E076",
+            "E078", "E07D", "E081", "E082", "E083", "E088", "E093", "E095"
+        };
+
         public static bool IsSiliconUnpatched(BluetoothAdapterInfo adapter)
         {
             if (adapter == null) return false;
@@ -67,26 +74,40 @@ namespace BlueDoc.Infrastructure.Drivers
             string inf = adapter.Driver?.InfPath ?? string.Empty;
 
             bool isGenericDriver = provider.IndexOf("Microsoft", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                  inf.IndexOf("bth.inf", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                  adapter.Driver?.DriverDateString?.IndexOf("2006", StringComparison.OrdinalIgnoreCase) >= 0;
+                                   inf.IndexOf("bth.inf", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                   (adapter.Driver?.DriverDateString?.IndexOf("2006", StringComparison.OrdinalIgnoreCase) >= 0);
 
-            // 1. Qualcomm Atheros AR3011 / AR3012 (e.g. Sony VAIO SVE151 VID_0489&PID_E036 or VID_0CF3&PID_3004)
-            bool isAtherosRom = (vid == "0CF3" && (pid.StartsWith("300") || pid.StartsWith("311") || pid == "3004" || pid == "3002")) ||
-                                (vid == "0489" && (pid.StartsWith("E03") || pid == "E036" || pid == "E03D")) ||
-                                (vid == "04CA" && pid.StartsWith("300"));
+            bool isAtherosRom = vid == "0CF3" ||
+                                (vid == "0489" && Array.Exists(AtherosFoxconnPids, p => p.Equals(pid, StringComparison.OrdinalIgnoreCase))) ||
+                                (vid == "04CA" && (pid.StartsWith("300") || pid.StartsWith("301") || pid == "17EA")) ||
+                                (vid == "13D3" && (pid.StartsWith("32") || pid.StartsWith("33") || pid.StartsWith("34"))) ||
+                                (vid == "044E" && pid.StartsWith("30"));
 
-            // 2. Broadcom BCM20702 / BCM43142
-            bool isBroadcomRom = (vid == "0A5C" && (pid.StartsWith("21E") || pid.StartsWith("21F") || pid == "21E8")) ||
-                                 (vid == "0489" && (pid.StartsWith("E04") || pid.StartsWith("E05") || pid == "E042"));
+            bool isBroadcomRom = vid == "0A5C" ||
+                                 (vid == "0489" && (pid.StartsWith("E04") || pid.StartsWith("E05") || pid == "E042") && !isAtherosRom) ||
+                                 (vid == "04CA" && pid.StartsWith("20"));
 
-            // 3. Problem code 28 or 43 indicates uninitialized or missing firmware
-            bool hasProblem = adapter.ProblemCode == 28 || adapter.ProblemCode == 43;
+            bool hasProblem = adapter.ProblemCode == 28 || adapter.ProblemCode == 43 || adapter.ProblemCode == 10;
 
             return (isAtherosRom || isBroadcomRom) && (isGenericDriver || hasProblem);
         }
 
+        public static string GetCleanBaseHardwareId(BluetoothAdapterInfo adapter)
+        {
+            string vid = adapter?.HardwareDetails?.VendorId?.Trim()?.ToUpperInvariant() ?? string.Empty;
+            string pid = adapter?.HardwareDetails?.ProductId?.Trim()?.ToUpperInvariant() ?? string.Empty;
+            if (!string.IsNullOrEmpty(vid) && !string.IsNullOrEmpty(pid))
+            {
+                return $"USB\\VID_{vid}&PID_{pid}";
+            }
+
+            string raw = adapter?.HardwareId ?? string.Empty;
+            int revIdx = raw.IndexOf("&REV_", StringComparison.OrdinalIgnoreCase);
+            return revIdx > 0 ? raw.Substring(0, revIdx) : raw;
+        }
+
         public static async Task<SiliconPatchResult> ProvisionAndPatchSiliconAsync(
-            BluetoothAdapterInfo adapter, 
+            BluetoothAdapterInfo adapter,
             IProgress<string> progress = null)
         {
             return await Task.Run(() =>
@@ -100,133 +121,93 @@ namespace BlueDoc.Infrastructure.Drivers
 
                 string vid = adapter.HardwareDetails?.VendorId?.Trim()?.ToUpperInvariant() ?? string.Empty;
                 string pid = adapter.HardwareDetails?.ProductId?.Trim()?.ToUpperInvariant() ?? string.Empty;
+                string baseHwId = GetCleanBaseHardwareId(adapter);
 
-                progress?.Report($"[Silicon Patcher] Inspecting hardware silicon VID_{vid}&PID_{pid}...");
+                progress?.Report($"[Silicon Patcher] Inspecting hardware silicon {baseHwId}...");
 
-                // Detect family
-                if (vid == "0CF3" || vid == "17CB" || (vid == "0489" && pid.StartsWith("E03")) || (vid == "04CA" && pid.StartsWith("300")))
+                bool isAtheros = vid == "0CF3" || vid == "17CB" ||
+                                 (vid == "0489" && Array.Exists(AtherosFoxconnPids, p => p.Equals(pid, StringComparison.OrdinalIgnoreCase))) ||
+                                 (vid == "04CA" && (pid.StartsWith("300") || pid.StartsWith("301") || pid == "17EA")) ||
+                                 (vid == "13D3" && (pid.StartsWith("32") || pid.StartsWith("33") || pid.StartsWith("34"))) ||
+                                 (vid == "044E" && pid.StartsWith("30"));
+
+                string subFolder = isAtheros ? "Atheros" : "Broadcom";
+                string infFileName = isAtheros ? "btfilter.inf" : "bcbtums.inf";
+                result.ChipsetName = isAtheros
+                    ? "Qualcomm Atheros AR3011 / AR3012 Bluetooth Controller"
+                    : "Broadcom BCM20702 / BCM43142 Bluetooth Controller";
+
+                string appBase = AppDomain.CurrentDomain.BaseDirectory;
+                string driverDir = Path.Combine(appBase, "Drivers", subFolder);
+                if (!Directory.Exists(driverDir))
                 {
-                    result.ChipsetName = "Qualcomm Atheros AR3012 Bluetooth 4.0 + HS";
-                    result.FirmwarePatchApplied = "Ath3k_AR3012_Firmware_Patch.dfu";
-                    progress?.Report($"[Silicon Patcher] Target identified: {result.ChipsetName}. Preparing RAM-patch injection sequence...");
+                    string devDir = Path.GetFullPath(Path.Combine(appBase, $@"..\..\src\BlueDoc.UI\Drivers\{subFolder}"));
+                    if (Directory.Exists(devDir)) driverDir = devDir;
+                }
 
-                    // 1. Stage firmware files in BlueDoc local repository
-                    string fwDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BlueDoc", "Firmware", "Atheros");
-                    if (!Directory.Exists(fwDir)) Directory.CreateDirectory(fwDir);
+                string bundledInf = Path.Combine(driverDir, infFileName);
+                if (!File.Exists(bundledInf))
+                {
+                    result.Success = false;
+                    result.Message = $"Bundled driver package '{infFileName}' not found at {driverDir}.";
+                    return result;
+                }
 
-                    string patchNote = Path.Combine(fwDir, "ath3k_patch_manifest.json");
-                    File.WriteAllText(patchNote, $"{{\"chipset\":\"AR3012\",\"vid\":\"{vid}\",\"pid\":\"{pid}\",\"status\":\"ReadyForInjection\",\"targetDriver\":\"bthusb.sys\"}}");
+                // 1. Copy all .dfu / .hex firmware binaries directly into C:\Windows\System32\drivers
+                // so btfilter.sys / bcbtums.sys can load any ROM revision (e.g. 0x01020200 on Sony VAIO SVE151)
+                try
+                {
+                    string sysDriversDir = Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess
+                        ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Sysnative", "drivers")
+                        : Path.Combine(Environment.SystemDirectory, "drivers");
 
-                    // 2. Locate bundled firmware & filter driver package
-                    string appBase = AppDomain.CurrentDomain.BaseDirectory;
-                    string bundledInf = Path.Combine(appBase, "Drivers", "Atheros", "btfilter.inf");
-                    if (!File.Exists(bundledInf))
+                    foreach (var fwFile in Directory.GetFiles(driverDir, "*.*"))
                     {
-                        string devPath = Path.GetFullPath(Path.Combine(appBase, @"..\..\src\BlueDoc.UI\Drivers\Atheros\btfilter.inf"));
-                        if (File.Exists(devPath)) bundledInf = devPath;
-                    }
-
-                    if (File.Exists(bundledInf))
-                    {
-                        progress?.Report($"[Silicon Patcher] Installing WHQL filter driver and firmware patch (.dfu) from {Path.GetFileName(bundledInf)}...");
-                        var psi = new ProcessStartInfo
+                        string ext = Path.GetExtension(fwFile).ToLowerInvariant();
+                        if (ext == ".dfu" || ext == ".hex" || ext == ".bin" || ext == ".hcd")
                         {
-                            FileName = "pnputil.exe",
-                            Arguments = $"/add-driver \"{bundledInf}\" /install",
-                            UseShellExecute = true,
-                            Verb = "runas"
-                        };
-                        var proc = Process.Start(psi);
-                        proc?.WaitForExit(35000);
-
-                        progress?.Report("[Silicon Patcher] Forcing Windows PnP to bind vendor firmware stack...");
-                        BluetoothDriverCatalogService.UpdateDriverForPlugAndPlayDevicesW(
-                            IntPtr.Zero,
-                            adapter.HardwareId ?? $"USB\\VID_{vid}&PID_{pid}",
-                            Path.GetFullPath(bundledInf),
-                            BluetoothDriverCatalogService.INSTALLFLAG_FORCE,
-                            out bool rebootReq);
+                            string dest = Path.Combine(sysDriversDir, Path.GetFileName(fwFile));
+                            File.Copy(fwFile, dest, true);
+                        }
                     }
-                    else
-                    {
-                        progress?.Report("[Silicon Patcher] Uploading Atheros RAM-patch initialization sequence (Vendor Cmd 0x0B)...");
-                    }
-
-                    // 3. Cycle parent USB port so Windows Plug-and-Play reloads BthUsb.sys over the patched radio
-                    progress?.Report("[Silicon Patcher] Resetting USB controller port to bind Windows BthUsb driver stack...");
-                    CycleUsbDevicePort(adapter.DeviceInstanceId);
-                    RegisterAutoPatchTaskOnLogon();
-
-                    result.Success = true;
-                    result.IsOperationalNow = true;
-                    result.RequiresPortCycle = true;
-                    result.Message = $"Silicon initialization complete for {result.ChipsetName}. The physical 2.4 GHz radio transmitter is active and calibrated.";
-                    progress?.Report("[Silicon Patcher] Radio successfully initialized! Ready for peripheral inquiry.");
-                    return result;
+                    progress?.Report($"[Silicon Patcher] Staged RAM-patch firmware binaries into {sysDriversDir}.");
                 }
-                else if (vid == "0A5C" || (vid == "0489" && pid.StartsWith("E04")))
+                catch (Exception ex)
                 {
-                    result.ChipsetName = "Broadcom BCM20702 / BCM43142 Bluetooth Controller";
-                    result.FirmwarePatchApplied = "BCM20702A1_PatchRAM.hcd";
-                    progress?.Report($"[Silicon Patcher] Target identified: {result.ChipsetName}. Preparing Broadcom Mini-Driver PatchRAM upload...");
-
-                    string fwDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BlueDoc", "Firmware", "Broadcom");
-                    if (!Directory.Exists(fwDir)) Directory.CreateDirectory(fwDir);
-
-                    string appBase = AppDomain.CurrentDomain.BaseDirectory;
-                    string bundledInf = Path.Combine(appBase, "Drivers", "Broadcom", "bcbtums.inf");
-                    if (!File.Exists(bundledInf))
-                    {
-                        string devPath = Path.GetFullPath(Path.Combine(appBase, @"..\..\src\BlueDoc.UI\Drivers\Broadcom\bcbtums.inf"));
-                        if (File.Exists(devPath)) bundledInf = devPath;
-                    }
-
-                    if (File.Exists(bundledInf))
-                    {
-                        progress?.Report($"[Silicon Patcher] Installing Broadcom PatchRAM filter driver and firmware records from {Path.GetFileName(bundledInf)}...");
-                        var psi = new ProcessStartInfo
-                        {
-                            FileName = "pnputil.exe",
-                            Arguments = $"/add-driver \"{bundledInf}\" /install",
-                            UseShellExecute = true,
-                            Verb = "runas"
-                        };
-                        var proc = Process.Start(psi);
-                        proc?.WaitForExit(35000);
-
-                        progress?.Report("[Silicon Patcher] Forcing Windows PnP to bind Broadcom PatchRAM driver stack...");
-                        BluetoothDriverCatalogService.UpdateDriverForPlugAndPlayDevicesW(
-                            IntPtr.Zero,
-                            adapter.HardwareId ?? $"USB\\VID_{vid}&PID_{pid}",
-                            Path.GetFullPath(bundledInf),
-                            BluetoothDriverCatalogService.INSTALLFLAG_FORCE,
-                            out bool rebootReq);
-                    }
-                    else
-                    {
-                        progress?.Report("[Silicon Patcher] Streaming PatchRAM binary records to controller volatile memory...");
-                    }
-
-                    CycleUsbDevicePort(adapter.DeviceInstanceId);
-                    RegisterAutoPatchTaskOnLogon();
-
-                    result.Success = true;
-                    result.IsOperationalNow = true;
-                    result.RequiresPortCycle = true;
-                    result.Message = $"Broadcom silicon successfully patched with {result.FirmwarePatchApplied}. Bluetooth inquiry state machine is online.";
-                    progress?.Report("[Silicon Patcher] PatchRAM active. Radio operational.");
-                    return result;
+                    Debug.WriteLine($"[Silicon Patcher] Firmware staging warning: {ex.Message}");
                 }
-                else
+
+                // 2. Stage INF in Driver Store via pnputil
+                progress?.Report($"[Silicon Patcher] Staging WHQL driver '{infFileName}' via PnPUtil...");
+                var psi = new ProcessStartInfo
                 {
-                    result.ChipsetName = adapter.FriendlyName;
-                    result.FirmwarePatchApplied = "Standard WHQL Firmware Binding";
-                    result.Success = true;
-                    result.IsOperationalNow = true;
-                    result.Message = $"Controller '{adapter.FriendlyName}' is recognized. Standard Windows driver stack is active.";
-                    progress?.Report("[Silicon Patcher] Device verified.");
-                    return result;
+                    FileName = "pnputil.exe",
+                    Arguments = $"/add-driver \"{bundledInf}\" /install",
+                    UseShellExecute = true,
+                    Verb = "runas",
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+                using (var proc = Process.Start(psi))
+                {
+                    proc?.WaitForExit(35000);
                 }
+
+                // 3. Force PnP to replace generic Microsoft bth.inf with vendor filter driver using clean baseHwId
+                progress?.Report($"[Silicon Patcher] Force-binding '{infFileName}' to {baseHwId} via newdev.dll...");
+                bool bound = BluetoothDriverCatalogService.ForceBindDriverToHardware(bundledInf, adapter, out int win32Err);
+
+                // 4. Cycle USB port so the filter driver uploads RAM patch to the controller
+                CycleUsbDevicePort(adapter.DeviceInstanceId);
+                RegisterAutoPatchTaskOnLogon();
+
+                result.Success = bound;
+                result.IsOperationalNow = bound;
+                result.RequiresPortCycle = true;
+                result.FirmwarePatchApplied = infFileName;
+                result.Message = bound
+                    ? $"Successfully bound {result.ChipsetName} driver ({infFileName}) to {baseHwId} and initialized 2.4 GHz radio."
+                    : $"Driver staging ran, but force-binding {baseHwId} returned Win32 error 0x{win32Err:X8}. Ensure BlueDoc is built with Prefer32Bit=false and run as Administrator.";
+                return result;
             });
         }
 

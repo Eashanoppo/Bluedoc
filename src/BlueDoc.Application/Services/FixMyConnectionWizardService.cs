@@ -318,6 +318,23 @@ namespace BlueDoc.Application.Services
                     return await ExecuteDiagnosticConclusionAsync(finalResult, (uint)adapter.ProblemCode, step2.StatusMessage);
                 }
 
+                if (BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.IsSiliconUnpatched(adapter))
+                {
+                    step2.StatusMessage = "Unprovisioned silicon detected (Microsoft 2006 generic driver). Provisioning firmware...";
+                    NotifyStepUpdated(step2);
+                    var patchRes = await BlueDoc.Infrastructure.Drivers.WinUsbFirmwarePatcher.ProvisionAndPatchSiliconAsync(adapter);
+                    if (!patchRes.Success)
+                    {
+                        step2.Status = DeviceOperationStatus.Failed;
+                        step2.StatusMessage = "Radio firmware provisioning required.";
+                        step2.Evidence = patchRes.Message;
+                        NotifyStepUpdated(step2);
+                        return await ExecuteDiagnosticConclusionAsync(finalResult, 1005, patchRes.Message);
+                    }
+                    await Task.Delay(2000);
+                    adapter = await _adapterService.GetPrimaryAdapterAsync();
+                }
+
                 if (!adapter.IsEnabled || adapter.Status == AdapterStatus.Disabled)
                 {
                     step2.Status = DeviceOperationStatus.Failed;

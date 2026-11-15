@@ -382,12 +382,8 @@ namespace BlueDoc.Infrastructure.Drivers
                         {
                             try
                             {
-                                forcePnpSuccess = UpdateDriverForPlugAndPlayDevicesW(
-                                    IntPtr.Zero,
-                                    hardwareId,
-                                    Path.GetFullPath(infToInstall),
-                                    INSTALLFLAG_FORCE,
-                                    out bool rebootReq);
+                                var targetAdapter = new BluetoothAdapterInfo { HardwareId = hardwareId };
+                                forcePnpSuccess = ForceBindDriverToHardware(infToInstall, targetAdapter, out int _);
                             }
                             catch (Exception ex)
                             {
@@ -406,6 +402,50 @@ namespace BlueDoc.Infrastructure.Drivers
                     return false;
                 }
             });
+        }
+
+        public static bool ForceBindDriverToHardware(string fullInfPath, BluetoothAdapterInfo adapter, out int lastWin32Error)
+        {
+            lastWin32Error = 0;
+            var candidateIds = new System.Collections.Generic.List<string>();
+
+            // Put clean USB\VID_xxxx&PID_xxxx FIRST so it matches INF model lines directly
+            string cleanBaseId = WinUsbFirmwarePatcher.GetCleanBaseHardwareId(adapter);
+            if (!string.IsNullOrWhiteSpace(cleanBaseId))
+            {
+                candidateIds.Add(cleanBaseId);
+            }
+
+            if (adapter?.HardwareIds != null)
+            {
+                foreach (var id in adapter.HardwareIds)
+                {
+                    if (!string.IsNullOrWhiteSpace(id) && !candidateIds.Contains(id))
+                        candidateIds.Add(id);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(adapter?.HardwareId) && !candidateIds.Contains(adapter.HardwareId))
+            {
+                candidateIds.Add(adapter.HardwareId);
+            }
+
+            foreach (var hwId in candidateIds)
+            {
+                if (UpdateDriverForPlugAndPlayDevicesW(
+                    IntPtr.Zero,
+                    hwId,
+                    Path.GetFullPath(fullInfPath),
+                    INSTALLFLAG_FORCE | INSTALLFLAG_NONINTERACTIVE,
+                    out bool rebootReq))
+                {
+                    lastWin32Error = 0;
+                    return true;
+                }
+                lastWin32Error = Marshal.GetLastWin32Error();
+            }
+
+            return false;
         }
 
         public async Task<string> BackupCurrentDriverAsync(string destinationFolder = null)
